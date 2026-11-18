@@ -24,6 +24,19 @@ BLACK = (0, 0, 0)
 CYAN = (110, 210, 255)
 _f = {}
 
+# Defaults (no voiceover). main() swaps these for the voiceover's timing when vo.json is given.
+CAPS = TL.CAPTIONS
+BEATS = {"jump": 2.4, "center": 15.1, "crazy": 18.2, "stop": 28.1}
+REMAP = [(0.0, 0.0), (TL.DUR, TL.DUR)]          # (output time, source animation time)
+# with voiceover: ease into the arrival, hold the 'peek' while he says "stop", then speed up the fall back
+REMAP_VO = [(0.0, 0.0), (26.0, 26.0), (29.6, 28.0), (32.1, 29.6), (TL.DUR, TL.DUR)]
+
+
+def src_time(t):
+    """Map output time to animation (render) time."""
+    xs, ys = zip(*REMAP)
+    return float(np.interp(t, xs, ys))
+
 
 def font(size, bold=True):
     k = (int(size), bold)
@@ -101,7 +114,9 @@ def window(t, a, b, fade=0.2):
     return clamp((t - a) / fade) * clamp((b - t) / fade)
 
 
-def overlay(img, t, pr):
+def overlay(img, t, pr, tc=None):
+    """t = animation time (HUD, labels), tc = output time (captions)."""
+    tc = t if tc is None else tc
     d = ImageDraw.Draw(img, "RGBA")
 
     # hook title (first ~2.7 s)
@@ -169,9 +184,9 @@ def overlay(img, t, pr):
                fill=(230, 230, 230, int(220 * da)), anchor="mm", stroke_width=3, stroke_fill=(0, 0, 0, int(200 * da)))
 
     # captions (voiceover script)
-    for t0, t1, text in TL.CAPTIONS:
-        if t0 <= t < t1:
-            s = ease_out_back((t - t0) / 0.18)
+    for t0, t1, text in CAPS:
+        if t0 <= tc < t1:
+            s = ease_out_back((tc - t0) / 0.18)
             caption(img, text, 1340, 76, 0.85 + 0.15 * s)
             break
 
@@ -179,14 +194,14 @@ def overlay(img, t, pr):
 def punch(t):
     """Little zoom 'punch' on key beats."""
     z = 1.0
-    for tb in (2.4, 15.1, 18.2, 28.1):
+    for tb in BEATS.values():
         if tb <= t < tb + 0.35:
             z = max(z, 1 + 0.05 * (1 - (t - tb) / 0.35) ** 2)
     return z
 
 
 # ---------------------------------------------------------------- audio
-def make_audio(path):
+def make_audio(path, music_gain=1.0):
     sr = 44100
     n = int(TL.DUR * sr)
     tt = np.arange(n) / sr
@@ -197,7 +212,7 @@ def make_audio(path):
         return np.convolve(x, np.ones(k) / k, mode="same")
 
     # wind rush that follows speed
-    sf = np.array([TL.speed_frac(x) for x in np.arange(0, TL.DUR, 0.01)])
+    sf = np.array([TL.speed_frac(src_time(x)) for x in np.arange(0, TL.DUR, 0.01)])
     sf = np.interp(tt, np.arange(len(sf)) * 0.01, sf)
     noise = rng.standard_normal(n)
     low = smooth(smooth(noise, 40), 40)
@@ -240,18 +255,18 @@ def make_audio(path):
 
     # whoosh at jump
     st = np.arange(int(1.0 * sr)) / sr
-    add(1.9, rng.standard_normal(len(st)) * np.sin(np.pi * st) ** 2 * 0.35)
+    add(BEATS["jump"] - 0.5, rng.standard_normal(len(st)) * np.sin(np.pi * st) ** 2 * 0.35)
     # boom at the centre + punch hits
-    for tb, v in ((2.4, 0.5), (15.1, 0.9), (18.2, 0.8), (28.1, 0.5)):
-        add(tb, sweep(0.8, 90, 35, v, decay=5))
+    for key, v in (("jump", 0.5), ("center", 0.9), ("crazy", 0.8), ("stop", 0.5)):
+        add(BEATS[key], sweep(0.8, 90, 35, v, decay=5))
     # riser before 'crazy part'
     st = np.arange(int(1.6 * sr)) / sr
-    add(16.6, sweep(1.6, 200, 1200, 0.08) * (st / 1.6) ** 2)
+    add(BEATS["crazy"] - 1.6, sweep(1.6, 200, 1200, 0.08) * (st / 1.6) ** 2)
     # caption ticks
-    for t0, _t1, _ in TL.CAPTIONS:
+    for t0, _t1, _ in CAPS:
         add(t0, sweep(0.04, 1800, 1400, 0.04, decay=60))
 
-    au /= np.max(np.abs(au)) / 0.85
+    au /= np.max(np.abs(au)) / (0.85 * music_gain)
     pcm = (au * 32767).astype(np.int16)
     with wave.open(path, "wb") as w:
         w.setnchannels(2)
@@ -261,24 +276,51 @@ def make_audio(path):
 
 
 def main():
+    """python3 post.py <frames_dir> <out.mp4> [voiceover_dir]"""
+    global CAPS, BEATS, REMAP
     frames, out = sys.argv[1], sys.argv[2]
+    vo_dir = sys.argv[3] if len(sys.argv) > 3 else None
     pr = json.load(open(os.path.join(frames, "projections.json")))
+    if vo_dir:
+        vo = json.load(open(os.path.join(vo_dir, "vo.json")))
+        CAPS = [tuple(c) for c in vo["captions"]]
+        BEATS = {"jump": 2.4, "center": 15.1,
+                 "crazy": next(c[0] for c in CAPS if "CRAZY" in c[2]),
+                 "stop": next(c[0] for c in CAPS if c[2].startswith("STOP"))}
+        REMAP = REMAP_VO
     wav = out + ".wav"
-    make_audio(wav)
-    cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
-           "-r", str(TL.FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "19",
-           "-pix_fmt", "yuv420p", "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", "44100", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", out]
+    make_audio(wav, music_gain=0.45 if vo_dir else 1.0)
+    inputs = ["-i", wav]
+    if vo_dir:
+        # warm 'documentary' voice: low-mid warmth, presence, gentle compression, small room;
+        # music ducks under the voice (sidechain), then everything to -14 LUFS
+        inputs += ["-i", os.path.join(vo_dir, "vo.wav")]
+        audio = ["-filter_complex",
+                 "[2:a]aformat=channel_layouts=stereo,highpass=f=70,equalizer=f=170:t=q:w=1.2:g=3,"
+                 "equalizer=f=3200:t=q:w=1:g=2,acompressor=threshold=-20dB:ratio=3:attack=5:release=120:makeup=2,"
+                 "aecho=0.8:0.7:30|55:0.10|0.06,asplit=2[v1][v2];"
+                 "[1:a][v1]sidechaincompress=threshold=0.02:ratio=5:attack=15:release=350[m];"
+                 "[m][v2]amix=inputs=2:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=11[a]",
+                 "-map", "0:v", "-map", "[a]"]
+    else:
+        audio = ["-af", "loudnorm=I=-14:TP=-1.5:LRA=11"]
+    cmd = (["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
+            "-r", str(TL.FPS), "-i", "-"] + inputs + audio +
+           ["-c:v", "libx264", "-preset", "medium", "-crf", "19", "-pix_fmt", "yuv420p",
+            "-ar", "44100", "-c:a", "aac", "-b:a", "192k", "-t", str(TL.DUR), "-movflags", "+faststart", out])
     ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
     for f in range(TL.NFRAMES):
         t = f / TL.FPS
-        src = Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB")
+        ts = src_time(t)
+        fs = min(TL.NFRAMES - 1, int(round(ts * TL.FPS)))
+        src = Image.open(os.path.join(frames, f"f_{fs:04d}.png")).convert("RGB")
         z = punch(t)
         if z > 1.0:
             w2, h2 = src.width / z, src.height / z
             x0, y0 = (src.width - w2) / 2, (src.height - h2) / 2
             src = src.crop((int(x0), int(y0), int(x0 + w2), int(y0 + h2)))
         img = src.resize((W, H), Image.LANCZOS).convert("RGBA")
-        overlay(img, t, pr.get(str(f), {}))
+        overlay(img, ts, pr.get(str(fs), {}), tc=t)
         ff.stdin.write(img.convert("RGB").tobytes())
     ff.stdin.close()
     ff.wait()

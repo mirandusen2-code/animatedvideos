@@ -150,9 +150,14 @@ is ~5,200 °C (~9,400 °F), close to the Sun's surface (~5,500 °C / ~9,900 °F)
 ## 8. How to make it yourself
 
 ```bash
-pip install bpy pillow numpy                 # Blender as a Python module (bpy 5.x)
-python3 blender_scene.py frames/ --res 576x1024 --samples 4   # renders 1050 frames (Cycles)
-python3 post.py frames/ earth-tunnel.mp4     # captions, HUD, sound → 1080x1920 MP4
+pip install bpy pillow numpy kokoro-onnx soundfile        # Blender as a Python module (bpy 5.x) + offline TTS
+./render_all.sh frames/ 576x1024 4                        # renders 1050 frames (Cycles), fresh process per batch
+# voiceover: a documentary-style male narrator (Kokoro voice "bm_george"); needs kokoro-v1.0.onnx + voices-v1.0.bin
+# from https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0
+python3 voiceover.py models/ vo/                           # -> vo/vo.wav + vo/vo.json (captions follow the speech)
+python3 post.py frames/ earth-tunnel-short-vo.mp4 vo/      # captions, HUD, music ducked under the voice -> MP4
 ```
-For a better final version: render at `--res 1080x1920 --samples 16` on a PC with a GPU, and record
-**your own voiceover** following the captions (good for the monetization rules, see §1).
+- `post.py` remaps time so the picture follows the narrator (slows into the arrival, holds the "stop" moment).
+- Other male voices to try: `am_michael` (warm, American), `am_fenrir`, `bm_fable`, `bm_lewis` (`python3 voiceover.py models/ vo/ am_michael`).
+- For a better final version: render at `--res 1080x1920 --samples 16` on a PC with a GPU, and/or record
+  **your own voice** following the captions (good for the monetization rules, see §1).
