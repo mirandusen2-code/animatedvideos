@@ -262,9 +262,6 @@ def make_audio(path, music_gain=1.0):
     # riser before 'crazy part'
     st = np.arange(int(1.6 * sr)) / sr
     add(BEATS["crazy"] - 1.6, sweep(1.6, 200, 1200, 0.08) * (st / 1.6) ** 2)
-    # caption ticks
-    for t0, _t1, _ in CAPS:
-        add(t0, sweep(0.04, 1800, 1400, 0.04, decay=60))
 
     au /= np.max(np.abs(au)) / (0.85 * music_gain)
     pcm = (au * 32767).astype(np.int16)
