@@ -85,7 +85,7 @@ The structure that keeps coming back in every source is **hook → context → p
 3. Big burned-in captions, 2–5 words at a time, with key words in a color.
 4. A **live counter** or meter on screen (timer, speed, temperature). This creates tension.
 5. One re-hook in the middle ("But here's the crazy part").
-6. Numbers concrete and correct (38 min, 5,200 °C). Credibility gets people to comment and share.
+6. Numbers concrete and correct (38 min, 5,200 °C). **Always give US units too** (mph, °F, miles): the US is the biggest English-speaking audience. Credibility gets people to comment and share.
 7. Sound design follows the image (whoosh, boom, riser before the twist).
 8. Ending flows back into the first sentence, so the video loops.
 9. Keep captions out of the bottom ~20% and the right edge (that's where the Shorts UI sits).
@@ -127,8 +127,8 @@ Rule of thumb **[opinion]**: the title should *add* to the hook rather than repe
 
 Facts: in a frictionless tunnel through the center, the fall takes **~38 minutes** with Earth's real density
 distribution (Klotz, *American Journal of Physics* 83, 231 (2015); a uniform Earth gives ~42 min). Top speed is
-reached at the center (uniform model ≈ 7.9 km/s ≈ 28,400 km/h; it's higher with the real density). The inner core
-is ~5,200 °C, close to the Sun's surface (~5,500 °C). Gravity is zero at the center.
+reached at the center (uniform model ≈ 7.9 km/s ≈ 28,400 km/h ≈ 17,600 mph; it's higher with the real density). The inner core
+is ~5,200 °C (~9,400 °F), close to the Sun's surface (~5,500 °C / ~9,900 °F). Gravity is zero at the center.
 
 | Time | Voiceover / caption | Shot (Blender) |
 |------|---------------------|----------------|
@@ -137,8 +137,8 @@ is ~5,200 °C, close to the Sun's surface (~5,500 °C). Gravity is zero at the c
 | 5.5 | "Here's what happens on the way." | Wide shot, "YOU" pointer, disclaimer. |
 | 7.4 | "You fall faster and faster…" | Camera follows the astronaut down the tunnel. Label: CRUST. |
 | 9.6 | "past the mantle, into liquid metal…" | Labels MANTLE / OUTER CORE. The astronaut slowly tumbles. |
-| 12.1 | "to a center almost as hot as the Sun's surface." | Glowing inner core, label ~5,200 °C. |
-| 15.1 | "By now you're going 28,000+ km/h." | Speed meter at max, zoom punch + boom. |
+| 12.1 | "to a center almost as hot as the Sun's surface." | Glowing inner core, label ~5,200 °C / 9,400 °F. |
+| 15.1 | "By now you're going over 28,000 km/h… that's over 17,000 miles per hour!" | Speed meter at max, zoom punch + boom. |
 | 18.2 | "But here's the crazy part:" | **Re-hook**: riser + hit. |
 | 19.8 | "at the center, gravity pulls from every side…" | Passing the center. |
 | 22.7 | "so now it starts slowing you down." | Speed bar drops. |

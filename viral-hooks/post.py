@@ -115,19 +115,20 @@ def overlay(img, t, pr):
     if ha > 0:
         mins = TL.minutes(t)
         mm, ss = int(mins), int((mins % 1) * 60)
-        if t > TL.T_BACK:
-            mm, ss = int(mins), int((mins % 1) * 60)
-        spd = int(round(28400 * TL.speed_frac(t), -2))
+        kmh = 28400 * TL.speed_frac(t)
+        spd = int(round(kmh, -2))
+        mph = int(round(kmh * 0.621371, -2))
         bg = (0, 0, 0, int(160 * ha))
         fg = tuple(int(c) for c in WHITE) + (int(255 * ha),)
-        x = pill(d, 70, 520 if t < 2.7 else 170, f"TIME  {mm:02d}:{ss:02d} min", 40, fg, bg)
-        hot = spd > 25000
-        pill(d, x + 24, 520 if t < 2.7 else 170, f"SPEED  {spd:,} km/h", 40,
-             (YELLOW if hot else WHITE) + (int(255 * ha),), bg)
+        hot = (YELLOW if spd > 25000 else WHITE) + (int(255 * ha),)
+        y0 = 520 if t < 2.7 else 170
+        x = pill(d, 70, y0, f"TIME  {mm:02d}:{ss:02d} min", 40, fg, bg)
+        pill(d, x + 24, y0, f"SPEED  {spd:,} km/h", 40, hot, bg)
+        pill(d, x + 24, y0 + 72, f"= {mph:,} mph", 40, hot, bg)
         # speed bar
-        bw = 940
-        d.rounded_rectangle([70, 230, 70 + bw, 246], radius=8, fill=(255, 255, 255, int(50 * ha)))
-        d.rounded_rectangle([70, 230, 70 + max(16, bw * TL.speed_frac(t)), 246], radius=8,
+        bw, by = 940, y0 + 132
+        d.rounded_rectangle([70, by, 70 + bw, by + 16], radius=8, fill=(255, 255, 255, int(50 * ha)))
+        d.rounded_rectangle([70, by, 70 + max(16, bw * TL.speed_frac(t)), by + 16], radius=8,
                             fill=(255, 140, 40, int(230 * ha)))
 
     # layer labels
@@ -143,9 +144,10 @@ def overlay(img, t, pr):
         al = int(255 * la)
         d.line([px, py, lx, ly], fill=(255, 255, 255, al), width=4)
         d.ellipse([px - 9, py - 9, px + 9, py + 9], fill=(255, 255, 255, al))
-        label = name + ("  ~5,200°C" if name == "INNER CORE" else "")
-        label = label + ("  (liquid metal)" if name == "OUTER CORE" else "")
-        pill(d, lx, ly, label, 38, (255, 255, 255, al), (0, 0, 0, int(170 * la)))
+        sub = {"INNER CORE": "~5,200°C / 9,400°F", "OUTER CORE": "liquid metal"}.get(name)
+        pill(d, lx, ly, name, 38, (255, 255, 255, al), (0, 0, 0, int(170 * la)))
+        if sub:
+            pill(d, lx, ly + 62, sub, 34, YELLOW + (al,), (0, 0, 0, int(170 * la)))
 
     # "YOU" pointer in wide shots
     ya = max(window(t, 5.0, 8.4, 0.3), window(t, 32.2, 40, 0.3))
