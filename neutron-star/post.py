@@ -129,12 +129,18 @@ def project(p, t):
 
 
 # ---------------------------------------------------------------- captions (1-3 words, active word amber)
+def line_of(t):
+    """Index of the narration line a word belongs to."""
+    starts = sorted(v[0] for v in L.values())
+    return sum(1 for s0 in starts if s0 <= t + 1e-6)
+
+
 def caption_groups():
     words = TIMING["words"]
     groups, cur = [], []
     for i, w in enumerate(words):
         cur.append(w)
-        pause = i + 1 < len(words) and words[i + 1][0] - w[1] > 0.12      # never group across a pause
+        pause = i + 1 < len(words) and line_of(words[i + 1][0]) != line_of(w[0])   # never across lines
         ends = w[2][-1] in ".,!?" or len(cur) == 3 or pause
         if ends:
             groups.append(cur)
