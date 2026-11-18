@@ -49,6 +49,12 @@ def lerpv(a, b, x):
 
 
 def shot(t):
+    if "SHOTS" in globals():
+        i = shot_index(t)
+        if i == 6:
+            return "squeeze"            # the Sun squeezed into a tiny ball
+        if i in (7, 8):
+            return "city"               # neutron star over a city at night
     if t < T_MACRO:
         return "studio"
     if t < T_SPACE:
@@ -152,6 +158,15 @@ def drift(t, amp=0.004):
 
 
 STAR = (1000.0, 0.0, 0.0)
+SUN = (2000.0, 0.0, 0.0)
+CITY = (3000.0, 0.0, 0.0)
+NS_CITY = (CITY[0], CITY[1], CITY[2] + 24.0)      # neutron star hovering over the city (as wide as the city)
+
+
+def squeeze(t):
+    """0 -> 1 progress of the Sun being squeezed (shot 6)."""
+    t0, t1 = SHOTS[6][0], SHOTS[6][1]
+    return smoother((t - t0 - 0.2) / (t1 - t0 - 0.5))
 _CB = None   # cube position (set below)
 
 
@@ -165,6 +180,8 @@ def _shots():
     c = CUBE_POS
     pile = (pan_pos(1, TILT_CUBE)[0], 0.0, pan_pos(1, TILT_CUBE)[2] + 0.12)
     cpos = lambda dx, dy, dz: (c[0] + dx, c[1] + dy, c[2] + dz)
+    sun = lambda d, a, h: (SUN[0] + d * math.sin(a), SUN[1] - d * math.cos(a), SUN[2] + h)
+    city = lambda x, y, z: (CITY[0] + x, CITY[1] + y, CITY[2] + z)
     hero0, hero1 = (2.2, -2.6, 1.4), (2.1, -2.47, 1.38)
     hero_t = (0.3, 0.0, 0.9)
     l = L
@@ -184,9 +201,9 @@ def _shots():
         (k2, T_SPACE, cpos(-0.17, -0.36, 0.33), cpos(-0.11, -0.28, 0.26), c, c, 50, 50, 2.4, "cube", 0, 4),
         (T_SPACE, k3, orbit(27, -0.3, 2), orbit(23, -0.2, 2), STAR, STAR, 35, 35, 16, None, 0, 0),
         (k3, k4, orbit(16, 0.45, -2), orbit(12.5, 0.5, -1.5), STAR, STAR, 35, 35, 16, None, 3, -2),
-        (k4, k5, orbit(30, 1.25, 9), orbit(27, 1.35, 8), STAR, STAR, 30, 30, 16, None, 0, 0),
-        (k5, k6, orbit(3.4, 2.0, 0.6), orbit(2.7, 2.4, 0.5), STAR, STAR, 35, 35, 16, None, 0, 0),
-        (k6, T_PULSAR, orbit(4.6, 3.0, -1.6), orbit(3.9, 3.25, -1.3), STAR, STAR, 32, 32, 16, None, 0, 0),
+        (k4, k5, sun(30, 0.3, 4), sun(4.2, 0.6, 0.6), SUN, SUN, 32, 32, 16, None, 0, 3),
+        (k5, k6, city(23, -31, 4.5), city(17, -23.5, 5.0), city(0, 0, 14), city(0, 0, 14.5), 28, 28, 16, None, 0, 0),
+        (k6, T_PULSAR, city(1.6, -4.6, 0.25), city(1.25, -3.9, 0.35), NS_CITY, NS_CITY, 16, 16, 16, None, 0, -3),
         (T_PULSAR, k7, orbit(15, 0.9, 3), orbit(7.5, 0.95, 1.6), STAR, STAR, 32, 32, 16, None, 0, -4),
         (k7, k8, orbit(11, 2.3, 0.6), orbit(10, 2.45, 0.6), STAR, STAR, 30, 30, 16, None, 0, 0),
         (k8, T_BACK, orbit(4.5, 4.0, 11), orbit(4.0, 4.2, 10), STAR, STAR, 30, 30, 16, None, 0, 0),

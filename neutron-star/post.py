@@ -217,7 +217,10 @@ VIGNETTE = (1 - 0.32 * np.clip(((XX - W / 2) / (W * 0.62)) ** 2 + ((YY - H / 2) 
 
 
 def finish(src, t):
-    img = src.resize((W, H), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=2.2, percent=55, threshold=2))
+    if src.size == (W, H):
+        img = src                                   # rendered at full resolution: no upscale needed
+    else:
+        img = src.resize((W, H), Image.LANCZOS).filter(ImageFilter.UnsharpMask(radius=2.2, percent=55, threshold=2))
     a = np.asarray(img).astype(np.float32) / 255.0
     # bloom: blur of the bright parts at quarter resolution
     small = img.resize((W // 4, H // 4), Image.BILINEAR)
@@ -244,30 +247,18 @@ def finish(src, t):
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).convert("RGBA")
 
 
-_PROJ = {}
+HI_RES_DIR = os.environ.get("HI_RES_FRAMES", "")   # optional dir with full-resolution re-renders
 
 
-def zoom_through(src, frames, f, t):
-    """Shot 6 (wide shockwave): digital push that accelerates into the neutron star, so the tiny star
-    grows into the next close-up instead of sitting in an empty black frame."""
-    t0, t1 = T.SHOTS[6][0], T.SHOTS[6][1]
-    if not (t0 <= t < t1):
-        return src
-    if frames not in _PROJ:
-        _PROJ[frames] = json.load(open(os.path.join(frames, "projections.json")))
-    sx, sy, _ = _PROJ[frames][str(f)]["star"]
-    u = (t - t0) / (t1 - t0)
-    z = 1.0 + 3.2 * u ** 2.0
-    w, h = src.width / z, src.height / z
-    cx = min(max(sx * src.width, w / 2), src.width - w / 2)
-    cy = min(max(sy * src.height, h / 2), src.height - h / 2)
-    return src.crop((int(cx - w / 2), int(cy - h / 2), int(cx + w / 2), int(cy + h / 2)))
+def source_frame(frames, f):
+    hi = os.path.join(HI_RES_DIR, f"f_{f:04d}.png") if HI_RES_DIR else ""
+    return hi if hi and os.path.exists(hi) else os.path.join(frames, f"f_{f:04d}.png")
 
 
 def render_frame(frames, f):
     t = f / T.FPS
-    src = Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB")
-    img = finish(zoom_through(src, frames, f, t), t)
+    src = Image.open(source_frame(frames, f)).convert("RGB")
+    img = finish(src, t)
     overlays(img, t)
     draw_captions(img, t)
     return img.convert("RGB")
@@ -406,6 +397,7 @@ def make_music_and_sfx():
     add(sfx, T.T_COLLAPSE - 2.3, rumble(2.5), 0.45)                    # star shudders
     add(sfx, T.T_COLLAPSE + 0.25, thump(140, 30, 2.4), 0.9)            # collapse / supernova
     add(sfx, T.T_PULSAR, thump(80, 28, 2.0), 0.85)                     # twist hit
+    add(sfx, T.SHOTS[7][0], thump(70, 32, 1.6), 0.35)                  # soft "whoomp" on the city reveal
     add(sfx, L["billion"][1] - 0.6, shimmer(1.6), 0.07)                # billion tons
     sfx = reverb(sfx, 1.8, 0.3, seed=2)
     return music, sfx

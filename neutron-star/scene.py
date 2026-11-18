@@ -493,6 +493,184 @@ for Lsh in (1.9, 3.1):
         col.objects.link(o)
         space.append(o)
 
+
+# ================================================================= squeeze set: our Sun crushed into a tiny ball
+squeeze_set = []
+SUNV = Vector(T.SUN)
+sun_m, nt_su, out_su = new_mat("Sun")
+tcs = node(nt_su, "ShaderNodeTexCoord")
+nzs = nt_su.nodes.new("ShaderNodeTexNoise")
+nzs.noise_dimensions = "4D"
+nzs.inputs["Scale"].default_value = 3.0
+nzs.inputs["Detail"].default_value = 10
+SUN_W = nzs.inputs["W"]
+nt_su.links.new(tcs.outputs["Object"], nzs.inputs["Vector"])
+crs = ramp(nt_su, [(0.35, (0.6, 0.12, 0.0)), (0.55, (1.0, 0.42, 0.03)), (0.72, (1.0, 0.75, 0.25))])
+nt_su.links.new(nzs.outputs["Fac"], crs.inputs[0])
+crb = ramp(nt_su, [(0.35, (0.15, 0.35, 1.0)), (0.6, (0.6, 0.8, 1.0)), (0.75, (1.0, 1.0, 1.0))])
+nt_su.links.new(nzs.outputs["Fac"], crb.inputs[0])
+mxs = nt_su.nodes.new("ShaderNodeMix")
+mxs.data_type = "RGBA"
+SUN_SHIFT = mxs.inputs["Factor"]
+nt_su.links.new(crs.outputs[0], mxs.inputs["A"])
+nt_su.links.new(crb.outputs[0], mxs.inputs["B"])
+ems = node(nt_su, "ShaderNodeEmission", Strength=1.3)
+SUN_STRENGTH = ems.inputs["Strength"]
+nt_su.links.new(mxs.outputs["Result"], ems.inputs["Color"])
+nt_su.links.new(ems.outputs[0], out_su.inputs[0])
+bm = bmesh.new()
+uvsphere(bm, 6.0, u=128, v=64)
+sun_o = mesh_obj("Sun", bm, sun_m)
+sun_o.location = SUNV
+suncor_m, SUNCOR_A = glow_mat("SunCorona", (1.0, 0.6, 0.15), 2.0, fresnel_power=3.0, alpha=0.8)
+bm = bmesh.new()
+uvsphere(bm, 6.9, u=96, v=48)
+suncor = mesh_obj("SunCorona", bm, suncor_m)
+suncor.location = SUNV
+squeeze_set += [sun_o, suncor]
+sq_rings = []
+for k, (rot, mult) in enumerate((((1.2, 0.2, 0), 1.35), ((0.3, 1.1, 0.4), 1.6), ((1.9, -0.6, 0.9), 1.9))):
+    rm, ra = glow_mat(f"SqueezeRing{k}", (1.0, 0.85, 0.55), 3.0, alpha=0.0)
+    bpy.ops.mesh.primitive_torus_add(major_radius=1.0, minor_radius=0.01, major_segments=128, minor_segments=8)
+    ro = bpy.context.active_object
+    ro.name = f"SqueezeRing{k}"
+    ro.data.materials.append(rm)
+    ro.location = SUNV
+    ro.rotation_euler = rot
+    sq_rings.append((ro, ra, mult))
+    squeeze_set.append(ro)
+
+# ================================================================= city set: a neutron star as wide as a city
+city_set = []
+CITYV = Vector(T.CITY)
+ground_m, _ = principled_mat("Ground", (0.012, 0.013, 0.016), rough=0.35)
+bm = bmesh.new()
+bmesh.ops.create_grid(bm, x_segments=1, y_segments=1, size=120)
+ground = mesh_obj("Ground", bm, ground_m, smooth=False)
+ground.location = CITYV
+city_set.append(ground)
+bld_m, nt_bl, out_bl = new_mat("Buildings")
+Lc = nt_bl.links
+pb = node(nt_bl, "ShaderNodeBsdfPrincipled")
+pb.inputs["Base Color"].default_value = (0.03, 0.032, 0.04, 1)
+pb.inputs["Roughness"].default_value = 0.5
+tcb = node(nt_bl, "ShaderNodeTexCoord")
+# window grid: u along the facade (x + y), v up the building; per-cell random decides if a light is on
+sepo = nt_bl.nodes.new("ShaderNodeSeparateXYZ")
+Lc.new(tcb.outputs["Object"], sepo.inputs[0])
+
+
+def mnode(op, a=None, b=None, va=None, vb=None):
+    n = node(nt_bl, "ShaderNodeMath")
+    n.operation = op
+    if a is not None:
+        Lc.new(a, n.inputs[0])
+    elif va is not None:
+        n.inputs[0].default_value = va
+    if b is not None:
+        Lc.new(b, n.inputs[1])
+    elif vb is not None:
+        n.inputs[1].default_value = vb
+    return n.outputs[0]
+
+
+u = mnode("MULTIPLY", mnode("ADD", sepo.outputs["X"], sepo.outputs["Y"]), vb=11.0)
+v = mnode("MULTIPLY", sepo.outputs["Z"], vb=16.0)
+fu, fv = mnode("FRACT", u), mnode("FRACT", v)
+rect = mnode("MULTIPLY", mnode("MULTIPLY", mnode("GREATER_THAN", fu, vb=0.22), mnode("LESS_THAN", fu, vb=0.78)),
+             mnode("MULTIPLY", mnode("GREATER_THAN", fv, vb=0.3), mnode("LESS_THAN", fv, vb=0.75)))
+cell = nt_bl.nodes.new("ShaderNodeCombineXYZ")
+Lc.new(mnode("FLOOR", u), cell.inputs["X"])
+Lc.new(mnode("FLOOR", v), cell.inputs["Y"])
+wn_ = nt_bl.nodes.new("ShaderNodeTexWhiteNoise")
+wn_.noise_dimensions = "3D"
+Lc.new(cell.outputs[0], wn_.inputs["Vector"])
+on = mnode("GREATER_THAN", wn_.outputs["Value"], vb=0.62)
+window_mask = mnode("MULTIPLY", rect, on)
+geo = nt_bl.nodes.new("ShaderNodeNewGeometry")
+sepn = nt_bl.nodes.new("ShaderNodeSeparateXYZ")
+Lc.new(geo.outputs["Normal"], sepn.inputs[0])
+absz = node(nt_bl, "ShaderNodeMath")
+absz.operation = "ABSOLUTE"
+Lc.new(sepn.outputs["Z"], absz.inputs[0])
+walls = node(nt_bl, "ShaderNodeMath")
+walls.operation = "LESS_THAN"
+walls.inputs[1].default_value = 0.5
+Lc.new(absz.outputs[0], walls.inputs[0])
+m2c = node(nt_bl, "ShaderNodeMath")
+m2c.operation = "MULTIPLY"
+Lc.new(window_mask, m2c.inputs[0])
+Lc.new(walls.outputs[0], m2c.inputs[1])
+m3c = node(nt_bl, "ShaderNodeMath")
+m3c.operation = "MULTIPLY"
+m3c.inputs[1].default_value = 2.2
+Lc.new(m2c.outputs[0], m3c.inputs[0])
+pb.inputs["Emission Color"].default_value = (1.0, 0.62, 0.28, 1)
+Lc.new(m3c.outputs[0], pb.inputs["Emission Strength"])
+Lc.new(pb.outputs[0], out_bl.inputs[0])
+# buildings: one mesh built with numpy from a unit cube
+crnd = random.Random(21)
+cube_v = np.array([(x, y, z) for x in (-0.5, 0.5) for y in (-0.5, 0.5) for z in (0.0, 1.0)])
+cube_f = [(0, 1, 3, 2), (4, 6, 7, 5), (0, 4, 5, 1), (2, 3, 7, 6), (0, 2, 6, 4), (1, 5, 7, 3)]
+bverts, bfaces = [], []
+off = 0
+g = 0.95
+for ix in range(-13, 14):
+    for iy in range(-13, 14):
+        x, y = ix * g + crnd.uniform(-0.12, 0.12), iy * g + crnd.uniform(-0.12, 0.12)
+        r = math.hypot(x, y)
+        if r > 11.5 or ix % 5 == 0 or iy % 6 == 0:          # city edge + avenues
+            continue
+        for _ in range(2 if r < 6 else 1):
+            w, d = crnd.uniform(0.3, 0.42), crnd.uniform(0.3, 0.42)
+            hgt = crnd.uniform(0.25, 0.9) + 3.2 * math.exp(-(r / 3.2) ** 2) * crnd.uniform(0.4, 1.3)
+            ox, oy = crnd.uniform(-0.2, 0.2), crnd.uniform(-0.2, 0.2)
+            v = cube_v * np.array([w, d, hgt]) + np.array([x + ox, y + oy, 0])
+            bverts.append(v)
+            bfaces += [[i + off for i in f] for f in cube_f]
+            off += 8
+me = bpy.data.meshes.new("Buildings")
+me.from_pydata(np.concatenate(bverts).tolist(), [], bfaces)
+bld = bpy.data.objects.new("Buildings", me)
+bld.data.materials.append(bld_m)
+bld.location = CITYV
+col.objects.link(bld)
+city_set.append(bld)
+bm = bmesh.new()
+uvsphere(bm, 10.0, u=128, v=64)
+nsc_m, nt_nc, out_nc = new_mat("NSCitySurface")
+tcc = node(nt_nc, "ShaderNodeTexCoord")
+nzc = node(nt_nc, "ShaderNodeTexNoise", Scale=1.4, Detail=10.0)
+nt_nc.links.new(tcc.outputs["Object"], nzc.inputs["Vector"])
+crc = ramp(nt_nc, [(0.3, (0.04, 0.12, 0.6)), (0.5, (0.25, 0.55, 1.0)), (0.66, (0.75, 0.9, 1.0))])
+nt_nc.links.new(nzc.outputs["Fac"], crc.inputs[0])
+emc = node(nt_nc, "ShaderNodeEmission", Strength=0.9)
+nt_nc.links.new(crc.outputs[0], emc.inputs["Color"])
+nt_nc.links.new(emc.outputs[0], out_nc.inputs[0])
+ns_city = mesh_obj("NSCity", bm, nsc_m)
+ns_city.location = Vector(T.NS_CITY)
+cityglow_m, _ = glow_mat("NSCityGlow", (0.3, 0.6, 1.0), 1.0, fresnel_power=5.0, alpha=0.45)
+bm = bmesh.new()
+uvsphere(bm, 12.5, u=96, v=48)
+ns_city_glow = mesh_obj("NSCityGlow", bm, cityglow_m)
+ns_city_glow.location = Vector(T.NS_CITY)
+moon = bpy.data.lights.new("CityMoon", "SUN")
+moon.energy = 0.25
+moon.color = (0.5, 0.65, 1.0)
+moon_o = bpy.data.objects.new("CityMoon", moon)
+moon_o.rotation_euler = (math.radians(50), 0, math.radians(30))
+col.objects.link(moon_o)
+ns_city.visible_shadow = False
+ns_city_glow.visible_shadow = False
+nsl = bpy.data.lights.new("NSCityLight", "POINT")
+nsl.energy = 60000
+nsl.color = (0.45, 0.65, 1.0)
+nsl.shadow_soft_size = 9.0
+nsl_o = bpy.data.objects.new("NSCityLight", nsl)
+nsl_o.location = Vector(T.NS_CITY)
+col.objects.link(nsl_o)
+city_set += [ns_city, ns_city_glow, moon_o, nsl_o]
+
 # ================================================================= camera
 cam_d = bpy.data.cameras.new("Cam")
 cam_d.sensor_fit = "AUTO"
@@ -528,8 +706,24 @@ for f in range(T.NFRAMES):
     CUR[0] = f
     shot = T.shot(t)
     in_space = shot in ("star", "pulsar")
+    elsewhere = shot in ("star", "pulsar", "squeeze", "city")
     for o in studio:
-        key(o, "hide_render", in_space)
+        key(o, "hide_render", elsewhere)
+    for o in squeeze_set:
+        key(o, "hide_render", shot != "squeeze")
+    for o in city_set:
+        key(o, "hide_render", shot != "city")
+    # the Sun being squeezed
+    q = T.squeeze(t) if shot == "squeeze" else 0.0
+    ssc = 1.0 - 0.93 * q
+    key(sun_o, "scale", (ssc,) * 3)
+    key(suncor, "scale", (ssc,) * 3)
+    key_socket(SUN_SHIFT, q ** 1.5)
+    key_socket(SUN_STRENGTH, 1.3 + 1.6 * q)
+    key_socket(SUN_W, t * 0.15)
+    for ro, ra, mult in sq_rings:
+        key(ro, "scale", (6.0 * ssc * mult,) * 3)
+        key_socket(ra, 0.0 if shot != "squeeze" else min(1.0, q * 4) * (1 - q * 0.3))
     for o in space:
         if o.parent is None or o.parent.name != "MagneticAxis":
             key(o, "hide_render", not in_space)
@@ -624,7 +818,7 @@ try:
 except Exception:
     pass
 
-SPP = {"studio": 12, "end": 12, "macro": 16, "macro2": 16, "star": 8, "pulsar": 8}
+SPP = {"studio": 12, "end": 12, "macro": 16, "macro2": 16, "star": 8, "pulsar": 8, "squeeze": 8, "city": 16}
 proj_path = os.path.join(OUT, "projections.json")
 proj = json.load(open(proj_path)) if os.path.exists(proj_path) else {}
 for f in FRAMES:
