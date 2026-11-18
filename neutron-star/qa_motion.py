@@ -35,5 +35,13 @@ for i, d in enumerate(diff):
     run = run + 1 if d < 0.05 else 0
     if run == 12:
         problems.append(f"freeze from {(i - 11) / T.FPS:.2f}s (>= 0.4 s identical frames)")
+# a cut frame must already belong to the new shot: its change into the next frame must look like normal motion
+for sh in T.SHOTS[1:]:
+    c = int(round(sh[0] * T.FPS + 0.4999))
+    if c + 3 < len(diff):
+        inside = np.median(diff[c + 1:c + 6])
+        if diff[c] > 3 * inside + 3:
+            problems.append(f"half-mixed frame at cut {c} ({c / T.FPS:.2f}s): change into next frame {diff[c]:.1f} "
+                            f"vs {inside:.1f} inside the shot")
 print(f"{len(frames)} frames, {len(cuts)} planned cuts, mean change {diff.mean():.2f}")
 print("\n".join(problems) if problems else "OK: no unplanned jumps, no freezes")
