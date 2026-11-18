@@ -33,9 +33,9 @@ def star(cx, cy, r_out, r_in, n, rot=0.0, jitter=0.0, seed=1):
     return pts
 
 
-def main():
-    out = sys.argv[1] if len(sys.argv) > 1 else "mindblown3d_profile.png"
-    img = radial_bg()
+def icon(background=True):
+    """The exploding brain on an SxS canvas (transparent if background=False)."""
+    img = radial_bg() if background else Image.new("RGBA", (S, S), (0, 0, 0, 0))
 
     # explosion burst behind the brain (glow + 3 layered stars)
     glow = Image.new("RGBA", (S, S), (0, 0, 0, 0))
@@ -77,8 +77,12 @@ def main():
     # sparkles
     for (x, y, r) in [(-700, -520, 90), (690, -430, 70), (-620, 300, 55), (650, 420, 80), (40, -820, 60)]:
         d.polygon(star(C + x, C + y, r, r * 0.28, 4, rot=-math.pi / 2), fill=(255, 255, 255))
+    return img
 
-    img.convert("RGB").resize((OUT, OUT), Image.LANCZOS).save(out)
+
+def main():
+    out = sys.argv[1] if len(sys.argv) > 1 else "mindblown3d_profile.png"
+    icon().convert("RGB").resize((OUT, OUT), Image.LANCZOS).save(out)
     print("saved", out)
 
 
