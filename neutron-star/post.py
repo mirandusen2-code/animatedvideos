@@ -352,13 +352,13 @@ def make_music_and_sfx():
         st = np.arange(len(x)) / SR
         return x / (np.abs(x).max() + 1e-9) * (st / d) ** 1.5 * env(len(x), 0.01, 0.15)
 
-    add(sfx, 0.0, thump(95, 40, 1.0) + clink(), 0.55)                  # scale slams down
+    add(sfx, 0.0, thump(95, 40, 1.0), 0.55)                            # scale slams down
+    add(sfx, 0.0, clink(), 0.55)
     add(sfx, L["neutron"][0] + 0.3, shimmer(), 0.10)                   # it starts to glow
     add(sfx, T.T_COLLAPSE - 2.3, rumble(2.5), 0.45)                    # star shudders
     add(sfx, T.T_COLLAPSE + 0.25, thump(140, 30, 2.4), 0.9)            # collapse / supernova
     add(sfx, T.T_PULSAR, thump(80, 28, 2.0), 0.85)                     # twist hit
     add(sfx, L["billion"][1] - 0.6, shimmer(1.6), 0.07)                # billion tons
-    land = T.DUR - 0.02
     sfx = reverb(sfx, 1.8, 0.3, seed=2)
     return music, sfx
 
@@ -403,7 +403,7 @@ def main():
         "deesser=i=0.35,acompressor=threshold=-20dB:ratio=3:attack=8:release=140:makeup=2,"
         "aecho=0.85:0.6:28|47:0.07|0.04,alimiter=limit=0.9,asplit=2[v1][v2];"
         # music ~6 dB under the voice and ducked further while he speaks
-        "[2:a]volume=0.32[mu];[mu][v1]sidechaincompress=threshold=0.03:ratio=6:attack=25:release=420[md];"
+        "[2:a]volume=0.27[mu];[mu][v1]sidechaincompress=threshold=0.03:ratio=6:attack=25:release=420[md];"
         "[3:a]volume=0.42[fx];"
         "[v2][md][fx]amix=inputs=3:normalize=0,aformat=channel_layouts=stereo,"
         "loudnorm=I=-14:TP=-1.5:LRA=11[a]")
