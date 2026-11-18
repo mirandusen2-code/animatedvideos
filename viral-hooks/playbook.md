@@ -88,7 +88,11 @@ The structure that keeps coming back in every source is **hook → context → p
 6. Numbers concrete and correct (38 min, 5,200 °C). **Always give US units too** (mph, °F, miles): the US is the biggest English-speaking audience. Credibility gets people to comment and share.
 7. Sound design follows the image (whoosh, boom, riser before the twist).
 8. Ending flows back into the first sentence, so the video loops.
-9. Keep captions out of the bottom ~20% and the right edge (that's where the Shorts UI sits).
+9. **Safe zone, measured on a real phone screenshot of our own Short (1080×1920 video):** YouTube crops
+   ~46 px on each side on tall phones; the top ~260 px holds status bar + back/search/menu icons; the right
+   column x > 880 (y 1050–1760) holds like/comment/save/share/remix; from y ≈ 1580 down sit the channel name,
+   title and buttons. → Keep all essential text inside **x 92–860, y 300–1540**. No HUD at the very top.
+   Captions ~72 px (not bigger), max 2 text elements on screen at once.
 10. Keep a recognizable style (the same character, colors and font): that builds a brand, *not* repetitive slop.
 
 ## 5. Ten title formulas

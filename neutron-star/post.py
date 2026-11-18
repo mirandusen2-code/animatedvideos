@@ -26,8 +26,11 @@ ICE = (127, 216, 255)
 WHITE = (255, 255, 255)
 INK = (8, 12, 24)
 # Shorts safe zone: top 250 px (search bar), bottom 420 px (title/channel), right ~200 px (buttons)
-SAFE = (64, 250, 880, H - 420)
-CX = (SAFE[0] + SAFE[2]) / 2                         # 472: centre of the safe column
+# Measured on a real phone screenshot of a published Short (YouTube crops ~46 px per side on tall phones):
+# top ~260 px = status/search icons, right x>880 (y 1050-1760) = like/comment/share, bottom from y~1580 =
+# channel name + title. Everything essential stays inside this column:
+SAFE = (92, 300, 860, 1540)
+CX = (SAFE[0] + SAFE[2]) / 2                         # 476: centre of the safe column
 TIMING = json.load(open(os.path.join(HERE, "vo", "timing.json")))
 L = T.L
 _f = {}
@@ -105,7 +108,24 @@ def pill(img, text, cx, cy, size=40, fg=WHITE, bg=(10, 16, 32, 200), alpha=1.0, 
     d.text((wdt / 2 + 1, h / 2 + 2), text, font=f, fill=fg, anchor="mm")
     if alpha < 1:
         layer.putalpha(layer.getchannel("A").point(lambda v: int(v * alpha)))
-    img.alpha_composite(layer, (int(cx - layer.width / 2), int(cy - layer.height / 2)))
+    x0 = int(min(max(cx - layer.width / 2, SAFE[0]), SAFE[2] - layer.width))
+    y0 = int(min(max(cy - layer.height / 2, SAFE[1]), SAFE[3] - layer.height))
+    img.alpha_composite(layer, (x0, y0))
+
+
+def project(p, t):
+    """World point -> output pixel, using the same camera as Blender (portrait, sensor fit on height)."""
+    loc, tgt, lens, _fs, _fo, roll = T.camera(t)
+    loc, tgt, p = np.array(loc), np.array(tgt), np.array(p)
+    f = tgt - loc
+    f /= np.linalg.norm(f)
+    r = np.cross(f, [0, 0, 1])
+    r /= np.linalg.norm(r)
+    u = np.cross(r, f)
+    d = p - loc
+    z = d @ f
+    vh = 18.0 / lens
+    return W / 2 + (d @ r / z) / (vh * 9 / 16) * W / 2, H / 2 - (d @ u / z) / vh * H / 2
 
 
 # ---------------------------------------------------------------- captions (1-3 words, active word amber)
@@ -146,9 +166,9 @@ def draw_captions(img, t):
                     colors[i] = ICE
             s = 0.88 + 0.12 * back_out((t - t0) / 0.14)
             # one line if it fits, else two
-            f = font(int(92 * s))
-            lines = [words] if f.getlength(" ".join(words)) <= 760 else [words[:2], words[2:]]
-            text_block(img, lines, CX, SAFE[3] - 120, 92, scale=s, colors=colors, maxw=760)
+            f = font(int(72 * s))
+            lines = [words] if f.getlength(" ".join(words)) <= 700 else [words[:2], words[2:]]
+            text_block(img, lines, CX, SAFE[3] - 95, 72, scale=s, colors=colors, maxw=700)
             return
 
 
@@ -158,30 +178,32 @@ def fmt(n):
 
 
 def overlays(img, t):
-    # hook (first ~2.4 s): the claim, big, under the top safe line
-    a = 1.0 if t < 2.2 else clamp((2.5 - t) / 0.3)
+    # hook (first shot): two clean labels on the scale instead of a wall of text
+    a = window(t, 0.15, T.SHOTS[0][1] - 0.05, 0.15)
     if a > 0:
-        s = 0.92 + 0.08 * back_out(t / 0.25)
-        text_block(img, [["1", "SUGAR", "CUBE"]], CX, 340, 84, alpha=a, scale=s, colors={0: AMBER})
-        text_block(img, [[">", "8", "BILLION"], ["PEOPLE"]], CX, 500, 84, alpha=a, scale=s, colors={1: AMBER, 2: AMBER})
+        cx, cy = project(T.CUBE_POS, t)
+        pill(img, "1 SUGAR CUBE", cx, cy - 120, 36, alpha=a, accent=AMBER)
+        p = T.pan_pos(1, T.scale_tilt(t))
+        px, py = project((p[0], p[1], p[2] + 0.22), t)
+        pill(img, "8 BILLION PEOPLE", px, py - 95, 36, alpha=a)
     # 20 km label while the narrator says it
     sq0, sq1 = L["squeeze"]
-    pill(img, "20 KM  ·  12 MILES", CX, 330, 44, alpha=window(t, sq0 + 2.2, sq1 + 1.6, 0.2))
+    pill(img, "20 KM  ·  12 MILES", CX, 380, 38, alpha=window(t, sq0 + 2.2, sq1 + 1.6, 0.2))
     # 716 / second counter
     s0, s1 = L["spin"][0], L["second"][1]
     a = window(t, s0, T.T_BACK, 0.2)
     if a > 0:
         n = 716 * clamp((t - s0) / (s1 - s0 - 0.3)) ** 0.7
-        text_block(img, [[fmt(n) + "×"]], CX, 360, 150, alpha=a, colors={0: ICE})
-        pill(img, "SPINS PER SECOND", CX, 480, 40, alpha=a)
+        text_block(img, [[fmt(n) + "×"]], CX, 400, 112, alpha=a, colors={0: ICE})
+        pill(img, "SPINS PER SECOND", CX, 500, 34, alpha=a)
     # one billion tons counter
     b0, b1 = L["billion"]
     a = window(t, b0 + 1.0, T.T_END, 0.2)
     if a > 0:
         u = clamp((t - (b0 + 1.0)) / (b1 - b0 - 1.2))
         n = 1e9 * (1 - (1 - u) ** 3)
-        text_block(img, [[fmt(round(n, -6) if u < 1 else 1e9)]], CX, 360, 110, alpha=a, colors={0: AMBER})
-        pill(img, "TONS  ·  ONE SUGAR CUBE", CX, 470, 38, alpha=a, accent=AMBER)
+        text_block(img, [[fmt(round(n, -6) if u < 1 else 1e9)]], CX, 400, 88, alpha=a, colors={0: AMBER})
+        pill(img, "TONS", CX, 495, 34, alpha=a, accent=AMBER)
 
 
 # ---------------------------------------------------------------- image finishing
