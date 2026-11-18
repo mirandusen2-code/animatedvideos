@@ -7,6 +7,7 @@ Also writes <out>.srt (subtitles).
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 import wave
@@ -238,13 +239,35 @@ def finish(src, t):
         k = 1 - (t - tf) / (6 / T.FPS)
         a = a + (1 - a) * (0.92 * k)
     # film grain
-    a = a + RNG.normal(0, 0.012, (H, W, 1)).astype(np.float32)
+    g = RNG.normal(0, 0.007, (H // 2, W // 2)).astype(np.float32)       # soft, luma-only grain
+    a = a + np.repeat(np.repeat(g, 2, 0), 2, 1)[..., None]
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).convert("RGBA")
+
+
+_PROJ = {}
+
+
+def zoom_through(src, frames, f, t):
+    """Shot 6 (wide shockwave): digital push that accelerates into the neutron star, so the tiny star
+    grows into the next close-up instead of sitting in an empty black frame."""
+    t0, t1 = T.SHOTS[6][0], T.SHOTS[6][1]
+    if not (t0 <= t < t1):
+        return src
+    if frames not in _PROJ:
+        _PROJ[frames] = json.load(open(os.path.join(frames, "projections.json")))
+    sx, sy, _ = _PROJ[frames][str(f)]["star"]
+    u = (t - t0) / (t1 - t0)
+    z = 1.0 + 3.2 * u ** 2.0
+    w, h = src.width / z, src.height / z
+    cx = min(max(sx * src.width, w / 2), src.width - w / 2)
+    cy = min(max(sy * src.height, h / 2), src.height - h / 2)
+    return src.crop((int(cx - w / 2), int(cy - h / 2), int(cx + w / 2), int(cy + h / 2)))
 
 
 def render_frame(frames, f):
     t = f / T.FPS
-    img = finish(Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB"), t)
+    src = Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB")
+    img = finish(zoom_through(src, frames, f, t), t)
     overlays(img, t)
     draw_captions(img, t)
     return img.convert("RGB")
@@ -406,7 +429,18 @@ def write_srt(path):
     out = []
     for i, (key, spoken, cap, _p) in enumerate(LINES, 1):
         a, b = L[key]
-        out.append(f"{i}\n{ts(a)} --> {ts(b)}\n{cap.replace('(', '').replace(')', '')}\n")
+        proper = {"SUN": "Sun", "EARTH": "Earth", "KM": "km"}
+
+        def norm(w):
+            m = re.match(r"^(\W*)(.*?)(\W*)$", w)
+            pre, core, post_ = m.groups()
+            if core.isupper() and len(core) > 1:
+                core = proper.get(core, core.lower())
+            return pre + core + post_
+        words = [norm(w) for w in cap.split()]
+        text = " ".join(words)
+        text = text[0].upper() + text[1:]
+        out.append(f"{i}\n{ts(a)} --> {ts(b)}\n{text}\n")
     open(path, "w").write("\n".join(out))
 
 
@@ -434,7 +468,7 @@ def main():
         "loudnorm=I=-14:TP=-1.5:LRA=11[a]")
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
            "-r", str(T.FPS), "-i", "-", "-i", vo, "-i", mw, "-i", sw, "-filter_complex", filt,
-           "-map", "0:v", "-map", "[a]", "-c:v", "libx264", "-preset", "slow", "-crf", "17",
+           "-map", "0:v", "-map", "[a]", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
            "-pix_fmt", "yuv420p", "-ar", "44100", "-c:a", "aac", "-b:a", "192k", "-t", str(T.DUR),
            "-movflags", "+faststart", out]
     ff = subprocess.Popen(cmd, stdin=subprocess.PIPE)
