@@ -192,9 +192,6 @@ def overlays(img, t):
         p = T.pan_pos(1, T.scale_tilt(t))
         px, py = project((p[0], p[1], p[2] + 0.22), t)
         pill(img, "8 BILLION PEOPLE", px, py - 95, 36, alpha=a)
-    # 20 km label while the narrator says it
-    sq0, sq1 = L["squeeze"]
-    pill(img, "20 KM  ·  12 MILES", CX, 380, 38, alpha=window(t, sq0 + 2.2, sq1 + 1.6, 0.2))
     # 716 / second counter
     s0, s1 = L["spin"][0], L["second"][1]
     a = window(t, s0, T.T_BACK, 0.2)
