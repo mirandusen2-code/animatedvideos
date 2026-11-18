@@ -507,7 +507,7 @@ SUN_W = nzs.inputs["W"]
 nt_su.links.new(tcs.outputs["Object"], nzs.inputs["Vector"])
 crs = ramp(nt_su, [(0.35, (0.6, 0.12, 0.0)), (0.55, (1.0, 0.42, 0.03)), (0.72, (1.0, 0.75, 0.25))])
 nt_su.links.new(nzs.outputs["Fac"], crs.inputs[0])
-crb = ramp(nt_su, [(0.35, (0.15, 0.35, 1.0)), (0.6, (0.6, 0.8, 1.0)), (0.75, (1.0, 1.0, 1.0))])
+crb = ramp(nt_su, [(0.35, (0.35, 0.6, 1.0)), (0.6, (0.75, 0.88, 1.0)), (0.75, (1.0, 1.0, 1.0))])
 nt_su.links.new(nzs.outputs["Fac"], crb.inputs[0])
 mxs = nt_su.nodes.new("ShaderNodeMix")
 mxs.data_type = "RGBA"
@@ -718,7 +718,7 @@ for f in range(T.NFRAMES):
     ssc = 1.0 - 0.93 * q
     key(sun_o, "scale", (ssc,) * 3)
     key(suncor, "scale", (ssc,) * 3)
-    key_socket(SUN_SHIFT, q ** 1.5)
+    key_socket(SUN_SHIFT, T.smoother((q - 0.6) / 0.4))      # stay orange, then turn blue-white at the end
     key_socket(SUN_STRENGTH, 1.3 + 1.6 * q)
     key_socket(SUN_W, t * 0.15)
     for ro, ra, mult in sq_rings:
