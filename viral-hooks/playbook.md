@@ -93,7 +93,8 @@ The structure that keeps coming back in every source is **hook → context → p
    column x > 880 (y 1050–1760) holds like/comment/save/share/remix; from y ≈ 1580 down sit the channel name,
    title and buttons. → Keep all essential text inside **x 92–860, y 300–1540**. No HUD at the very top.
    Captions ~72 px (not bigger), max 2 text elements on screen at once.
-10. Keep a recognizable style (the same character, colors and font): that builds a brand, *not* repetitive slop.
+10. **Render at full 1080×1920, no upscaling and no film grain**: phones are sharp, and soft or grainy images look amateur.
+11. Keep a recognizable style (the same character, colors and font): that builds a brand, *not* repetitive slop.
 
 ## 5. Ten title formulas
 

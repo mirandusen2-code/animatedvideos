@@ -86,10 +86,18 @@ no "subscribe" at the end. The last line must flow into the first.
 - **Kokoro** (open-source neural TTS) for the voice; **ffmpeg** for voice processing, ducking & loudness.
 - **Pillow/NumPy** post: captions, counters, bloom, grain; **H.264 1080×1920 30 fps**.
 
+## 8b. Render quality (lesson learned)
+- Always render at the **final resolution (1080×1920)**. Never render small and upscale: it looks soft/grainy on
+  phones. Lower the sample count instead; the denoiser handles it.
+- No film grain. Judge quality on **1:1 crops**, not on scaled-down contact sheets.
+- If the render time forces a quality trade-off, ask the user before choosing.
+
 ## 9. QA checklist before export
 - [ ] Every fact matches §1 (metric + US units).
 - [ ] No text in the button/caption dead zones (checked against a safe-zone overlay).
 - [ ] Captions in sync with the voice; no caption longer than 3 words.
 - [ ] Voice is clear above the music; no hiss/clicks; −14 LUFS.
 - [ ] The loop is seamless (end → start).
+- [ ] Every shot sharp at 1:1 (rendered at 1080×1920, no upscaling, no grain).
+- [ ] `qa_motion.py`: no unplanned jumps or freezes.
 - [ ] Watched as a viewer: would I swipe at second 1? At second 10? If yes, fix it.
