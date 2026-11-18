@@ -1,47 +1,47 @@
 1
-00:00:00,150 --> 00:00:03,640
+00:00:00,150 --> 00:00:03,620
 This sugar cube weighs more than every human on Earth
 
 2
-00:00:03,890 --> 00:00:04,668
+00:00:03,890 --> 00:00:04,400
 Combined.
 
 3
-00:00:05,219 --> 00:00:06,525
+00:00:05,219 --> 00:00:06,580
 Because it isn't sugar.
 
 4
-00:00:06,775 --> 00:00:08,951
+00:00:06,860 --> 00:00:08,740
 It's a piece of a neutron star.
 
 5
-00:00:09,400 --> 00:00:12,208
+00:00:09,580 --> 00:00:12,039
 When a giant star dies, its core collapses,
 
 6
-00:00:12,359 --> 00:00:18,655
+00:00:12,519 --> 00:00:18,079
 Squeezing more mass than our Sun into a ball just 20 km (12 miles) wide.
 
 7
-00:00:18,955 --> 00:00:20,469
+00:00:18,955 --> 00:00:20,140
 About the size of a city.
 
 8
-00:00:20,969 --> 00:00:22,565
+00:00:20,960 --> 00:00:22,219
 But here's the crazy part.
 
 9
-00:00:23,015 --> 00:00:25,495
+00:00:23,015 --> 00:00:25,399
 Some of them spin over 700 times
 
 10
-00:00:25,644 --> 00:00:26,574
+00:00:25,644 --> 00:00:26,399
 Every second.
 
 11
-00:00:27,125 --> 00:00:31,422
+00:00:27,125 --> 00:00:31,280
 So one sugar cube of it, here on Earth, would weigh a billion tons.
 
 12
-00:00:31,771 --> 00:00:32,743
+00:00:31,960 --> 00:00:32,780
 And that's why...

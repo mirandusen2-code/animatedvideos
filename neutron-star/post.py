@@ -133,7 +133,7 @@ def project(p, t):
 def line_of(t):
     """Index of the narration line a word belongs to."""
     starts = sorted(v[0] for v in L.values())
-    return sum(1 for s0 in starts if s0 <= t + 1e-6)
+    return sum(1 for s0 in starts if s0 <= t + 0.06)
 
 
 def caption_groups():
@@ -418,8 +418,12 @@ def write_srt(path):
         s = x % 60
         return f"{h:02d}:{m:02d}:{int(s):02d},{int((s % 1) * 1000):03d}"
     out = []
+    wt = TIMING["words"]
+    k = 0
     for i, (key, spoken, cap, _p) in enumerate(LINES, 1):
-        a, b = L[key]
+        n = len(cap.split())
+        a, b = wt[k][0], wt[k + n - 1][1]                 # measured start of first word, end of last word
+        k += n
         proper = {"SUN": "Sun", "EARTH": "Earth", "KM": "km"}
 
         def norm(w):
