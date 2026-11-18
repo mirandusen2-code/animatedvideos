@@ -54,8 +54,8 @@ def resample(x, sr_in, sr_out):
 
 def main():
     model_dir, out_dir = sys.argv[1], sys.argv[2]
-    voice = sys.argv[3] if len(sys.argv) > 3 else "bm_george"
-    speed = float(sys.argv[4]) if len(sys.argv) > 4 else 1.08
+    voice = sys.argv[3] if len(sys.argv) > 3 else "am_michael"
+    speed = float(sys.argv[4]) if len(sys.argv) > 4 else 1.0
     lang = "en-gb" if voice.startswith("b") else "en-us"
     os.makedirs(out_dir, exist_ok=True)
     k = Kokoro(os.path.join(model_dir, "kokoro-v1.0.onnx"), os.path.join(model_dir, "voices-v1.0.bin"))

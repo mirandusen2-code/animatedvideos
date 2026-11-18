@@ -16,9 +16,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import timeline as TL  # noqa: E402
 
 W, H = 1080, 1920
-FONT_B = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
-FONT_R = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+# Montserrat (OFL): the most used caption font in viral Shorts/TikToks
+FONT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fonts")
+FONTS = {"black": "Montserrat-Black.otf", "bold": "Montserrat-ExtraBold.otf", "regular": "Montserrat-SemiBold.otf"}
 YELLOW = (255, 214, 64)
+GREEN = (80, 255, 120)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 CYAN = (110, 210, 255)
@@ -28,8 +30,33 @@ _f = {}
 CAPS = TL.CAPTIONS
 BEATS = {"jump": 2.4, "center": 15.1, "crazy": 18.2, "stop": 28.1}
 REMAP = [(0.0, 0.0), (TL.DUR, TL.DUR)]          # (output time, source animation time)
-# with voiceover: ease into the arrival, hold the 'peek' while he says "stop", then speed up the fall back
-REMAP_VO = [(0.0, 0.0), (26.0, 26.0), (29.6, 28.0), (32.1, 29.6), (TL.DUR, TL.DUR)]
+
+
+def word_groups(caps, max_words=3):
+    """Split caption chunks into groups of <= max_words, timing each word by its length."""
+    groups = []
+    for t0, t1, text in caps:
+        words = text.split()
+        weights = [len(w) + 2 for w in words]
+        starts, acc = [], t0
+        for w in weights:
+            starts.append(acc)
+            acc += (t1 - t0) * w / sum(weights)
+        n = len(words)
+        k = (n + max_words - 1) // max_words          # balanced groups, e.g. 4 words -> 2+2
+        sizes = [n // k + (1 if i < n % k else 0) for i in range(k)]
+        i = 0
+        for sz in sizes:
+            ws, ts = words[i:i + sz], starts[i:i + sz]
+            end = starts[i + sz] if i + sz < n else t1
+            groups.append([ts[0], end, ws, ts])
+            i += sz
+    for a, b in zip(groups, groups[1:]):              # keep a group up until the next one starts
+        a[1] = max(a[1], min(b[0], a[1] + 0.6))
+    return groups
+
+
+GROUPS = word_groups(CAPS)
 
 
 def src_time(t):
@@ -38,10 +65,11 @@ def src_time(t):
     return float(np.interp(t, xs, ys))
 
 
-def font(size, bold=True):
-    k = (int(size), bold)
+def font(size, bold=True, black=False):
+    kind = "black" if black else ("bold" if bold else "regular")
+    k = (int(size), kind)
     if k not in _f:
-        _f[k] = ImageFont.truetype(FONT_B if bold else FONT_R, k[0])
+        _f[k] = ImageFont.truetype(os.path.join(FONT_DIR, FONTS[kind]), k[0])
     return _f[k]
 
 
@@ -74,26 +102,34 @@ def is_hot(w):
     return len(core) > 1 and core.isupper() or any(ch.isdigit() for ch in w)
 
 
-def caption(img, text, cy, size, scale=1.0, alpha=1.0, maxw=940):
-    """Shorts-style caption: bold, thick outline, key words in yellow."""
+def caption(img, text, cy, size, scale=1.0, alpha=1.0, maxw=940, active=None):
+    """Viral Shorts caption: Montserrat Black, UPPERCASE, thick outline + drop shadow.
+    Key words (numbers / words written in caps) are yellow; the word being spoken (`active`) is green."""
     if alpha <= 0.01:
         return
     size = int(size * scale)
-    f = font(size)
+    f = font(size, black=True)
     layer = Image.new("RGBA", (W, int(size * 4.2)), (0, 0, 0, 0))
     d = ImageDraw.Draw(layer)
-    lines = wrap(text.split(), f, maxw * scale, d)
-    lh = size * 1.18
+    words = text.split()
+    hot = [is_hot(w) for w in words]
+    up = [w.upper() for w in words]
+    lines = wrap(up, f, maxw * scale, d)
+    lh = size * 1.12
     top = layer.height / 2 - lh * len(lines) / 2
-    sw = max(3, size // 9)
+    sw = max(4, size // 9)
+    k = 0
     for i, ln in enumerate(lines):
         total = d.textlength(" ".join(ln), font=f)
         x = W / 2 - total / 2
         y = top + i * lh
         for w in ln:
-            col = YELLOW if is_hot(w) else WHITE
+            col = GREEN if k == active else (YELLOW if hot[k] else WHITE)
+            d.text((x + size * 0.06, y + size * 0.08), w, font=f, fill=(0, 0, 0, 150),
+                   stroke_width=sw, stroke_fill=(0, 0, 0, 150))          # drop shadow
             d.text((x, y), w, font=f, fill=col, stroke_width=sw, stroke_fill=BLACK)
             x += d.textlength(w + " ", font=f)
+            k += 1
     if alpha < 1:
         layer.putalpha(layer.getchannel("A").point(lambda v: int(v * alpha)))
     img.alpha_composite(layer, (0, int(cy - layer.height / 2)))
@@ -123,7 +159,7 @@ def overlay(img, t, pr, tc=None):
     a = window(t, 0.0, 2.7, 0.15) if t > 0.15 else 1.0
     if a > 0:
         s = 0.6 + 0.4 * ease_out_back(t / 0.35) if t < 0.35 else 1.0
-        caption(img, "WHAT IF YOU JUMPED THROUGH THE EARTH?", 300, 92, s, a, maxw=980)
+        caption(img, "WHAT IF YOU JUMPED THROUGH THE EARTH?", 300, 96, s, a, maxw=1000)
 
     # HUD: timer + speed
     ha = window(t, 2.4, 31.6, 0.3)
@@ -155,9 +191,9 @@ def overlay(img, t, pr, tc=None):
         if sz <= 0 or not (0.02 < sx < 0.98 and 0.05 < sy < 0.95):
             continue
         px, py = sx * W, sy * H
-        if py > 1230:          # anchor inside the caption band: skip
+        if py > 1230 or py < 330:   # anchor under the captions or the HUD: skip
             continue
-        lx, ly = min(px + 120, 640), min(py - 60, 1110)
+        lx, ly = min(px + 120, 640), max(360, min(py - 60, 1110))
         al = int(255 * la)
         d.line([px, py, lx, ly], fill=(255, 255, 255, al), width=4)
         d.ellipse([px - 9, py - 9, px + 9, py + 9], fill=(255, 255, 255, al))
@@ -184,10 +220,11 @@ def overlay(img, t, pr, tc=None):
                fill=(230, 230, 230, int(220 * da)), anchor="mm", stroke_width=3, stroke_fill=(0, 0, 0, int(200 * da)))
 
     # captions (voiceover script)
-    for t0, t1, text in CAPS:
-        if t0 <= tc < t1:
-            s = ease_out_back((tc - t0) / 0.18)
-            caption(img, text, 1340, 76, 0.85 + 0.15 * s)
+    for g0, g1, words, times in GROUPS:
+        if g0 <= tc < g1:
+            act = max([i for i, w0 in enumerate(times) if w0 <= tc], default=None)
+            s = ease_out_back((tc - g0) / 0.15)
+            caption(img, " ".join(words), 1330, 92, 0.85 + 0.15 * s, active=act)
             break
 
 
@@ -263,7 +300,7 @@ def make_audio(path, music_gain=1.0):
 
 def main():
     """python3 post.py <frames_dir> <out.mp4> [voiceover_dir]"""
-    global CAPS, BEATS, REMAP
+    global CAPS, BEATS, REMAP, GROUPS
     frames, out = sys.argv[1], sys.argv[2]
     vo_dir = sys.argv[3] if len(sys.argv) > 3 else None
     pr = json.load(open(os.path.join(frames, "projections.json")))
@@ -273,7 +310,12 @@ def main():
         BEATS = {"jump": 2.4, "center": 15.1,
                  "crazy": next(c[0] for c in CAPS if "CRAZY" in c[2]),
                  "stop": next(c[0] for c in CAPS if c[2].startswith("STOP"))}
-        REMAP = REMAP_VO
+        GROUPS = word_groups(CAPS)
+        # picture follows the narrator: arrive just before "stop", hold the peek until "and fall", then catch up
+        stop = BEATS["stop"]
+        fall = next(c[0] for c in CAPS if c[2].lower().startswith("and fall"))
+        REMAP = [(0.0, 0.0), (min(26.0, stop - 1.5), min(26.0, stop - 1.5)), (stop - 0.3, 28.0),
+                 (max(fall, stop + 0.6), 29.6), (TL.DUR, TL.DUR)]
     wav = out + ".wav"
     make_audio(wav, music_gain=0.45 if vo_dir else 1.0)
     inputs = ["-i", wav]
