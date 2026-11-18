@@ -1,32 +1,38 @@
-# Upload details: neutron-star Short
+# Upload: "This Sugar Cube Weighs More Than Every Human"
 
-## Title (pick one)
+## Title (recommended)
 **This Sugar Cube Weighs More Than Every Human 🤯**
 
-Alternatives:
+Alternatives (A/B-test after 1–2 days if "viewed vs. swiped" is low):
 1. 1 Sugar Cube > 8 Billion People
 2. The Heaviest Sugar Cube in the Universe
-3. Why This Sugar Cube Weighs a Billion Tons
+3. A Star the Size of a City
 
 ## Description
-One sugar cube of neutron star weighs about a billion tons, more than every human on Earth combined. 🤯
-When a giant star dies, its core collapses into a ball just 20 km (12 miles) wide, and some spin over 700 times every second.
+One sugar cube of neutron star would weigh about a billion tons, more than every human on Earth combined. 🤯
+When a giant star dies, its core collapses into a ball just 20 km (12 miles) wide, the size of a city, and some spin over 700 times every second.
 
-Facts: NASA (neutron star density), McGill/NRAO (fastest pulsar, 716 spins per second).
+Sources: NASA (neutron star density), McGill/NRAO (fastest pulsar, 716 spins per second).
 
 #shorts #space #science
 
-## Tags
-neutron star, sugar cube, neutron star sugar cube, heaviest thing in the universe, pulsar, supernova, dying star, space facts, science facts, mind blowing facts, astronomy, astrophysics, density, did you know, 3d animation, science explained, educational, shorts, mindblown 3d
+## Tags (paste in YouTube Studio → More options → Tags)
+neutron star, sugar cube, neutron star sugar cube, heaviest thing in the universe, pulsar, fastest pulsar, supernova, dying star, star collapse, space facts, science facts, mind blowing facts, astronomy, astrophysics, density, did you know, 3d animation, science explained, shorts, mindblown 3d
 
-## Hashtags (in the description)
-#shorts #space #science
-
-## Thumbnail
-Three candidates in `thumbnails/`: `thumb_scale.png` (recommended: shows the paradox), `thumb_glowing_cube.png`,
-`thumb_pulsar.png`. On Shorts you can pick a frame or upload one in the YouTube mobile app.
+## Thumbnails (folder `thumbnails/`, all 1080×1920)
+| File | Text | When to use |
+|---|---|---|
+| `thumb_scale.png` | 1 SUGAR CUBE > 8 BILLION PEOPLE | **Recommended**: states the paradox |
+| `thumb_city.png` | A STAR THE SIZE OF A CITY | Most striking image (alternative) |
+| `thumb_glowing_cube.png` | 1 BILLION TONS | Simple, bold |
+| `thumb_pulsar.png` | 716 SPINS PER SECOND | Space-fan audience |
 
 ## Files
-- `sugar-cube-neutron-star.mp4`: main version (Chatterbox narration, Michael timbre)
+- `sugar-cube-neutron-star.mp4`: **main version** (expressive Chatterbox narration, Michael timbre)
 - `sugar-cube-neutron-star_kokoro-voice.mp4`: same video with the Kokoro narration
-- `sugar-cube-neutron-star.srt`: subtitles (upload under Subtitles in YouTube Studio)
+- `sugar-cube-neutron-star.srt`: subtitles (YouTube Studio → Subtitles → Upload file → With timing)
+
+## QA passed
+Facts vs. sources · Whisper: final mix = script word for word · captions aligned to the speech (0.00 s) ·
+all text inside the measured phone safe zone · rendered at 1080×1920 (no upscaling, no grain) ·
+no unplanned jumps / freezes / black frames · −14.4 LUFS, peak −1.4 dB.

@@ -11,6 +11,7 @@ for name, f, lines, colors in [
     ("thumb_scale", 40, [["1", "SUGAR", "CUBE"], [">", "8", "BILLION"], ["PEOPLE"]], {0: post.AMBER, 4: post.AMBER, 5: post.AMBER}),
     ("thumb_glowing_cube", 870, [["1", "BILLION"], ["TONS"]], {0: post.AMBER, 1: post.AMBER}),
     ("thumb_pulsar", 700, [["716", "SPINS"], ["PER", "SECOND"]], {0: post.ICE}),
+    ("thumb_city", 600, [["A", "STAR", "THE"], ["SIZE", "OF", "A", "CITY"]], {1: post.ICE, 6: post.AMBER}),
 ]:
     t = f / post.T.FPS
     from PIL import Image
