@@ -143,6 +143,12 @@ def caption_groups():
         cur.append(w)
         pause = i + 1 < len(words) and line_of(words[i + 1][0]) != line_of(w[0])   # never across lines
         ends = w[2][-1] in ".,!?" or len(cur) == 3 or pause
+        # never end a group on a bare number: keep "1 MILLION" together
+        if ends and len(cur) > 1 and not pause and w[2][-1] not in ".,!?" and any(ch.isdigit() for ch in w[2]):
+            nxt = cur.pop()
+            groups.append(cur)
+            cur = [nxt]
+            continue
         if ends:
             groups.append(cur)
             cur = []
@@ -206,10 +212,11 @@ def overlays(img, t):
         grow = clamp((t - a0) / 0.9)
         d = ImageDraw.Draw(img, "RGBA")
         x0, x1 = SAFE[0] + 40, SAFE[2] - 40
-        for y, lab, frac, col in ((370, "WATER  500 T", 0.0005, WHITE), (470, "AIR  1,000,000 T", 1.0, ICE)):
-            wbar = max(10, (x1 - x0) * frac * (1 - (1 - grow) ** 3))
-            d.rounded_rectangle([x0, y + 26, x0 + wbar, y + 50], radius=12, fill=col + (int(235 * a),))
-            f = font(34, "ExtraBold")
+        for y, lab, frac, col in ((360, "WATER: 500 T", 0.0005, WHITE), (490, "AIR: 1,000,000 T", 1.0, ICE)):
+            wbar = max(16, (x1 - x0) * frac * (1 - (1 - grow) ** 3))
+            d.rounded_rectangle([x0, y + 34, x0 + wbar, y + 72], radius=19, fill=col + (int(235 * a),),
+                                outline=INK + (int(200 * a),), width=3)
+            f = font(46, "ExtraBold")
             d.text((x0, y), lab, font=f, fill=WHITE + (int(255 * a),), anchor="lm", stroke_width=4,
                    stroke_fill=INK + (int(255 * a),))
 

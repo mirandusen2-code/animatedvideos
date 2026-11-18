@@ -6,7 +6,7 @@ The last line flows back into the first (loop).
 
 LINES = [
     ("hook",     "This fluffy cloud weighs half a million kilos.",
-                 "This fluffy cloud weighs 500,000 KG", 0.3),
+                 "This fluffy cloud weighs HALF A MILLION kilos.", 0.3),
     ("pounds",   "That's over a million pounds.", "That's over 1 MILLION POUNDS.", 0.3),
     ("elephants", "As heavy as nearly a hundred elephants.", "As heavy as nearly 100 ELEPHANTS.", 0.4),
     ("why",      "So why doesn't it fall?", "So why doesn't it FALL?", 0.45),

@@ -247,10 +247,25 @@ for i in range(18):                                        # flat base
     el.co = (crnd.uniform(-6, 6), crnd.uniform(-2, 2), -0.6)
     el.size_x, el.size_y, el.size_z = 2.4, 1.6, 0.7
     el.radius = 2.0
+mb.resolution = 0.16
 cloud = bpy.data.objects.new("Cloud", mb)
-cloud.data.materials.append(cloud_m)
 cloud.location = Vector(T.CLOUD) - Vector((0, 0, 2.5))
 col.objects.link(cloud)
+bpy.context.view_layer.objects.active = cloud
+cloud.select_set(True)
+bpy.ops.object.convert(target="MESH")
+cloud = bpy.context.view_layer.objects.active
+cloud.data.materials.clear()
+cloud.data.materials.append(cloud_m)
+tex = bpy.data.textures.new("Puffs", "CLOUDS")
+tex.noise_scale = 0.9
+tex.noise_depth = 3
+disp = cloud.modifiers.new("Puffs", "DISPLACE")
+disp.texture = tex
+disp.strength = 0.55
+disp.mid_level = 0.45
+for poly in cloud.data.polygons:
+    poly.use_smooth = True
 sky_set.append(cloud)
 
 # giant crane scale above the cloud: hook, dial housing, face, ticks, needle, cables
@@ -275,6 +290,23 @@ for k in range(31):                                          # ticks over 300 de
     p1 = D + Vector((r1 * math.sin(ang), -0.39, r1 * math.cos(ang)))
     cylinder(b, p0, p1, 0.06 if big else 0.035, seg=6)
 ticks = b.build("Ticks", ink_m, smooth=False)
+FONT = bpy.data.fonts.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "viral-hooks", "fonts",
+                                        "Montserrat-ExtraBold.otf"))
+dial_labels = []
+for k, (txt, size) in enumerate([(str(v), 0.42) for v in range(0, 700, 100)] + [("×1000 KG", 0.34)]):
+    cu = bpy.data.curves.new(f"DialText{k}", "FONT")
+    cu.body, cu.font, cu.size = txt, FONT, size
+    cu.align_x, cu.align_y = "CENTER", "CENTER"
+    o = bpy.data.objects.new(f"DialText{k}", cu)
+    if k < 7:
+        ang = math.radians(-150 + 50 * k)
+        o.location = D + Vector((1.55 * math.sin(ang), -0.4, 1.55 * math.cos(ang)))
+    else:
+        o.location = D + Vector((0, -0.4, -1.05))
+    o.rotation_euler = (math.pi / 2, 0, 0)
+    o.data.materials.append(ink_m)
+    col.objects.link(o)
+    dial_labels.append(o)
 b = Builder()
 cylinder(b, (0, 0, -0.35), (0, 0, 2.15), 0.07, seg=8)
 b.sphere((0, 0, 0), (0.22, 0.12, 0.22))
@@ -288,10 +320,10 @@ bpy.ops.mesh.primitive_torus_add(major_radius=1.0, minor_radius=0.22, major_segm
                                  location=Vector(T.HOOK) + Vector((0, 0, 0.4)), rotation=(math.pi / 2, 0, 0))
 hook = bpy.context.active_object
 hook.data.materials.append(steel_m)
-sky_set += [dial_house, dial_face, ticks, needle, hook_parts, hook]
+sky_set += [dial_house, dial_face, ticks, needle, hook_parts, hook] + dial_labels
 
 # herd of 100 porcelain elephants under the cloud
-porcelain_m, _ = pmat("Porcelain", (0.62, 0.62, 0.65), rough=0.3, coat=0.4)
+porcelain_m, _ = pmat("Porcelain", (0.36, 0.36, 0.39), rough=0.35, coat=0.4)
 
 
 def elephant(b, m):
@@ -341,7 +373,7 @@ glass.visible_shadow = False
 sky_set.append(glass)
 
 # feather (vane from a curved strip + quill)
-feather_m, _ = pmat("Feather", (0.97, 0.97, 0.97), rough=0.7)
+feather_m, _ = pmat("Feather", (0.98, 0.95, 0.9), rough=0.6, emit=(1.0, 0.97, 0.92), strength=0.35)
 fv, ff = [], []
 N = 24
 for i in range(N + 1):
@@ -354,23 +386,37 @@ for i in range(N):
     a, c2 = 3 * i, 3 * (i + 1)
     ff += [[a, a + 1, c2 + 1, c2], [a + 1, a + 2, c2 + 2, c2 + 1]]
 feather = obj_from("Feather", fv, ff, feather_m)
+feather.scale = (2.2, 2.2, 2.2)
+quill_m, _ = pmat("Quill", (0.75, 0.68, 0.58), rough=0.4)
+bq = Builder()
+cylinder(bq, (0, -0.55, 0.0), (0, 3.25, 0.29), 0.035, seg=10)
+quill = bq.build("Quill", quill_m)
+quill.parent = feather
 feather.data.materials[0].use_backface_culling = False
 sky_set.append(feather)
 
 # ================================================================= drops set (inside the cloud)
 drops_set = []
-fog_m, _ = glow_mat("CloudInside", (0.86, 0.9, 0.96), 1.0, alpha=1.0)
+fog_m, nt_f, out_f = new_mat("CloudInside")
+tcf = node(nt_f, "ShaderNodeTexCoord")
+sepf = nt_f.nodes.new("ShaderNodeSeparateXYZ")
+nt_f.links.new(tcf.outputs["Generated"], sepf.inputs[0])
+crf = ramp(nt_f, [(0.3, (0.42, 0.52, 0.68)), (0.55, (0.78, 0.84, 0.92)), (0.75, (1.0, 0.96, 0.88))])
+nt_f.links.new(sepf.outputs["Z"], crf.inputs[0])
+emf = node(nt_f, "ShaderNodeEmission", Strength=0.9)
+nt_f.links.new(crf.outputs[0], emf.inputs["Color"])
+nt_f.links.new(emf.outputs[0], out_f.inputs[0])
 bpy.ops.mesh.primitive_uv_sphere_add(radius=40, location=T.DROPS)
 fog = bpy.context.active_object
 fog.data.materials.append(fog_m)
 drops_set.append(fog)
-drop_m, _ = pmat("Droplet", (1, 1, 1), rough=0.0, transmission=1.0, ior=1.33)
+drop_m, _ = pmat("Droplet", (0.85, 0.93, 1.0), rough=0.0, transmission=1.0, ior=1.33)
 b = Builder()
 drnd = random.Random(9)
 DROP_LIST = []
 for i in range(520):
     p = (drnd.uniform(-3.2, 3.2), drnd.uniform(-1.0, 6.0), drnd.uniform(-3.0, 3.6))
-    r = drnd.uniform(0.025, 0.07)
+    r = drnd.uniform(0.04, 0.12)
     DROP_LIST.append((p, r, drnd.uniform(0, 6.28)))
 drop_objs = []
 for k in range(4):                                  # 4 groups so they can bob with different phases
@@ -380,13 +426,13 @@ for k in range(4):                                  # 4 groups so they can bob w
     o = bb.build(f"Drops{k}", drop_m)
     drop_objs.append(o)
     drops_set.append(o)
-air_m, AIR_A = glow_mat("WarmAir", (1.0, 0.75, 0.45), 1.6, alpha=0.0)
+air_m, AIR_A = glow_mat("WarmAir", (1.0, 0.62, 0.3), 3.0, alpha=0.0)
 streaks = []
 for k in range(14):
     x, y = drnd.uniform(-2.6, 2.6), drnd.uniform(0.0, 4.5)
     cu = bpy.data.curves.new(f"Streak{k}", "CURVE")
     cu.dimensions = "3D"
-    cu.bevel_depth = 0.012
+    cu.bevel_depth = 0.022
     sp = cu.splines.new("POLY")
     pts = [(0.12 * math.sin(j * 0.6 + k), 0, j * 0.18) for j in range(12)]
     sp.points.add(len(pts) - 1)
@@ -398,7 +444,7 @@ for k in range(14):
     streaks.append((o, x, y, drnd.uniform(0, 1)))
     drops_set.append(o)
 fill = bpy.data.lights.new("DropKey", "AREA")
-fill.energy, fill.size, fill.color = 900, 4.0, (1.0, 0.95, 0.85)
+fill.energy, fill.size, fill.color = 2500, 1.5, (1.0, 0.95, 0.85)
 fill_o = bpy.data.objects.new("DropKey", fill)
 fill_o.location = Vector(T.DROPS) + Vector((3, -4, 4))
 fill_o.rotation_euler = Vector((3, -4, 4)).to_track_quat("Z", "Y").to_euler()
@@ -445,13 +491,10 @@ for f in range(T.NFRAMES):
     key(cloud, "rotation_euler", (0, 0, 0.02 * math.sin(t * 0.4)))
     key(needle, "rotation_euler", (0, T.needle(t), 0))
     cd = T.cube_draw(t)
-    for k, (o, a, b2) in enumerate(edge_objs):
-        u = T.clamp(cd * 1.6 - k / len(edge_objs) * 0.6)          # edges draw one after another
-        key(o, "scale", (1, 1, 1))
-        mid = (a + b2) / 2
-        o.location = (0, 0, 0)
-        key_socket(EDGE_A, min(1.0, cd * 3))
+    key_socket(EDGE_A, min(1.0, cd * 3))
     key_socket(GLASS_A, 0.18 * cd)
+    key(feather, "hide_render", T.shot_index(t) != len(T.SHOTS) - 1)
+    key(quill, "hide_render", T.shot_index(t) != len(T.SHOTS) - 1)
     fp, fr = T.feather_pos(t)
     key(feather, "location", fp)
     key(feather, "rotation_euler", fr)
@@ -459,7 +502,7 @@ for f in range(T.NFRAMES):
     for k, o in enumerate(drop_objs):
         key(o, "location", (0.02 * math.sin(t * 1.3 + k), 0, 0.06 * math.sin(t * 0.9 + k * 1.7) + 0.05 * t))
     aa = T.clamp((t - T.L["light"][0]) / 0.4)
-    key_socket(AIR_A, 0.55 * aa)
+    key_socket(AIR_A, 0.9 * aa)
     for o, x, y, ph in streaks:
         z = ((t * 0.9 + ph * 4) % 4.0) - 2.6
         key(o, "location", Vector(T.DROPS) + Vector((x, y, z)))
@@ -475,7 +518,8 @@ for f in range(T.NFRAMES):
     cam_d.keyframe_insert("lens", frame=f)
     cam_d.dof.aperture_fstop = fstop
     cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
-    fp_ = {"dial": Vector(T.DIAL), "drop": Vector(T.DROPS) + Vector((0, 0, 0.3))}.get(focus, Vector(tgt))
+    fp_ = {"dial": Vector(T.DIAL), "drop": Vector(T.DROPS) + Vector((0, 0, 0.3)),
+           "feather": Vector(T.feather_pos(t)[0])}.get(focus, Vector(tgt))
     cam_d.dof.focus_distance = (Vector(loc) - fp_).length
     cam_d.dof.keyframe_insert("focus_distance", frame=f)
 

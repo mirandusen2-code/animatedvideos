@@ -36,7 +36,7 @@ def lerpv(a, b, x):
 
 # ---------------------------------------------------------------- world layout
 CLOUD = (0.0, 0.0, 30.0)          # centre of the hero cloud (cloud ~16 units wide, ~9 tall)
-CLOUD_TOP = 34.5
+CLOUD_TOP = 32.3
 HOOK = (0.0, 0.0, CLOUD_TOP + 1.0)
 DIAL = (0.0, 0.0, CLOUD_TOP + 6.5)  # crane-scale dial centre (dial faces -y)
 DROPS = (600.0, 0.0, 0.0)         # macro set: inside the cloud
@@ -44,25 +44,27 @@ HERD = (0.0, 0.0, 0.0)            # elephants stand on the ground under the clou
 
 
 def needle(t):
-    """Dial needle angle (rad, clockwise from 12 o'clock): swings to 'full' with an overshoot."""
+    """Dial needle angle (rad, clockwise from 12 o'clock). Scale: -150 deg = 0, +150 deg = 600 (x1000 kg).
+    Swings from 0 to 500 (= +100 deg) with a small overshoot."""
     x = clamp((t - 0.25) / 1.6)
-    over = 1 + 0.08 * math.sin(x * math.pi * 3) * (1 - x)
-    return math.radians(300) * ease_out(x) * over
+    over = 1 + 0.06 * math.sin(x * math.pi * 3) * (1 - x)
+    return math.radians(-150 + 250 * ease_out(x) * over)
 
 
 def cube_draw(t):
     """0..1: the glass air-cube drawing itself around the cloud."""
     a0 = L["air"][0] - 0.1
-    return smoother((t - a0) / 1.4)
+    f0 = L["feather"][0] - 0.1                         # fades out in the last shot, so the loop matches the hook
+    return smoother((t - a0) / 1.4) * (1 - smoother((t - f0) / 0.8))
 
 
 def feather_pos(t):
     """Feather drifting down past the cloud in the last line (sways side to side)."""
     t0 = L["feather"][0] - 0.3
     u = clamp((t - t0) / (DUR - t0))
-    z = lerp(CLOUD[2] + 4.0, CLOUD[2] - 7.0, u)
-    x = 4.5 + 1.6 * math.sin(u * 7.0)
-    return (x, -9.0 + 2.0 * u, z), (0.5 * math.sin(u * 7.0 + 1.2), 0.25 * math.cos(u * 6), u * 2.0)
+    z = lerp(CLOUD[2] + 2.0, CLOUD[2] - 9.0, u)
+    x = 1.0 + 1.8 * math.sin(u * 6.0)
+    return (x, -11.0, z), (1.45 + 0.35 * math.sin(u * 6.0 + 1.2), 0.3 * math.cos(u * 5), 0.5 + 0.6 * math.sin(u * 3))
 
 
 # ---------------------------------------------------------------- shots
@@ -71,28 +73,29 @@ def _shots():
     c = CLOUD
     pt = lambda x, y, z: (c[0] + x, c[1] + y, c[2] + z)
     dr = lambda x, y, z: (DROPS[0] + x, DROPS[1] + y, DROPS[2] + z)
-    hero0, hero1 = pt(9.0, -40.0, -12.0), pt(7.5, -34.0, -10.5)
-    hero_t = pt(0.0, 0.0, 3.0)
-    dial_t = DIAL
+    hero0, hero1 = pt(4.2, -20.0, -8.6), pt(3.6, -17.5, -7.9)
+    hero_t = pt(0.0, 0.0, 4.0)
     k1 = l["hook"][0] + 2.1                       # cut to the dial as the number lands
     k2 = l["elephants"][0] + 1.3
-    k3 = l["droplets"][0] + 0.1
-    k4 = l["light"][0] + 0.1
+    k3a = l["droplets"][0] + 1.8
+    k4a = l["light"][0] + 1.9
     k5 = l["air"][0] + 1.6
     return [
         # t0, t1, loc0, loc1, target0, target1, lens0, lens1, fstop, focus, roll0, roll1, set
-        (0.0, k1, hero0, hero1, hero_t, hero_t, 24, 24, 11, None, 0, 0, "sky"),
-        (k1, l["pounds"][1] + 0.15, (DIAL[0] + 2.2, DIAL[1] - 9.0, DIAL[2] - 0.6), (DIAL[0] + 1.6, DIAL[1] - 7.6, DIAL[2] - 0.4),
-         dial_t, dial_t, 50, 50, 4, "dial", 0, 0, "sky"),
-        (l["pounds"][1] + 0.15, k2, (-26.0, -46.0, 2.2), (-22.0, -40.0, 2.6), pt(0, 0, -8), pt(0, 0, -6), 20, 20, 8, None, 0, 0, "sky"),
+        (0.0, k1, hero0, hero1, hero_t, hero_t, 22, 22, 11, None, 0, 0, "sky"),
+        (k1, l["pounds"][1] + 0.15, (DIAL[0] + 1.6, DIAL[1] - 15.0, DIAL[2] - 0.6), (DIAL[0] + 1.2, DIAL[1] - 13.2, DIAL[2] - 0.4),
+         DIAL, DIAL, 40, 40, 5.6, "dial", 0, 0, "sky"),
+        (l["pounds"][1] + 0.15, k2, (9.0, -32.0, 3.2), (7.5, -29.5, 3.4), (0.0, -6.0, 14.0), (0.0, -6.0, 15.0), 18, 18, 8, None, 0, 0, "sky"),
         (k2, l["why"][0] - 0.1, (14.0, -30.0, 52.0), (11.0, -24.0, 48.0), (0.0, 0.0, 2.0), (0.0, 0.0, 6.0), 26, 26, 11, None, 0, 0, "sky"),
-        (l["why"][0] - 0.1, k3, pt(3.0, -36.0, 1.0), pt(0.6, -9.5, 0.5), pt(0, 0, 0), pt(0, 0, 0), 30, 30, 11, None, 0, 6, "sky"),
-        (k3, k4, dr(0.0, -2.6, 0.2), dr(0.25, -2.1, 0.3), dr(0, 0, 0.1), dr(0.1, 0, 0.2), 60, 60, 1.6, "drop", 0, 0, "drops"),
-        (k4, l["crazy"][0] - 0.05, dr(-2.2, -1.2, -0.6), dr(-1.9, -1.0, -0.3), dr(0, 0, 0.5), dr(0, 0, 0.8), 45, 45, 2.0, "drop", 0, 0, "drops"),
+        (l["why"][0] - 0.1, l["droplets"][0], pt(3.0, -36.0, 1.0), pt(0.6, -9.5, 0.5), pt(0, 0, 0), pt(0, 0, 0), 30, 30, 11, None, 0, 6, "sky"),
+        (l["droplets"][0], k3a, dr(0.0, -2.6, 0.2), dr(0.25, -2.1, 0.3), dr(0, 0, 0.1), dr(0.1, 0, 0.2), 60, 60, 1.6, "drop", 0, 0, "drops"),
+        (k3a, l["light"][0], dr(1.6, -1.6, 1.4), dr(1.3, -1.3, 1.2), dr(0, 0.5, 0.3), dr(0, 0.5, 0.3), 50, 50, 1.8, "drop", 0, 0, "drops"),
+        (l["light"][0], k4a, dr(-2.2, -1.2, -0.6), dr(-1.9, -1.0, -0.3), dr(0, 0, 0.5), dr(0, 0, 0.8), 45, 45, 2.0, "drop", 0, 0, "drops"),
+        (k4a, l["crazy"][0] - 0.05, dr(0.3, -2.4, -1.6), dr(0.2, -2.0, -1.2), dr(0, 0.5, 1.0), dr(0, 0.5, 1.3), 35, 35, 2.4, "drop", 0, 0, "drops"),
         (l["crazy"][0] - 0.05, l["air"][0] - 0.1, pt(-30.0, -70.0, 6.0), pt(-16.0, -42.0, 4.0), pt(0, 0, 1), pt(0, 0, 1), 28, 28, 11, None, 0, -4, "sky"),
         (l["air"][0] - 0.1, k5, pt(26.0, -42.0, 14.0), pt(22.0, -36.0, 12.0), pt(0, 0, 1), pt(0, 0, 1), 24, 24, 11, None, 0, 0, "sky"),
         (k5, l["feather"][0] - 0.1, pt(-24.0, -30.0, -8.0), pt(-20.0, -26.0, -6.0), pt(0, 0, 2), pt(0, 0, 2), 22, 22, 11, None, 0, 0, "sky"),
-        (l["feather"][0] - 0.1, DUR + 0.1, pt(11.0, -45.0, -13.0), hero0, hero_t, hero_t, 24, 24, 11, None, 0, 0, "sky"),
+        (l["feather"][0] - 0.1, DUR + 0.1, pt(6.0, -28.0, -11.0), hero0, hero_t, hero_t, 22, 22, 11, "feather", 0, 0, "sky"),
     ]
 
 
