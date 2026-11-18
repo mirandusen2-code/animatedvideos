@@ -1,4 +1,4 @@
-"""Narration for the cloud video: Chatterbox (MIT) in the Michael timbre, line by line, then Whisper word timing.
+"""Narration for the cloud video: Chatterbox (MIT) in the timbre of a reference clip (af_heart), line by line, then Whisper word timing.
 
 Run in the env that has chatterbox-tts + faster-whisper:
     python voiceover.py <reference.wav> [exaggeration] [cfg_weight]
@@ -114,7 +114,7 @@ def main():
         ratio = difflib.SequenceMatcher(None, re.sub(r"[^a-z ]", "", spoken.lower()).split(),
                                         re.sub(r"[^a-z ]", "", heard.lower()).split()).ratio()
         report.append(f"{key:9s} {a:5.2f}-{b:5.2f}  match {ratio:.2f} | {heard}")
-    json.dump({"voice": "chatterbox (michael timbre)", "lines": lines, "words": words, "end": round(t, 3)},
+    json.dump({"voice": "chatterbox (timbre of the reference clip)", "lines": lines, "words": words, "end": round(t, 3)},
               open(os.path.join(VO, "timing.json"), "w"), indent=1)
     print("\n".join(report))
     print(f"narration ends at {t:.2f}s")

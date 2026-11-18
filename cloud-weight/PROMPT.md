@@ -11,6 +11,11 @@ museum" style: a giant brass crane scale, grey porcelain elephants (same porcela
 neutron-star video: channel continuity). Palette: sky blue #2E6FD8, cloud white, sun amber #FFB547,
 grass green #3E8E41, porcelain grey.
 
+## Voice
+Warm, clear, flowing female narrator: Kokoro `af_heart` timbre (its best-graded voice), performed by
+Chatterbox for natural intonation. Lighter and airier than the Michael voice of the space videos, matching
+the topic. Verified with Whisper (voice = script) and aligned word by word for the captions.
+
 ## Script (facts in RESEARCH.md)
 | line | voice | picture |
 |---|---|---|
