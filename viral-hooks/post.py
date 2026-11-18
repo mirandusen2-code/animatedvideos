@@ -204,20 +204,12 @@ def punch(t):
 def make_audio(path, music_gain=1.0):
     sr = 44100
     n = int(TL.DUR * sr)
-    tt = np.arange(n) / sr
-    rng = np.random.default_rng(1)
     au = np.zeros(n)
 
-    def smooth(x, k):
-        return np.convolve(x, np.ones(k) / k, mode="same")
-
-    # wind rush that follows speed
-    sf = np.array([TL.speed_frac(src_time(x)) for x in np.arange(0, TL.DUR, 0.01)])
-    sf = np.interp(tt, np.arange(len(sf)) * 0.01, sf)
-    noise = rng.standard_normal(n)
-    low = smooth(smooth(noise, 40), 40)
-    high = noise - smooth(noise, 6)
-    au += (0.9 * low * (0.15 + sf) + 0.05 * high * sf ** 2)
+    def fade(x, ms=40):
+        k = int(sr * ms / 1000)
+        x[-k:] *= np.linspace(1, 0, k)   # no click when a note is cut off
+        return x
 
     # music: 120 bpm pulse bass + minor arpeggio
     bpm = 120
@@ -231,14 +223,14 @@ def make_audio(path, music_gain=1.0):
         bar = int(t0 / (beat * 4)) % len(roots)
         st = np.arange(int(0.25 * sr)) / sr
         f = hz(notes[k % 8] + (12 if bar % 2 else 0) - (roots[0] - roots[bar]) * 0)
-        pluck = np.sin(2 * np.pi * f * st) * np.exp(-st * 14) * 0.05
+        pluck = fade(np.sin(2 * np.pi * f * st) * np.exp(-st * 14) * 0.05)
         i = int(t0 * sr)
         j = min(n, i + len(pluck))
         au[i:j] += pluck[: j - i]
         if k % 2 == 0:
             st2 = np.arange(int(0.35 * sr)) / sr
             fb = hz(roots[bar] - 12)
-            bass = np.sin(2 * np.pi * fb * st2) * np.exp(-st2 * 6) * 0.16
+            bass = fade(np.sin(2 * np.pi * fb * st2) * np.exp(-st2 * 6) * 0.16)
             j = min(n, i + len(bass))
             au[i:j] += bass[: j - i]
 
@@ -253,12 +245,9 @@ def make_audio(path, music_gain=1.0):
         f = f0 + (f1 - f0) * st / d
         return vol * np.sin(2 * np.pi * np.cumsum(f) / sr) * np.exp(-st * decay)
 
-    # whoosh at jump
-    st = np.arange(int(1.0 * sr)) / sr
-    add(BEATS["jump"] - 0.5, rng.standard_normal(len(st)) * np.sin(np.pi * st) ** 2 * 0.35)
     # boom at the centre + punch hits
     for key, v in (("jump", 0.5), ("center", 0.9), ("crazy", 0.8), ("stop", 0.5)):
-        add(BEATS[key], sweep(0.8, 90, 35, v, decay=5))
+        add(BEATS[key], fade(sweep(0.8, 90, 35, v, decay=5)))
     # riser before 'crazy part'
     st = np.arange(int(1.6 * sr)) / sr
     add(BEATS["crazy"] - 1.6, sweep(1.6, 200, 1200, 0.08) * (st / 1.6) ** 2)
