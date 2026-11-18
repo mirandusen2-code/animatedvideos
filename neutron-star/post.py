@@ -242,8 +242,7 @@ def finish(src, t):
         k = 1 - (t - tf) / (6 / T.FPS)
         a = a + (1 - a) * (0.92 * k)
     # film grain
-    g = RNG.normal(0, 0.007, (H // 2, W // 2)).astype(np.float32)       # soft, luma-only grain
-    a = a + np.repeat(np.repeat(g, 2, 0), 2, 1)[..., None]
+    # (no film grain: the image must stay perfectly clean)
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).convert("RGBA")
 
 
