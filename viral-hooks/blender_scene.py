@@ -361,7 +361,7 @@ scene.cycles.adaptive_threshold = 0.05
 scene.cycles.use_denoising = True
 scene.cycles.max_bounces = 4
 scene.cycles.transparent_max_bounces = 4
-r.use_persistent_data = True
+r.use_persistent_data = False  # long runs with persistent data rendered the astronaut black
 if THREADS:
     r.threads_mode = "FIXED"
     r.threads = THREADS
