@@ -539,6 +539,7 @@ r.resolution_percentage = 100
 r.image_settings.file_format = "PNG"
 r.use_motion_blur = True
 r.motion_blur_shutter = 0.5
+r.motion_blur_position = "START"     # blur only looks forward: the first frame of a shot never mixes in the previous shot
 r.use_persistent_data = False
 c = scene.cycles
 c.device = "CPU"
