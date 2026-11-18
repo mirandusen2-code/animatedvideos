@@ -107,7 +107,7 @@ def overlay(img, t, pr):
     # hook title (first ~2.7 s)
     a = window(t, 0.0, 2.7, 0.15) if t > 0.15 else 1.0
     if a > 0:
-        s = ease_out_back(t / 0.35) if t < 0.35 else 1.0
+        s = 0.6 + 0.4 * ease_out_back(t / 0.35) if t < 0.35 else 1.0
         caption(img, "WHAT IF YOU JUMPED THROUGH THE EARTH?", 300, 92, s, a, maxw=980)
 
     # HUD: timer + speed
@@ -140,7 +140,9 @@ def overlay(img, t, pr):
         if sz <= 0 or not (0.02 < sx < 0.98 and 0.05 < sy < 0.95):
             continue
         px, py = sx * W, sy * H
-        lx, ly = min(px + 120, 640), py - 60
+        if py > 1230:          # anchor inside the caption band: skip
+            continue
+        lx, ly = min(px + 120, 640), min(py - 60, 1110)
         al = int(255 * la)
         d.line([px, py, lx, ly], fill=(255, 255, 255, al), width=4)
         d.ellipse([px - 9, py - 9, px + 9, py + 9], fill=(255, 255, 255, al))
@@ -149,17 +151,16 @@ def overlay(img, t, pr):
         if sub:
             pill(d, lx, ly + 62, sub, 34, YELLOW + (al,), (0, 0, 0, int(170 * la)))
 
-    # "YOU" pointer in wide shots
+    # "YOU" pointer in wide shots (skipped where it would sit behind the captions)
     ya = max(window(t, 5.0, 8.4, 0.3), window(t, 32.2, 40, 0.3))
     if ya > 0 and "person" in pr:
-        sx, sy, _ = pr["person"]
-        px, py = sx * W, sy * H
-        bob = 8 * math.sin(t * 8)
-        tipx = px - 30 + bob
-        al = int(255 * ya)
-        d.polygon([(tipx, py), (tipx - 34, py - 22), (tipx - 34, py + 22)], fill=YELLOW + (al,))
-        d.text((tipx - 44, py), "YOU", font=font(54), fill=YELLOW + (al,), anchor="rm",
-               stroke_width=6, stroke_fill=BLACK + (al,))
+        px, py = pr["person"][0] * W, pr["person"][1] * H
+        if not 1180 < py < 1520:
+            tipx = px - 30 + 8 * math.sin(t * 8)
+            al = int(255 * ya)
+            d.polygon([(tipx, py), (tipx - 34, py - 22), (tipx - 34, py + 22)], fill=YELLOW + (al,))
+            d.text((tipx - 44, py), "YOU", font=font(54), fill=YELLOW + (al,), anchor="rm",
+                   stroke_width=6, stroke_fill=BLACK + (al,))
 
     # disclaimer
     da = window(t, 5.5, 9.5, 0.3)
