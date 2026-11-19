@@ -552,8 +552,11 @@ for f in range(T.NFRAMES):
     aa = T.clamp((t - T.L["light"][0]) / 0.4)
     key_socket(AIR_A, 0.9 * aa)
     for o, x, y, ph in streaks:
-        z = ((t * 0.9 + ph * 4) % 4.0) - 2.6
+        cyc = (t * 0.9 + ph * 4) % 4.0
+        z = cyc - 2.6
+        env = math.sin(math.pi * cyc / 4.0) ** 0.6          # grows in at the bottom, shrinks out at the top
         key(o, "location", Vector(T.DROPS) + Vector((x, y, z)))
+        key(o, "scale", (max(env, 1e-3),) * 3)
     # camera
     loc, tgt, lens, fstop, focus, roll = T.camera(t)
     q = (Vector(tgt) - Vector(loc)).to_track_quat("-Z", "Y") @ Quaternion((0, 0, 1), math.radians(roll))
