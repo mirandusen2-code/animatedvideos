@@ -17,6 +17,6 @@ LINES = [
     ("crazy",    "But here's the crazy part.", "But here's the CRAZY part.", 0.3),
     ("air",      "The air in the same space weighs over a thousand times more.",
                  "The AIR in the same space weighs over 1,000× MORE.", 0.25),
-    ("feather",  "So next time a cloud looks as light as a feather...",
-                 "So next time a cloud looks as light as a feather...", 0.0),
+    ("feather",  "So it floats... even though...",
+                 "So it FLOATS... even though...", 0.0),
 ]
