@@ -562,7 +562,11 @@ for k in range(90):
                   prnd.uniform(0.8, 2.0)))
 SETS["moon"] += [regolith, earth_sky, lander] + [p[0] for p in plume]
 moon_tuns = [make_bear(f"MoonTun{k}", N0 + V(pos), sc, sets=("moon",))
-             for k, (pos, sc) in enumerate((((0, 0, 0.05), 1.0), ((-1.6, 2.5, 0.0), 0.8), ((1.9, 3.6, 0.0), 0.7)))]
+             for k, (pos, sc) in enumerate((((0, 0, 0.05), 1.0), ((-1.6, 2.5, 0.0), 0.8), ((1.9, 3.6, 0.0), 0.7),
+                                            ((1.6, 22.2, 0.1), 0.9), ((2.6, 22.9, 0.05), 0.7), ((0.9, 23.3, 0.1), 0.8),
+                                            ((2.1, 21.4, 0.05), 0.6)))]
+for k, p in enumerate(moon_tuns[3:]):
+    p["root"].rotation_euler = (0.2 * k, 0.15, 0.9 * k + 0.4)
 
 # ================================================================= camera
 cam_d = bpy.data.cameras.new("Cam")
@@ -634,11 +638,11 @@ for f in range(T.NFRAMES):
         g = T.ease_out(pl)
         key(o, "location", N0 + V((0, 25, 0.3)) + V((dvec.x, dvec.y, dvec.z * 0.6)) * 6.0 * g * spd - V((0, 0, 2.5 * g * g)))
         key(o, "scale", (max(1e-3, (0.4 + 0.8 * g) * (1 - g) ** 0.5 * (1 if pl > 0 else 0.001)),) * 3)
-        key(o, "hide_render", st != "moon" or pl <= 0 or pl >= 1)
+        key(o, "hide_render", st != "moon" or pl <= 0 or pl >= 1 or T.shot_index(t) != 7)   # dust only in the wide crash shot
     fall = T.clamp((t - (T.L["moon"][0] + 0.2)) / 0.7)
-    key(lander, "location", N0 + V((-6 + 6 * fall, 25, 14 * (1 - fall) + 0.6)))
-    key(lander, "rotation_euler", (0.3, 0.2 * (1 - fall), 0.8))
-    key(lander, "hide_render", st != "moon" or fall >= 1)
+    key(lander, "location", N0 + V((-6 + 6 * fall, 25, 14 * (1 - fall) + 0.6 - 0.45 * fall)))
+    key(lander, "rotation_euler", (0.3 + 0.5 * fall, 0.2 * (1 - fall) + 0.35 * fall, 0.8))   # ends tilted in the crater
+    key(lander, "hide_render", st != "moon")
     key_socket(DUST_A, 0.0 if pl <= 0 else 0.75 * (1 - pl) ** 1.2)
     # camera
     loc, tgt, lens, fstop, focus, roll = T.camera(t)
@@ -652,7 +656,7 @@ for f in range(T.NFRAMES):
     cam_d.keyframe_insert("lens", frame=f)
     cam_d.dof.aperture_fstop = fstop
     cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
-    fp = Vector(T.hero_pos(t)) if focus == "hero" else Vector(tgt)
+    fp = Vector(T.hero_pos(t)) if focus == "hero" else (N0 + V((1.6, 22.4, 0.2)) if focus == "crash" else Vector(tgt))
     cam_d.dof.focus_distance = (Vector(loc) - fp).length
     cam_d.dof.keyframe_insert("focus_distance", frame=f)
 
