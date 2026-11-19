@@ -231,7 +231,7 @@ def overlays(img, t):
     pill(img, "EACH DROP: THINNER THAN A HAIR", CX, 400, 36, alpha=window(t, d0 + 0.6, T.SHOTS[6][1], 0.2))
     # bar comparison: water in the cloud vs air in the same space
     a0 = L["air"][0] + 1.0
-    a = window(t, a0, L["feather"][0], 0.25)
+    a = window(t, a0, T.SHOTS[-1][0], 0.15) if t < T.SHOTS[-1][0] else 0.0     # gone exactly at the cut
     if a > 0:
         grow = clamp((t - a0) / 0.9)
         d = ImageDraw.Draw(img, "RGBA")

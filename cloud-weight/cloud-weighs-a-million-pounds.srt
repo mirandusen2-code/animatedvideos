@@ -1,0 +1,31 @@
+1
+00:00:00,150 --> 00:00:03,157
+This fluffy cloud weighs over 1 million pounds.
+
+2
+00:00:03,818 --> 00:00:06,251
+That's as heavy as nearly 100 elephants.
+
+3
+00:00:06,924 --> 00:00:07,988
+So why doesn't it fall?
+
+4
+00:00:08,497 --> 00:00:11,595
+Its water is split into trillions of tiny droplets.
+
+5
+00:00:12,057 --> 00:00:15,637
+Each one is so light that rising warm air holds it up.
+
+6
+00:00:16,079 --> 00:00:17,417
+But here's the crazy part.
+
+7
+00:00:17,885 --> 00:00:20,954
+The air in the same space weighs over 1,000× more.
+
+8
+00:00:21,443 --> 00:00:23,163
+So it floats... even though...

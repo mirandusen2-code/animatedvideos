@@ -536,11 +536,11 @@ for f in range(T.NFRAMES):
     for k, o in enumerate(edge_objs):
         g = T.edge_draw(t, k, len(edge_objs))
         key(o, "scale", (1, 1, max(g, 1e-3)))
-        key(o, "hide_render", st != "sky" or g < 0.01)
+        key(o, "hide_render", st != "sky" or g < 0.01 or T.shot_index(t) == len(T.SHOTS) - 1)
     key(needle, "rotation_euler", (0, T.needle(t), 0))
     cd = T.cube_draw(t)
     key_socket(EDGE_A, 1.0)
-    key_socket(GLASS_A, 0.18 * cd)
+    key_socket(GLASS_A, 0.0 if T.shot_index(t) == len(T.SHOTS) - 1 else 0.18 * cd)
     key(feather, "hide_render", T.shot_index(t) != len(T.SHOTS) - 1)
     key(quill, "hide_render", T.shot_index(t) != len(T.SHOTS) - 1)
     fp, fr = T.feather_pos(t)
