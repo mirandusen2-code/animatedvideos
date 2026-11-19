@@ -143,8 +143,9 @@ def caption_groups():
         cur.append(w)
         pause = i + 1 < len(words) and line_of(words[i + 1][0]) != line_of(w[0])   # never across lines
         ends = w[2][-1] in ".,!?" or len(cur) == 3 or pause
-        # never end a group on a bare number: keep "1 MILLION" together
-        if ends and len(cur) > 1 and not pause and w[2][-1] not in ".,!?" and any(ch.isdigit() for ch in w[2]):
+        # never end a group on a bare number ("1 | MILLION") or a small word ("HALF A | MILLION")
+        small = w[2].lower().strip(".,!?") in {"a", "an", "the", "of", "to", "into", "on", "in", "as", "and", "so", "than"}
+        if ends and len(cur) > 1 and not pause and w[2][-1] not in ".,!?" and (any(ch.isdigit() for ch in w[2]) or small):
             nxt = cur.pop()
             groups.append(cur)
             cur = [nxt]
