@@ -8,7 +8,7 @@ TIMING = json.load(open(os.path.join(HERE, "vo", "timing.json")))
 L = {k: tuple(v) for k, v in TIMING["lines"].items()}
 
 FPS = 30
-DUR = round(L["feather"][1] + 0.5, 2)
+DUR = round(L["feather"][1] + 0.25, 2)          # short tail: "even though..." flows straight into the hook
 NFRAMES = int(DUR * FPS)
 
 

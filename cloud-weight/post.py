@@ -390,7 +390,7 @@ def make_music_and_sfx():
     gate[i0 - edge:i0] = np.linspace(1, 0, edge)
     music *= gate
     # gentle fade in/out so the loop restart is smooth
-    music *= np.clip(tt / 0.4, 0, 1) * np.clip((T.DUR - tt) / 0.5, 0, 1)
+    music *= np.clip(tt / 0.12, 0, 1) * np.clip((T.DUR - tt) / 0.12, 0, 1)   # tiny fades: no dip at the loop
     music = reverb(music, 2.6, 0.4, seed=1)
 
     # --- sound effects (only key moments)
