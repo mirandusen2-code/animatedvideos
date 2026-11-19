@@ -23,7 +23,7 @@ from script import LINES  # noqa: E402
 SR = 44100
 LEAD_IN = 0.15
 VO = os.path.join(HERE, "vo")
-NUM = {"fifty": "50", "seven": "7000", "thousand": "7000", "one": "one", "two": "two"}
+NUM = {"fifty": "50", "seven": "7000", "thousand": "7000"}
 
 
 def load(path):

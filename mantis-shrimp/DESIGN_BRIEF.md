@@ -16,19 +16,16 @@ scales, blue tail fan, two independently moving striped eyes on stalks, and two 
 Water: abyss `#02080F` → teal `#08303D`. Hero: emerald `#1E7A3A`, orange `#E0471A`, club red `#8C0A1E`,
 blue `#1A3FC8`. Flash: warm white `#FFF0D0`, shock ring ice `#9AD8FF`. Numbers: amber `#FFB547`.
 
-## Shots
+## Shots (~20.8 s, seamless loop: "…all because" → "this shrimp punches at fifty miles per hour")
 | # | Line | Set | Shot | Info graphic |
 |---|---|---|---|---|
-| 0 | hook | tank | Shrimp behind aquarium glass, punch → small crack | – |
-| 1 | hook | tank | Close on the glass: second punch, the crack spreads | "PEACOCK MANTIS SHRIMP" |
-| 2 | speed | reef | Side view, the club unfolds in slow motion | "50 MPH" counter |
-| 3 | blink | reef | Eye close-up, two strikes in the foreground | "WHOLE STRIKE: < 1/1000 SEC" |
-| 4 | snail | reef | Strike on a snail shell: it shatters | – |
-| 5 | crazy | macro | Huge club approaching a shell wall, music stop + hit | "ULTRA SLOW MOTION" |
-| 6 | bubbles | macro | Bubbles form between club and shell | "CAVITATION BUBBLES" |
-| 7 | collapse | macro | Bubbles collapse → flash + shock ring | – |
-| 8–9 | heat | macro | The flash glows on the shell, two angles | "7,000 °F" counter |
-| 10 | loop | reef | Shrimp faces camera: two quick strikes ("one punch, two hits") → loops to frame 0 | – |
+| 0 | hook | tank | Shrimp behind aquarium glass, punch → small crack | "50 MPH" counter |
+| 1 | glass | tank | Close on the glass: second punch, the crack spreads | "PEACOCK MANTIS SHRIMP" |
+| 2 | crazy | macro | Huge club approaching a shell wall, music stop + hit | "ULTRA SLOW MOTION" |
+| 3–4 | bubbles | macro | Club closes in; bubbles form in the gap | "CAVITATION BUBBLES" |
+| 5–6 | collapse | macro | Club touches (hit 1), bubbles pop: flash + shock ring + the shell cracks (hit 2) | "HIT 1 · THE CLUB", "HIT 2 · BUBBLE BLAST" |
+| 7–8 | heat | macro | The flash glows on the shell, two angles | "7,000 °F" counter |
+| 9 | loop | reef | Strike on a snail shell (hit 1), flash shatters it (hit 2) | "HIT 1", "HIT 2" |
 
 ## Technical
 Blender Cycles, 1080×1920, no motion blur, no grain, AgX Medium High Contrast. Shots and strikes are timed

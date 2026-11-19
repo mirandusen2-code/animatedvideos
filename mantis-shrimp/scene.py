@@ -130,6 +130,27 @@ def fade_emit_mat(name, color, strength):
     return m, a.outputs[0], em.inputs["Strength"]
 
 
+def soften(mat):
+    """Emission fades towards the silhouette: a soft glow instead of a hard disc."""
+    _nt = mat.node_tree
+    _lw = node(_nt, "ShaderNodeLayerWeight", Blend=0.5)
+    _inv = _nt.nodes.new("ShaderNodeMath")
+    _inv.operation = "SUBTRACT"
+    _inv.inputs[0].default_value = 1.0
+    _nt.links.new(_lw.outputs["Facing"], _inv.inputs[1])
+    _pw = _nt.nodes.new("ShaderNodeMath")
+    _pw.operation = "POWER"
+    _pw.inputs[1].default_value = 6.0
+    _nt.links.new(_inv.outputs[0], _pw.inputs[0])
+    _mul = _nt.nodes.new("ShaderNodeMath")
+    _mul.operation = "MULTIPLY"
+    _mix = next(n for n in _nt.nodes if n.type == "MIX_SHADER")
+    _val = next(n for n in _nt.nodes if n.type == "VALUE")
+    _nt.links.new(_val.outputs[0], _mul.inputs[0])
+    _nt.links.new(_pw.outputs[0], _mul.inputs[1])
+    _nt.links.new(_mul.outputs[0], _mix.inputs[0])
+
+
 def obj_from(name, verts, faces, mat, smooth=True):
     me = bpy.data.meshes.new(name)
     me.from_pydata(np.asarray(verts).tolist(), [], faces)
@@ -511,65 +532,67 @@ frame_bot.scale = (0.12, 8, 0.14)
 frame_bot.data.materials.append(M_FRAME)
 SETS["tank"] += [glass, frame_bot]
 
-# crack: spokes + rings as thin strips just outside the glass, revealed by radius
-CRACK_C = V((GLASS_X + 0.045, 0.0, 0.20))
-crnd = random.Random(3)
-segs = []
-NSP = 17
-spoke_pts = []
-for i in range(NSP):
-    a = 2 * math.pi * i / NSP + crnd.uniform(-0.15, 0.15)
-    r, pts = 0.0, [(0.0, 0.0)]
-    rmax = crnd.uniform(0.6, 1.2)
-    while r < rmax:
-        r += crnd.uniform(0.05, 0.12)
-        a += crnd.uniform(-0.12, 0.12)
-        pts.append((r * math.cos(a), r * math.sin(a)))
-    spoke_pts.append(pts)
-    segs += list(zip(pts[:-1], pts[1:]))
-    if crnd.random() < 0.6:                       # side branch
-        j = crnd.randrange(2, max(3, len(pts) - 2))
-        b0 = pts[j]
-        ba = math.atan2(b0[1], b0[0]) + crnd.choice((-0.6, 0.6))
-        bl = crnd.uniform(0.15, 0.4)
-        segs.append((b0, (b0[0] + bl * math.cos(ba), b0[1] + bl * math.sin(ba))))
-for rr in (0.09, 0.2, 0.36, 0.58):
+# crack: spokes + rings as thin strips in a YZ plane, revealed by a keyed radius
+def make_crack(name, seed, rmax, width, zmin, color, strength):
+    crnd = random.Random(seed)
+    segs, spoke_pts, NSP = [], [], 17
     for i in range(NSP):
-        if crnd.random() < 0.72:
-            p0 = min(spoke_pts[i], key=lambda p: abs(math.hypot(*p) - rr))
-            p1 = min(spoke_pts[(i + 1) % NSP], key=lambda p: abs(math.hypot(*p) - rr))
-            mid = ((p0[0] + p1[0]) / 2 * 1.04, (p0[1] + p1[1]) / 2 * 1.04)
-            segs += [(p0, mid), (mid, p1)]
-cv, cf = [], []
-for (y0, z0), (y1, z1) in segs:
-    if CRACK_C.z + min(z0, z1) < 0.13:           # below the frame
-        continue
-    d = V((0, y1 - y0, z1 - z0))
-    if d.length < 1e-6:
-        continue
-    n = V((0, -d.z, d.y)).normalized() * (0.0017 * max(0.45, 1 - 0.6 * math.hypot(y0, z0)))
-    base = len(cv)
-    cv += [(0, y0 + n.y, z0 + n.z), (0, y0 - n.y, z0 - n.z), (0, y1 - n.y, z1 - n.z), (0, y1 + n.y, z1 + n.z)]
-    cf.append([base, base + 1, base + 2, base + 3])
-CRACK_M, nt_c, out_c = new_mat("Crack")
-tcc = node(nt_c, "ShaderNodeTexCoord")
-vl = nt_c.nodes.new("ShaderNodeVectorMath")
-vl.operation = "LENGTH"
-nt_c.links.new(tcc.outputs["Object"], vl.inputs[0])
-rv = node(nt_c, "ShaderNodeValue")
-CRACK_R = rv.outputs[0]
-lt = nt_c.nodes.new("ShaderNodeMath")
-lt.operation = "LESS_THAN"
-nt_c.links.new(vl.outputs["Value"], lt.inputs[0])
-nt_c.links.new(rv.outputs[0], lt.inputs[1])
-trc = node(nt_c, "ShaderNodeBsdfTransparent")
-emc = node(nt_c, "ShaderNodeEmission", Color=(0.85, 0.95, 1.0, 1), Strength=0.9)
-mxc = nt_c.nodes.new("ShaderNodeMixShader")
-nt_c.links.new(lt.outputs[0], mxc.inputs[0])
-nt_c.links.new(trc.outputs[0], mxc.inputs[1])
-nt_c.links.new(emc.outputs[0], mxc.inputs[2])
-nt_c.links.new(mxc.outputs[0], out_c.inputs[0])
-crack_o = obj_from("Crack", cv, cf, CRACK_M, smooth=False)
+        a = 2 * math.pi * i / NSP + crnd.uniform(-0.15, 0.15)
+        r, pts = 0.0, [(0.0, 0.0)]
+        rm = crnd.uniform(*rmax)
+        while r < rm:
+            r += crnd.uniform(0.05, 0.12) * rmax[1] / 1.2
+            a += crnd.uniform(-0.12, 0.12)
+            pts.append((r * math.cos(a), r * math.sin(a)))
+        spoke_pts.append(pts)
+        segs += list(zip(pts[:-1], pts[1:]))
+        if crnd.random() < 0.6:                       # side branch
+            j = crnd.randrange(2, max(3, len(pts) - 2))
+            b0 = pts[min(j, len(pts) - 1)]
+            ba = math.atan2(b0[1], b0[0]) + crnd.choice((-0.6, 0.6))
+            bl = crnd.uniform(0.15, 0.4) * rmax[1] / 1.2
+            segs.append((b0, (b0[0] + bl * math.cos(ba), b0[1] + bl * math.sin(ba))))
+    for rr in (0.09, 0.2, 0.36, 0.58):
+        rr *= rmax[1] / 1.2
+        for i in range(NSP):
+            if crnd.random() < 0.72:
+                p0 = min(spoke_pts[i], key=lambda p: abs(math.hypot(*p) - rr))
+                p1 = min(spoke_pts[(i + 1) % NSP], key=lambda p: abs(math.hypot(*p) - rr))
+                mid = ((p0[0] + p1[0]) / 2 * 1.04, (p0[1] + p1[1]) / 2 * 1.04)
+                segs += [(p0, mid), (mid, p1)]
+    cv, cf = [], []
+    for (y0, z0), (y1, z1) in segs:
+        if min(z0, z1) < zmin:
+            continue
+        d = V((0, y1 - y0, z1 - z0))
+        if d.length < 1e-6:
+            continue
+        n = V((0, -d.z, d.y)).normalized() * (width * max(0.45, 1 - 0.6 * math.hypot(y0, z0) / rmax[1]))
+        base = len(cv)
+        cv += [(0, y0 + n.y, z0 + n.z), (0, y0 - n.y, z0 - n.z), (0, y1 - n.y, z1 - n.z), (0, y1 + n.y, z1 + n.z)]
+        cf.append([base, base + 1, base + 2, base + 3])
+    m, nt_c, out_c = new_mat(name)
+    tcc = node(nt_c, "ShaderNodeTexCoord")
+    vl = nt_c.nodes.new("ShaderNodeVectorMath")
+    vl.operation = "LENGTH"
+    nt_c.links.new(tcc.outputs["Object"], vl.inputs[0])
+    rv = node(nt_c, "ShaderNodeValue")
+    lt = nt_c.nodes.new("ShaderNodeMath")
+    lt.operation = "LESS_THAN"
+    nt_c.links.new(vl.outputs["Value"], lt.inputs[0])
+    nt_c.links.new(rv.outputs[0], lt.inputs[1])
+    trc = node(nt_c, "ShaderNodeBsdfTransparent")
+    emc = node(nt_c, "ShaderNodeEmission", Color=(*color, 1), Strength=strength)
+    mxc = nt_c.nodes.new("ShaderNodeMixShader")
+    nt_c.links.new(lt.outputs[0], mxc.inputs[0])
+    nt_c.links.new(trc.outputs[0], mxc.inputs[1])
+    nt_c.links.new(emc.outputs[0], mxc.inputs[2])
+    nt_c.links.new(mxc.outputs[0], out_c.inputs[0])
+    return obj_from(name, cv, cf, m, smooth=False), rv.outputs[0]
+
+
+CRACK_C = V((GLASS_X + 0.045, 0.0, 0.20))
+crack_o, CRACK_R = make_crack("Crack", 3, (0.6, 1.2), 0.0017, 0.13 - CRACK_C.z, (0.85, 0.95, 1.0), 0.9)
 crack_o.location = K0 + CRACK_C
 SETS["tank"].append(crack_o)
 area("TankKey", K0 + V((0.5, -1.0, 5.0)), K0 + V((0.6, 0, 0.3)), 450, 3.5, (0.85, 0.95, 1.0), "tank")
@@ -628,6 +651,11 @@ for k in range(46):
     spin = V((frnd.uniform(-8, 8), frnd.uniform(-8, 8), frnd.uniform(-8, 8)))
     frags.append((o, p0, vel, spin, s * 0.35))
     SETS["reef"].append(o)
+MINI_M, MINI_A, _ = fade_emit_mat("MiniFlash", (1.0, 0.93, 0.8), 6.0)
+soften(MINI_M)
+mini_o = sph("MiniFlash", IMPACT, 1.0, MINI_M, u=24, v=12)
+no_bounce([mini_o])
+SETS["reef"].append(mini_o)
 area("ReefKey", R0 + V((0.8, -1.5, 5.0)), R0 + V((0.8, 0, 0.3)), 500, 3.5, (0.85, 0.95, 1.0), "reef")
 area("ReefRim", R0 + V((-2.5, 3.0, 2.0)), R0 + V((0.8, 0, 0.3)), 480, 2.0, (0.35, 0.7, 1.0), "reef")
 area("ReefFill", R0 + V((4.0, -3.0, 1.2)), R0 + V((0.8, 0, 0.3)), 120, 3.0, (1.0, 0.88, 0.78), "reef")
@@ -686,23 +714,7 @@ for k in range(70):
     bubble_objs.append((o, off, r, brnd.uniform(0, 1)))
     SETS["macro"].append(o)
 FLASH_M, FLASH_A, FLASH_S = fade_emit_mat("Flash", (1.0, 0.93, 0.8), 40.0)
-_nt = FLASH_M.node_tree
-_lw = node(_nt, "ShaderNodeLayerWeight", Blend=0.5)
-_pw = _nt.nodes.new("ShaderNodeMath")
-_pw.operation = "POWER"
-_pw.inputs[1].default_value = 3.0
-_nt.links.new(_lw.outputs["Facing"], _pw.inputs[0])
-_inv = _nt.nodes.new("ShaderNodeMath")
-_inv.operation = "SUBTRACT"
-_inv.inputs[0].default_value = 1.0
-_nt.links.new(_pw.outputs[0], _inv.inputs[1])
-_mul = _nt.nodes.new("ShaderNodeMath")
-_mul.operation = "MULTIPLY"
-_mix = next(n for n in _nt.nodes if n.type == "MIX_SHADER")
-_val = next(n for n in _nt.nodes if n.type == "VALUE")
-_nt.links.new(_val.outputs[0], _mul.inputs[0])
-_nt.links.new(_inv.outputs[0], _mul.inputs[1])
-_nt.links.new(_mul.outputs[0], _mix.inputs[0])
+soften(FLASH_M)
 flash_o = sph("FlashCore", GAP, 1.0, FLASH_M, u=32, v=16)
 no_bounce([flash_o])
 RING_M, RING_A, RING_S = fade_emit_mat("Ring", (0.6, 0.85, 1.0), 6.0)
@@ -717,6 +729,10 @@ flash_l = bpy.data.objects.new("FlashLight", fl)
 flash_l.location = GAP + V((-0.05, 0, 0))
 col.objects.link(flash_l)
 SETS["macro"] += [flash_o, ring_o, flash_l]
+# the prey's shell cracks from the second hit (dark fissures with a faint hot glow)
+shell_crack_o, SHELL_CRACK_R = make_crack("ShellCrack", 8, (0.8, 1.5), 0.006, -9.0, (1.0, 0.45, 0.12), 2.5)
+shell_crack_o.location = C0 + V((-0.014, 0, 0))
+SETS["macro"].append(shell_crack_o)
 marine_snow("MacroSnow", C0, "macro", ((-5, 0), (-3, 3), (-3, 3)), n=140)
 area("MacroKey", C0 + V((-2.0, -3.0, 4.5)), C0 + V((-1.0, 0, 0)), 700, 3.0, (0.85, 0.95, 1.0), "macro")
 area("MacroRim", C0 + V((-3.5, 4.0, 1.0)), C0 + V((-1.0, 0, 0)), 900, 2.0, (0.3, 0.6, 1.0), "macro")
@@ -748,7 +764,6 @@ def key_socket(sock, value):
     sock.keyframe_insert("default_value", frame=CUR[0])
 
 
-SNAIL_SHOT = 4
 prev_q = None
 for f in range(T.NFRAMES):
     t = f / T.FPS
@@ -764,17 +779,15 @@ for f in range(T.NFRAMES):
     pose_shrimp(shrimp_tank, t, strike=T.strike_tank(t))
     key_socket(CRACK_R, 1.8 * T.crack(t) + (0.0 if T.crack(t) > 0 else -1.0))
     # reef: which strike depends on the shot
-    if si == 2:
-        s_reef = T.strike_slowmo(t)
-    elif si == 3:
-        s_reef = T.strike_blink(t)
-    elif si == 4:
-        s_reef = T.strike_snail(t)
-    else:
-        s_reef = T.strike_loop(t)
+    s_reef = T.strike_snail(t)
     pose_shrimp(shrimp_reef, t, strike=s_reef, seed=1.0)
     tau = T.shatter(t)
-    key(snail, "hide_render", st != "reef" or si < SNAIL_SHOT or tau >= 0)
+    key(snail, "hide_render", st != "reef" or tau >= 0)
+    mf = T.mini_flash(t)
+    key(mini_o, "scale", (max(1e-3, 0.03 + 0.14 * mf),) * 3)
+    key_socket(MINI_A, min(1.0, mf * 1.5))
+    key(mini_o, "hide_render", st != "reef" or mf <= 0.01)
+    key_socket(SHELL_CRACK_R, 1.6 * T.shell_crack(t) + (0.0 if T.shell_crack(t) > 0 else -1.0))
     for o, p0, vel, spin, half in frags:
         if tau < 0:
             p, rot = p0, V((0, 0, 0))
@@ -788,7 +801,7 @@ for f in range(T.NFRAMES):
         key(o, "hide_render", st != "reef" or tau < 0)
     # macro
     mc = T.macro_club(t)
-    key(club_rig, "location", C0 + V((T.lerp(-3.2, -0.07 - BIG_CLUB_R - 0.06, mc), 0, 0)))
+    key(club_rig, "location", C0 + V((T.lerp(-3.2, -0.70, mc), 0, 0)))
     bb = T.bubbles(t)
     for o, off, r, ph in bubble_objs:
         g = T.clamp(bb * 1.3 - ph * 0.3)
@@ -821,8 +834,8 @@ for f in range(T.NFRAMES):
     cam_d.dof.keyframe_insert("aperture_fstop", frame=f)
     base = K0 if st == "tank" else R0
     fp = {"hero": base + V((0.85, 0, 0.32)), "glass": K0 + CRACK_C, "eye": R0 + V((0.96, 0.08, 0.55)),
-          "club": (C0 + V((T.lerp(-3.2, -0.73, mc), 0, 0))) if st == "macro" else R0 + club_local(s_reef),
-          "snail": SNAIL_C + V((-0.1, 0, 0.15)), "gap": GAP}[focus]
+          "club": (C0 + V((T.lerp(-3.2, -0.70, mc), 0, 0))) if st == "macro" else R0 + club_local(s_reef),
+          "snail": SNAIL_C + V((-0.1, 0, 0.15)), "gap": GAP, "wall": GAP + V((0, 0.2, 0.2))}[focus]
     cam_d.dof.focus_distance = (Vector(loc) - fp).length
     cam_d.dof.keyframe_insert("focus_distance", frame=f)
 

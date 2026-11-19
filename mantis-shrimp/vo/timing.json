@@ -3,525 +3,426 @@
  "lines": {
   "hook": [
    0.15,
-   2.726
+   2.771
   ],
-  "speed": [
-   2.976,
-   5.435
-  ],
-  "blink": [
-   5.535,
-   7.307
-  ],
-  "snail": [
-   7.407,
-   9.997
+  "glass": [
+   2.871,
+   4.339
   ],
   "crazy": [
-   10.347,
-   11.833
+   4.639,
+   6.125
   ],
   "bubbles": [
-   12.133,
-   15.646
+   6.375,
+   10.248
   ],
   "collapse": [
-   15.846,
-   18.322
+   10.398,
+   13.59
   ],
   "heat": [
-   18.422,
-   22.559
+   13.64,
+   17.738
   ],
   "loop": [
-   22.859,
-   24.58
+   18.038,
+   20.705
   ]
  },
  "words": [
   [
    0.15,
-   0.38,
+   0.36,
    "This",
    false,
    false
   ],
   [
-   0.38,
+   0.36,
    0.62,
    "shrimp",
    false,
-   true
+   false
   ],
   [
    0.62,
-   0.88,
-   "can",
-   false,
-   false
-  ],
-  [
-   0.88,
-   1.14,
-   "PUNCH",
+   1.04,
+   "PUNCHES",
    true,
    true
   ],
   [
-   1.14,
-   1.44,
-   "hard",
-   false,
-   false
-  ],
-  [
-   1.44,
-   1.66,
-   "enough",
-   false,
-   true
-  ],
-  [
-   1.66,
-   1.86,
-   "to",
-   false,
-   false
-  ],
-  [
-   1.86,
-   2.08,
-   "break",
-   false,
-   false
-  ],
-  [
-   2.08,
-   2.48,
-   "GLASS.",
-   true,
-   true
-  ],
-  [
-   2.98,
-   3.12,
-   "Its",
-   false,
-   false
-  ],
-  [
-   3.12,
-   3.44,
-   "club",
-   false,
-   false
-  ],
-  [
-   3.44,
-   3.82,
-   "swings",
-   false,
-   false
-  ],
-  [
-   3.82,
-   4.04,
-   "out",
-   false,
-   true
-  ],
-  [
-   4.04,
-   4.18,
+   1.04,
+   1.24,
    "at",
    false,
    false
   ],
   [
-   4.18,
-   4.48,
+   1.24,
+   1.68,
    "50",
    true,
    false
   ],
   [
-   4.48,
-   4.66,
+   1.68,
+   1.9,
    "MILES",
    true,
    true
   ],
   [
-   4.66,
-   4.96,
+   1.9,
+   2.22,
    "per",
    false,
    false
   ],
   [
-   4.96,
-   5.32,
+   2.22,
+   2.54,
    "hour,",
    false,
    true
   ],
   [
-   5.94,
-   6.14,
-   "faster",
+   2.871,
+   3.12,
+   "hard",
    false,
    false
   ],
   [
-   6.14,
-   6.44,
-   "than",
+   3.12,
+   3.36,
+   "enough",
    false,
    true
   ],
   [
-   6.44,
-   6.6,
-   "you",
+   3.36,
+   3.5,
+   "to",
    false,
    false
   ],
   [
-   6.6,
-   6.78,
-   "can",
+   3.5,
+   3.7,
+   "break",
    false,
    false
   ],
   [
-   6.78,
-   7.14,
-   "BLINK,",
+   3.7,
+   4.1,
+   "GLASS.",
    true,
    true
   ],
   [
-   7.48,
-   8.06,
-   "SMASHING",
-   true,
-   false
-  ],
-  [
-   8.06,
-   8.44,
-   "snail",
-   false,
-   false
-  ],
-  [
-   8.44,
-   8.8,
-   "shells",
-   false,
-   true
-  ],
-  [
-   8.8,
-   9.08,
-   "in",
-   false,
-   false
-  ],
-  [
-   9.08,
-   9.26,
-   "a",
-   false,
-   false
-  ],
-  [
-   9.26,
-   9.54,
-   "single",
-   false,
-   false
-  ],
-  [
-   9.54,
-   9.84,
-   "HIT.",
-   true,
-   true
-  ],
-  [
-   10.347,
-   10.56,
+   4.639,
+   4.86,
    "But",
    false,
    false
   ],
   [
-   10.56,
-   11.1,
+   4.86,
+   5.4,
    "here's",
    false,
    true
   ],
   [
-   11.1,
-   11.22,
+   5.4,
+   5.52,
    "the",
    false,
    false
   ],
   [
-   11.22,
-   11.44,
+   5.52,
+   5.72,
    "CRAZY",
    true,
    false
   ],
   [
-   11.44,
-   11.74,
+   5.72,
+   6.04,
    "part.",
    false,
    true
   ],
   [
-   12.133,
-   12.26,
-   "The",
+   6.52,
+   6.7,
+   "Its",
    false,
    false
   ],
   [
-   12.26,
-   12.46,
-   "punch",
+   6.7,
+   6.98,
+   "club",
    false,
    false
   ],
   [
-   12.46,
-   12.64,
+   6.98,
+   7.12,
    "is",
    false,
    false
   ],
   [
-   12.64,
-   12.86,
+   7.12,
+   7.32,
    "so",
    false,
    false
   ],
   [
-   12.86,
-   13.32,
+   7.32,
+   7.8,
    "fast,",
    false,
    true
   ],
   [
-   13.62,
-   13.76,
+   8.08,
+   8.2,
    "the",
    false,
    false
   ],
   [
-   13.76,
-   13.98,
+   8.2,
+   8.44,
    "water",
    false,
    false
   ],
   [
-   13.98,
-   14.28,
+   8.44,
+   8.7,
    "RIPS",
    true,
    false
   ],
   [
-   14.28,
-   14.68,
-   "open",
+   8.7,
+   9.04,
+   "apart",
    false,
    true
   ],
   [
-   14.68,
-   14.98,
+   9.04,
+   9.32,
    "into",
    false,
    false
   ],
   [
-   14.98,
-   15.3,
+   9.32,
+   9.6,
+   "tiny",
+   false,
+   false
+  ],
+  [
+   9.6,
+   9.94,
    "BUBBLES.",
    true,
    true
   ],
   [
-   15.846,
-   15.96,
+   10.52,
+   10.76,
    "When",
    false,
    false
   ],
   [
-   15.96,
-   16.14,
+   10.76,
+   10.98,
    "they",
    false,
    false
   ],
   [
-   16.14,
-   16.5,
-   "COLLAPSE,",
+   10.98,
+   11.26,
+   "POP,",
    true,
    true
   ],
   [
-   16.9,
-   17.1,
+   11.68,
+   11.8,
    "they",
    false,
    false
   ],
   [
-   17.1,
-   17.32,
+   11.8,
+   12.02,
    "hit",
+   false,
+   false
+  ],
+  [
+   12.02,
+   12.22,
+   "the",
+   false,
+   false
+  ],
+  [
+   12.22,
+   12.48,
+   "prey",
    false,
    true
   ],
   [
-   17.32,
-   17.56,
+   12.48,
+   12.68,
    "a",
    false,
    false
   ],
   [
-   17.56,
-   17.8,
+   12.68,
+   13.02,
    "SECOND",
    true,
    false
   ],
   [
-   17.8,
-   18.22,
+   13.02,
+   13.48,
    "time,",
    false,
    true
   ],
   [
-   18.422,
-   18.54,
+   13.64,
+   13.74,
    "with",
    false,
    false
   ],
   [
-   18.54,
-   18.76,
+   13.94,
+   14.18,
    "a",
    false,
    false
   ],
   [
-   18.76,
-   18.98,
+   14.18,
+   14.48,
    "FLASH",
    true,
-   true
+   false
   ],
   [
-   18.98,
-   19.28,
+   14.48,
+   14.72,
    "of",
    false,
    false
   ],
   [
-   19.28,
-   19.52,
-   "light",
-   false,
-   false
-  ],
-  [
-   19.52,
-   19.82,
-   "and",
-   false,
-   false
-  ],
-  [
-   19.82,
-   20.1,
+   14.72,
+   15.02,
    "heat",
    false,
    true
   ],
   [
-   20.1,
-   20.42,
+   15.02,
+   15.54,
    "over",
    false,
    false
   ],
   [
-   20.42,
-   21.14,
+   15.54,
+   16.32,
    "7,000",
    true,
    false
   ],
   [
-   21.14,
-   21.74,
+   16.32,
+   16.94,
    "DEGREES",
    true,
    true
   ],
   [
-   21.74,
-   22.32,
+   16.94,
+   17.52,
    "Fahrenheit.",
    false,
    true
   ],
   [
-   22.859,
-   23.08,
-   "ONE",
-   true,
+   18.04,
+   18.18,
+   "So",
+   false,
    false
   ],
   [
-   23.08,
-   23.36,
-   "punch.",
+   18.18,
+   18.52,
+   "every",
+   false,
+   false
+  ],
+  [
+   18.52,
+   18.78,
+   "punch",
    false,
    true
   ],
   [
-   23.88,
-   24.08,
-   "TWO",
-   true,
+   18.78,
+   19.0,
+   "hits",
+   false,
    false
   ],
   [
-   24.08,
-   24.34,
-   "hits.",
+   19.0,
+   19.4,
+   "TWICE,",
+   true,
+   true
+  ],
+  [
+   19.8,
+   19.98,
+   "all",
+   false,
+   false
+  ],
+  [
+   19.98,
+   20.42,
+   "because",
    false,
    true
   ]
  ],
- "end": 24.58
+ "end": 20.705
 }

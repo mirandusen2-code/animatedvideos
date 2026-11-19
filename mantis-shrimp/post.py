@@ -212,24 +212,28 @@ def fmt(n):
 def overlays(img, t):
     """Big, readable infographics (labels >= 44 px, numbers >= 110 px), max 2 text elements at once."""
     S = T.SHOTS
-    # hook: what it is (new info, not in the voice)
-    pill(img, "PEACOCK MANTIS SHRIMP", CX, 380, 46, alpha=window(t, S[1][0] + 0.15, S[1][1], 0.2), accent=AMBER)
-    # speed: counter up to 50 mph
-    a = window(t, S[2][0] + 0.15, S[2][1], 0.2)
+    L_ = T.L
+    # hook: speed counter, then what animal this is
+    a = window(t, 0.45, L_["hook"][1] + 0.1, 0.2)
     if a > 0:
-        u = clamp((t - S[2][0] - 0.2) / 1.6)
+        u = clamp((t - 0.5) / 1.4)
         number(img, f"{int(round(50 * (1 - (1 - u) ** 3)))}", CX, 410, 120, AMBER, alpha=a, suffix="MPH")
-    # blink: how short the strike is
-    pill(img, "WHOLE STRIKE: < 1/1000 SEC", CX, 380, 46, alpha=window(t, S[3][0] + 0.15, S[3][1], 0.2), accent=ICE)
-    # slow motion + what the bubbles are called
-    pill(img, "ULTRA SLOW MOTION", CX, 380, 46, alpha=window(t, S[5][0] + 0.25, S[5][1], 0.2), accent=ICE)
-    pill(img, "CAVITATION BUBBLES", CX, 380, 46, alpha=window(t, S[6][0] + 0.25, S[6][1], 0.2), accent=ICE)
-    # heat: counter up to 7,000 F
-    h0 = T.L["heat"][0]
+    pill(img, "PEACOCK MANTIS SHRIMP", CX, 380, 46, alpha=window(t, L_["glass"][0] + 0.1, S[1][1], 0.2), accent=AMBER)
+    # twist: slow motion, then what the bubbles are
+    pill(img, "ULTRA SLOW MOTION", CX, 380, 46, alpha=window(t, S[2][0] + 0.25, S[3][1], 0.2), accent=ICE)
+    pill(img, "CAVITATION BUBBLES", CX, 380, 46, alpha=window(t, S[4][0] + 0.1, S[4][1], 0.2), accent=ICE)
+    # the two hits, spelled out
+    pill(img, "HIT 1 · THE CLUB", CX, 380, 50, alpha=window(t, T.T_HIT - 0.05, T.T_POP - 0.05, 0.12), accent=AMBER)
+    pill(img, "HIT 2 · BUBBLE BLAST", CX, 380, 50, alpha=window(t, T.T_POP, S[6][1], 0.12), accent=AMBER)
+    # heat counter
+    h0 = L_["heat"][0]
     a = window(t, h0 + 0.1, S[8][1], 0.2)
     if a > 0:
-        u = clamp((t - h0 - 0.15) / 2.2)
+        u = clamp((t - h0 - 0.15) / 2.4)
         number(img, fmt(round(7000 * (1 - (1 - u) ** 3) / 10) * 10), CX, 410, 120, AMBER, alpha=a, suffix="°F")
+    # ending: the two hits on the snail shell
+    pill(img, "HIT 1", CX, 380, 54, alpha=window(t, T.T_LPUNCH - 0.05, T.T_SNAIL - 0.05, 0.1), accent=AMBER)
+    pill(img, "HIT 2", CX, 380, 54, alpha=window(t, T.T_SNAIL, T.DUR + 1, 0.1), accent=AMBER)
 
 
 # ---------------------------------------------------------------- image finishing
@@ -415,20 +419,18 @@ def make_music_and_sfx():
         return x * np.sin(np.pi * st / d) ** 2
 
     add(sfx, T.T_PUNCH - 0.02, thump(160, 50, 0.6), 0.55)              # punch on the glass
-    add(sfx, T.T_PUNCH, clink(0.7) + 0.4 * crackle(0.5, 1), 0.2)
+    add(sfx, T.T_PUNCH, clink(0.7) + 0.4 * crackle(0.7, 1), 0.2)
     add(sfx, T.T_GLASS - 0.02, thump(160, 50, 0.6), 0.55)              # second punch: crack spreads
-    add(sfx, T.T_GLASS, clink(0.9) + 0.6 * crackle(0.7, 2), 0.24)
-    add(sfx, L["speed"][0] + 0.3, whoosh(1.4), 0.10)                   # slow-motion swing
-    add(sfx, T.L["blink"][0] + 0.3, whoosh(0.25, 7), 0.12)
-    add(sfx, T.L["blink"][0] + 0.95, whoosh(0.25, 8), 0.12)
-    add(sfx, T.T_SNAIL - 0.02, thump(140, 45, 0.6), 0.5)               # the snail shell shatters
-    add(sfx, T.T_SNAIL, crackle(0.8, 3), 0.35)
+    add(sfx, T.T_GLASS, clink(0.9) + 0.6 * crackle(0.9, 2), 0.24)
     add(sfx, L["crazy"][0], thump(80, 28, 2.0), 0.85)                  # twist hit
-    add(sfx, L["bubbles"][0] + 0.4, shimmer(2.2), 0.06)               # bubbles grow
-    add(sfx, T.T_POP - 0.01, thump(220, 30, 1.6), 0.8)                 # collapse: the flash
+    add(sfx, L["bubbles"][0] + 0.3, whoosh(1.6), 0.08)                 # slow-motion club
+    add(sfx, T.SHOTS[4][0], shimmer(2.0), 0.06)                        # bubbles grow
+    add(sfx, T.T_HIT - 0.02, thump(120, 40, 0.8), 0.5)                 # hit 1: the club
+    add(sfx, T.T_POP - 0.01, thump(220, 30, 1.6), 0.85)                # hit 2: the bubbles pop
     add(sfx, T.T_POP, crackle(0.6, 5), 0.3)
-    add(sfx, T.T_ONE - 0.02, thump(150, 45, 0.5), 0.45)                # "one punch"
-    add(sfx, T.T_TWO - 0.02, thump(150, 45, 0.5), 0.45)                # "two hits"
+    add(sfx, T.T_LPUNCH - 0.02, thump(150, 45, 0.5), 0.45)             # ending: hit 1 on the snail
+    add(sfx, T.T_SNAIL - 0.01, thump(200, 40, 0.7), 0.5)               # hit 2: the shell shatters
+    add(sfx, T.T_SNAIL, crackle(0.8, 3), 0.3)
     sfx = reverb(sfx, 1.8, 0.3, seed=2)
     return music, sfx
 
