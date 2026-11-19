@@ -293,11 +293,11 @@ def pose_bear(p, t, tun=0.0, walk=0.0, wiggle=1.0):
 S0 = V(T.SPACE)
 earth_m, nt_e, out_e = new_mat("Earth")
 tce = node(nt_e, "ShaderNodeTexCoord")
-nze = node(nt_e, "ShaderNodeTexNoise", Scale=0.02, Detail=8.0)
+nze = node(nt_e, "ShaderNodeTexNoise", Scale=0.012, Detail=8.0)
 nt_e.links.new(tce.outputs["Object"], nze.inputs["Vector"])
 cre = ramp(nt_e, [(0.50, (0.01, 0.10, 0.42)), (0.54, (0.08, 0.30, 0.12)), (0.64, (0.50, 0.44, 0.28))], interp="LINEAR")
 nt_e.links.new(nze.outputs["Fac"], cre.inputs[0])
-nzc = node(nt_e, "ShaderNodeTexNoise", Scale=0.035, Detail=6.0)
+nzc = node(nt_e, "ShaderNodeTexNoise", Scale=0.02, Detail=6.0)
 nt_e.links.new(tce.outputs["Object"], nzc.inputs["Vector"])
 crc = ramp(nt_e, [(0.55, (0, 0, 0)), (0.7, (1, 1, 1))])
 nt_e.links.new(nzc.outputs["Fac"], crc.inputs[0])
@@ -308,8 +308,22 @@ nt_e.links.new(cre.outputs[0], mxe.inputs["A"])
 mxe.inputs["B"].default_value = (0.95, 0.97, 1.0, 1)
 pe = node(nt_e, "ShaderNodeBsdfPrincipled", Roughness=0.6)
 nt_e.links.new(mxe.outputs["Result"], pe.inputs["Base Color"])
-nt_e.links.new(pe.outputs[0], out_e.inputs[0])
-earth = sph("Earth", S0 + V(T.EARTH_C), 230.0, earth_m, u=256, v=128)
+lwe = node(nt_e, "ShaderNodeLayerWeight", Blend=0.5)
+pwe = node(nt_e, "ShaderNodeMath")
+pwe.operation = "POWER"
+pwe.inputs[1].default_value = 4.0
+nt_e.links.new(lwe.outputs["Facing"], pwe.inputs[0])
+mle = node(nt_e, "ShaderNodeMath")
+mle.operation = "MULTIPLY"
+mle.inputs[1].default_value = 5.0
+nt_e.links.new(pwe.outputs[0], mle.inputs[0])
+eme = node(nt_e, "ShaderNodeEmission", Color=(0.35, 0.68, 1.0, 1))
+nt_e.links.new(mle.outputs[0], eme.inputs["Strength"])
+ade = nt_e.nodes.new("ShaderNodeAddShader")
+nt_e.links.new(pe.outputs[0], ade.inputs[0])
+nt_e.links.new(eme.outputs[0], ade.inputs[1])
+nt_e.links.new(ade.outputs[0], out_e.inputs[0])       # atmosphere glow built into the Earth (no transparent shell)
+earth = sph("Earth", S0 + V(T.EARTH_C), 300.0, earth_m, u=256, v=128)
 atm_m, _ = glow_mat("Atmosphere", (0.35, 0.65, 1.0), 2.5, alpha=1.0)
 m_, nt_a, out_a = new_mat("AtmosphereRim")
 lw = node(nt_a, "ShaderNodeLayerWeight", Blend=0.5)
@@ -324,13 +338,12 @@ nt_a.links.new(pw.outputs[0], mxa.inputs[0])
 nt_a.links.new(tra.outputs[0], mxa.inputs[1])
 nt_a.links.new(ema.outputs[0], mxa.inputs[2])
 nt_a.links.new(mxa.outputs[0], out_a.inputs[0])
-atm = sph("Atmosphere", S0 + V(T.EARTH_C), 234.0, m_, u=256, v=128)
-atm.visible_shadow = False
+
 moon_m, nt_mo, out_mo = new_mat("MoonSurface")
 tcm = node(nt_mo, "ShaderNodeTexCoord")
-nzm = node(nt_mo, "ShaderNodeTexNoise", Scale=3.0, Detail=10.0)
+nzm = node(nt_mo, "ShaderNodeTexNoise", Scale=0.6, Detail=10.0)
 nt_mo.links.new(tcm.outputs["Object"], nzm.inputs["Vector"])
-crm = ramp(nt_mo, [(0.35, (0.18, 0.18, 0.19)), (0.6, (0.55, 0.55, 0.56))])
+crm = ramp(nt_mo, [(0.4, (0.30, 0.30, 0.31)), (0.6, (0.62, 0.62, 0.62))])
 nt_mo.links.new(nzm.outputs["Fac"], crm.inputs[0])
 pmo = node(nt_mo, "ShaderNodeBsdfPrincipled", Roughness=0.95)
 nt_mo.links.new(crm.outputs[0], pmo.inputs["Base Color"])
@@ -338,8 +351,8 @@ bmm = node(nt_mo, "ShaderNodeBump", Strength=0.6)
 nt_mo.links.new(nzm.outputs["Fac"], bmm.inputs["Height"])
 nt_mo.links.new(bmm.outputs["Normal"], pmo.inputs["Normal"])
 nt_mo.links.new(pmo.outputs[0], out_mo.inputs[0])
-moon_sph = sph("MoonSphere", S0 + V(T.MOON_SPHERE), 24.0, moon_m, u=128, v=64)
-SETS["space"] += [earth, atm, moon_sph]
+moon_sph = sph("MoonSphere", S0 + V(T.MOON_SPHERE), 60.0, moon_m, u=128, v=64)
+SETS["space"] += [earth, moon_sph]
 bear_space = make_bear("BearSpace", S0, 1.0, sets=("space",))
 
 # ================================================================= RULER set (steel ruler, mm ticks)
@@ -517,7 +530,6 @@ gv = np.stack([X.ravel() + N0.x, Y.ravel() + N0.y, Z.ravel() + N0.z], 1)
 gf = [[i * n + j, i * n + j + 1, (i + 1) * n + j + 1, (i + 1) * n + j] for i in range(n - 1) for j in range(n - 1)]
 regolith = obj_from("Regolith", gv, gf, moon_m)
 earth_sky = sph("EarthInMoonSky", N0 + V((10, 160, 45)), 12.0, earth_m, u=96, v=48)
-atm2 = sph("EarthInMoonSkyAtm", N0 + V((10, 160, 45)), 12.25, m_, u=96, v=48)
 dust_m, DUST_A = glow_mat("Dust", (0.75, 0.73, 0.70), 0.0, alpha=0.0)
 m_d, nt_du, out_du = new_mat("DustPlume")
 pdu = node(nt_du, "ShaderNodeBsdfPrincipled", Roughness=1.0)
@@ -546,7 +558,7 @@ for k in range(30):
     plume.append((sph(f"Plume{k}", N0 + V((0, 25, 0)), 1.0, m_d, u=24, v=12),
                   V((math.cos(a) * prnd.uniform(0.4, 1), math.sin(a) * prnd.uniform(0.4, 1), prnd.uniform(0.3, 1.2))),
                   prnd.uniform(0.8, 2.0)))
-SETS["moon"] += [regolith, earth_sky, atm2, lander] + [p[0] for p in plume]
+SETS["moon"] += [regolith, earth_sky, lander] + [p[0] for p in plume]
 moon_tuns = [make_bear(f"MoonTun{k}", N0 + V(pos), sc, sets=("moon",))
              for k, (pos, sc) in enumerate((((0, 0, 0.05), 1.0), ((-1.6, 2.5, 0.0), 0.8), ((1.9, 3.6, 0.0), 0.7)))]
 

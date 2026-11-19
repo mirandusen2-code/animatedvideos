@@ -17,8 +17,8 @@ RULER = (500.0, 0.0, 0.0)
 MOSS = (1000.0, 0.0, 0.0)
 DROP = (1500.0, 0.0, 0.0)
 MOON = (2000.0, 0.0, 0.0)
-MOON_SPHERE = (-38.0, 140.0, 12.0)          # the Moon seen from space (crazy shot), relative to SPACE
-EARTH_C = (0.0, 70.0, -232.0)               # Earth centre (space set), radius 230: limb just below the hero
+MOON_SPHERE = (-260.0, 900.0, 160.0)        # the Moon far away (only big in the "crazy" push-in)
+EARTH_C = (0.0, 420.0, -260.0)              # Earth far below/behind: a curved limb low in frame
 
 
 def clamp(x, a=0.0, b=1.0):
@@ -99,7 +99,7 @@ def _shots():
         (l["dries"][0] - 0.1, l["wakes"][0] - 0.25, mo(2.6, -3.2, 1.6), mo(2.1, -2.6, 1.4), mo(0, 0, 0.45), mo(0, 0, 0.45), 55, 55, 3.2, "hero", 0, 0, "moss"),
         (l["wakes"][0] - 0.25, l["babies"][0] - 0.1, mo(-2.8, -2.4, 1.2), mo(-2.3, -2.0, 1.1), mo(0, 0, 0.6), mo(0, 0, 0.5), 50, 50, 3.2, "hero", 0, 0, "moss"),
         (l["babies"][0] - 0.1, l["crazy"][0] - 0.05, dr(1.8, -4.0, 0.9), dr(1.3, -3.3, 0.8), dr(0.3, 0, 0.1), dr(0.3, 0, 0.1), 45, 45, 4.0, "hero", 0, 0, "drop"),
-        (l["crazy"][0] - 0.05, l["moon"][0] - 0.05, sp(3.0, -7.0, 1.0), sp(-4.0, -16.0, 3.0), sp(-6, 60, 4), sp(-30, 130, 12), 30, 30, 16, None, 0, -5, "space"),
+        (l["crazy"][0] - 0.05, l["moon"][0] - 0.05, sp(2.0, -6.0, 1.0), sp(1.0, -4.0, 1.4), sp(-260, 900, 160), sp(-260, 900, 160), 60, 120, 16, None, 0, -5, "space"),
         (l["moon"][0] - 0.05, l["moon"][0] + 1.9, mn(-26.0, -60.0, 9.0), mn(-22.0, -54.0, 7.8), mn(0, 25, 3), mn(0, 25, 4), 32, 32, 16, None, 0, 0, "moon"),
         (l["moon"][0] + 1.9, l["still"][0] - 0.05, mn(14.0, -8.0, 2.0), mn(11.0, -4.0, 2.4), mn(0, 25, 4), mn(0, 25, 5), 28, 28, 16, None, 0, 0, "moon"),
         (l["still"][0] - 0.05, DUR + 0.1, mn(1.8, -4.6, 0.55), mn(1.4, -3.9, 0.7), mn(0, 0, 0.6), mn(0, 0, 1.4), 45, 45, 6, "hero", 0, 0, "moon"),
