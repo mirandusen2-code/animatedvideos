@@ -498,7 +498,7 @@ eggs = []
 erand = random.Random(3)
 for k in range(7):
     a = k / 7 * 6.28
-    eggs.append(sph(f"Egg{k}", D0 + V((-0.9 + 0.35 * math.cos(a), 0.35 * math.sin(a), -0.15 + 0.05 * erand.random())),
+    eggs.append(sph(f"Egg{k}", D0 + V((-0.75 + 0.32 * math.cos(a), -0.55 + 0.25 * math.sin(a), -0.18 + 0.05 * erand.random())),
                     0.18, egg_m, u=24, v=12))
 bub_m, _ = pmat("Bubble", (1, 1, 1), rough=0.0, transmission=1.0, ior=1.33)
 bubbles = []
@@ -512,8 +512,8 @@ dk_o.location = D0 + V((-3, -4, 4))
 dk_o.rotation_euler = V((-3, -4, 4)).to_track_quat("Z", "Y").to_euler()
 col.objects.link(dk_o)
 SETS["drop"] += [dome, dk_o] + eggs + bubbles
-bear_drop = make_bear("BearDrop", D0 + V((0.4, 0, -0.3)), 1.0, sets=("drop",))
-babies = [make_bear(f"Baby{k}", D0 + V((-0.9 + 0.5 * math.cos(k * 2.1), 0.5 * math.sin(k * 2.1), -0.25)), 0.3,
+bear_drop = make_bear("BearDrop", D0 + V((0.7, 0.35, -0.3)), 1.0, sets=("drop",))
+babies = [make_bear(f"Baby{k}", D0 + V((-0.95 + 0.45 * k, -0.75 + 0.15 * (k % 2), -0.3)), 0.4,
                     sets=("drop",)) for k in range(3)]
 
 # ================================================================= MOON set
@@ -555,9 +555,9 @@ for sx in (-1, 1):
 lander = lander.build("Lander", gold_m, smooth=False)
 plume = []
 prnd = random.Random(8)
-for k in range(30):
+for k in range(90):
     a = prnd.uniform(0, 6.28)
-    plume.append((sph(f"Plume{k}", N0 + V((0, 25, 0)), 1.0, m_d, u=24, v=12),
+    plume.append((sph(f"Plume{k}", N0 + V((0, 25, 0)), prnd.uniform(0.25, 0.5), m_d, u=16, v=8),
                   V((math.cos(a) * prnd.uniform(0.4, 1), math.sin(a) * prnd.uniform(0.4, 1), prnd.uniform(0.3, 1.2))),
                   prnd.uniform(0.8, 2.0)))
 SETS["moon"] += [regolith, earth_sky, lander] + [p[0] for p in plume]
@@ -624,7 +624,7 @@ for f in range(T.NFRAMES):
     for k, e in enumerate(eggs):
         key(e, "scale", (max(1e-3, 1 - hb),) * 3)
     for k, bb in enumerate(babies):
-        sc = 0.3 * T.ease_out((hb - 0.1 * k) / 0.6)
+        sc = 0.4 * T.ease_out((hb - 0.12 * k) / 0.55)
         bb["base"] = max(sc, 1e-3)
         pose_bear(bb, t + k, tun=0.0, walk=0.6)
     for p in moon_tuns:
@@ -632,14 +632,14 @@ for f in range(T.NFRAMES):
     pl = T.plume(t)
     for o, dvec, spd in plume:
         g = T.ease_out(pl)
-        key(o, "location", N0 + V((0, 25, 0.3)) + dvec * 5.0 * g * spd)
-        key(o, "scale", (max(1e-3, (0.3 + 1.4 * g) * (1 if pl > 0 else 0.001)),) * 3)
+        key(o, "location", N0 + V((0, 25, 0.3)) + V((dvec.x, dvec.y, dvec.z * 0.6)) * 6.0 * g * spd - V((0, 0, 2.5 * g * g)))
+        key(o, "scale", (max(1e-3, (0.4 + 0.8 * g) * (1 - g) ** 0.5 * (1 if pl > 0 else 0.001)),) * 3)
         key(o, "hide_render", st != "moon" or pl <= 0 or pl >= 1)
     fall = T.clamp((t - (T.L["moon"][0] + 0.2)) / 0.7)
     key(lander, "location", N0 + V((-6 + 6 * fall, 25, 14 * (1 - fall) + 0.6)))
     key(lander, "rotation_euler", (0.3, 0.2 * (1 - fall), 0.8))
     key(lander, "hide_render", st != "moon" or fall >= 1)
-    key_socket(DUST_A, 0.0 if pl <= 0 else 0.9 * (1 - pl) ** 1.4)
+    key_socket(DUST_A, 0.0 if pl <= 0 else 0.75 * (1 - pl) ** 1.2)
     # camera
     loc, tgt, lens, fstop, focus, roll = T.camera(t)
     q = (Vector(tgt) - Vector(loc)).to_track_quat("-Z", "Y") @ Quaternion((0, 0, 1), math.radians(roll))
