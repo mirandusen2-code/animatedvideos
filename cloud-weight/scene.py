@@ -216,6 +216,9 @@ for _ in range(260):
     bl.sphere((x, y, z + 2.2 * s), (1.0 * s, 1.0 * s, 1.25 * s))
     bl.sphere((x + 0.4 * s, y, z + 2.9 * s), (0.7 * s, 0.7 * s, 0.8 * s))
 sky_set += [bl.build("TreeTops", tree_m), bt.build("Trunks", trunk_m)]
+for o in sky_set:                       # grass/trees don't bounce green light into the white cloud
+    o.visible_diffuse = False
+    o.visible_glossy = False
 
 # hero cumulus: metaball cluster (flat bottom, billowing top)
 cloud_m, nt_c, out_c = new_mat("Cloud")
