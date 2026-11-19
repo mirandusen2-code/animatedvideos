@@ -219,19 +219,16 @@ def fmt(n):
 
 def overlays(img, t):
     """At most one number/label at a time, always inside the safe column."""
-    # dial reading: 500,000 KG, then 1,100,000 LB under it
+    # dial reading counts up with the needle: 1,100,000 LB
     s1 = T.SHOTS[1][1]
-    a = window(t, 0.55, s1, 0.2)
+    a = window(t, T.LAND, s1, 0.2)
     if a > 0:
-        u = clamp((t - 0.55) / 1.3)
-        n = 500000 * (1 - (1 - u) ** 3)
-        number(img, fmt(round(n, -3)), CX, 400, 100, AMBER, alpha=a, suffix="KG")
-        lb = window(t, L["pounds"][0], s1, 0.2)
-        if lb > 0:
-            pill(img, "= 1,100,000 LB", CX, 500, 36, alpha=lb, accent=AMBER)
+        u = clamp((t - T.LAND) / 1.3)
+        n = 1100000 * (1 - (1 - u) ** 3)
+        number(img, fmt(round(n, -3)), CX, 400, 100, AMBER, alpha=a, suffix="LB")
     # droplet size label (new information, not said in the voice)
     d0, d1 = L["droplets"]
-    pill(img, "EACH DROP  ≈ 0.02 MM", CX, 400, 36, alpha=window(t, d0 + 0.6, T.SHOTS[6][1], 0.2))
+    pill(img, "EACH DROP: THINNER THAN A HAIR", CX, 400, 36, alpha=window(t, d0 + 0.6, T.SHOTS[6][1], 0.2))
     # bar comparison: water in the cloud vs air in the same space
     a0 = L["air"][0] + 1.0
     a = window(t, a0, L["feather"][0], 0.25)
@@ -239,7 +236,7 @@ def overlays(img, t):
         grow = clamp((t - a0) / 0.9)
         d = ImageDraw.Draw(img, "RGBA")
         x0, x1 = SAFE[0] + 40, SAFE[2] - 40
-        for y, lab, frac, col in ((360, "WATER: 500 T", 0.0005, WHITE), (490, "AIR: 1,000,000 T", 1.0, ICE)):
+        for y, lab, frac, col in ((360, "WATER: 1.1 MILLION LB", 0.0005, WHITE), (490, "AIR: 2+ BILLION LB", 1.0, ICE)):
             wbar = max(16, (x1 - x0) * frac * (1 - (1 - grow) ** 3))
             d.rounded_rectangle([x0, y + 34, x0 + wbar, y + 72], radius=19, fill=col + (int(235 * a),),
                                 outline=INK + (int(200 * a),), width=3)

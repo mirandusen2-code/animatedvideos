@@ -43,12 +43,46 @@ DROPS = (600.0, 0.0, 0.0)         # macro set: inside the cloud
 HERD = (0.0, 0.0, 0.0)            # elephants stand on the ground under the cloud
 
 
+LAND = 0.55                         # the cloud drops onto the hook in the first half second
+
+
+def cloud_dz(t):
+    """Vertical offset of the cloud: drops onto the hook at the start, rises off it at the end (seamless loop)."""
+    if t < LAND:
+        x = t / LAND
+        return 7.0 * (1 - x * x)                       # falls with gravity
+    lift0 = L["feather"][0] + 0.2
+    bounce = -0.35 * math.exp(-(t - LAND) * 5.0) * math.sin((t - LAND) * 11.0)
+    return bounce + 7.0 * smoother((t - lift0) / (DUR - lift0))
+
+
+def needle_value(t):
+    """Reading in thousands of pounds (scale 0..1200): swings to 1,100 with an overshoot, back to 0 at the end."""
+    x = clamp((t - LAND) / 1.5)
+    over = 1 + 0.07 * math.sin(x * math.pi * 3) * (1 - x)
+    lift0 = L["feather"][0] + 0.2
+    return 1100.0 * ease_out(x) * over * (1 - smoother((t - lift0) / (DUR - lift0)))
+
+
 def needle(t):
-    """Dial needle angle (rad, clockwise from 12 o'clock). Scale: -150 deg = 0, +150 deg = 600 (x1000 kg).
-    Swings from 0 to 500 (= +100 deg) with a small overshoot."""
-    x = clamp((t - 0.25) / 1.6)
-    over = 1 + 0.06 * math.sin(x * math.pi * 3) * (1 - x)
-    return math.radians(-150 + 250 * ease_out(x) * over)
+    """Needle angle (rad): -150 deg = 0 lb, +150 deg = 1,200 x1000 lb."""
+    return math.radians(-150 + 300 * needle_value(t) / 1200.0)
+
+
+def herd_scale(t, rank):
+    """Elephants pop in one after another (rank 0..99) as she says the line, and pop out in the last line."""
+    t_in = L["elephants"][0] + 0.15 + 0.022 * rank
+    t_out = L["feather"][0] + 0.2 + 0.012 * rank
+    x = clamp((t - t_in) / 0.32)
+    c = 1.7
+    pop = 1 + (c + 1) * (x - 1) ** 3 + c * (x - 1) ** 2 if x > 0 else 0.0
+    return max(0.0, pop * (1 - smoother((t - t_out) / 0.3)))
+
+
+def edge_draw(t, k, n):
+    """0..1 growth of cube edge k of n: the edges draw themselves one after another like a blueprint."""
+    a0 = L["air"][0] - 0.1 + 0.07 * k
+    return smoother((t - a0) / 0.45) * (1 - smoother((t - L["feather"][0] + 0.1) / 0.6))
 
 
 def cube_draw(t):
@@ -75,17 +109,17 @@ def _shots():
     dr = lambda x, y, z: (DROPS[0] + x, DROPS[1] + y, DROPS[2] + z)
     hero0, hero1 = pt(4.2, -20.0, -8.6), pt(3.6, -17.5, -7.9)
     hero_t = pt(0.0, 0.0, 4.0)
-    k1 = l["hook"][0] + 2.1                       # cut to the dial as the number lands
-    k2 = l["elephants"][0] + 1.3
+    k1 = l["hook"][0] + 1.9                       # cut to the dial as the number lands
+    k2 = l["elephants"][0] + 1.7
     k3a = l["droplets"][0] + 1.8
     k4a = l["light"][0] + 1.9
     k5 = l["air"][0] + 1.6
     return [
         # t0, t1, loc0, loc1, target0, target1, lens0, lens1, fstop, focus, roll0, roll1, set
         (0.0, k1, hero0, hero1, hero_t, hero_t, 22, 22, 11, None, 0, 0, "sky"),
-        (k1, l["pounds"][1] + 0.15, (DIAL[0] + 1.6, DIAL[1] - 15.0, DIAL[2] - 0.6), (DIAL[0] + 1.2, DIAL[1] - 13.2, DIAL[2] - 0.4),
+        (k1, l["hook"][1] + 0.2, (DIAL[0] + 1.6, DIAL[1] - 15.0, DIAL[2] - 0.6), (DIAL[0] + 1.2, DIAL[1] - 13.2, DIAL[2] - 0.4),
          DIAL, DIAL, 40, 40, 5.6, "dial", 0, 0, "sky"),
-        (l["pounds"][1] + 0.15, k2, (9.0, -32.0, 3.2), (7.5, -29.5, 3.4), (0.0, -6.0, 14.0), (0.0, -6.0, 15.0), 18, 18, 8, None, 0, 0, "sky"),
+        (l["hook"][1] + 0.2, k2, (9.0, -32.0, 3.2), (7.5, -29.5, 3.4), (0.0, -6.0, 14.0), (0.0, -6.0, 15.0), 18, 18, 8, None, 0, 0, "sky"),
         (k2, l["why"][0] - 0.1, (14.0, -30.0, 52.0), (11.0, -24.0, 48.0), (0.0, 0.0, 2.0), (0.0, 0.0, 6.0), 26, 26, 11, None, 0, 0, "sky"),
         (l["why"][0] - 0.1, l["droplets"][0], pt(3.0, -36.0, 1.0), pt(0.6, -9.5, 0.5), pt(0, 0, 0), pt(0, 0, 0), 30, 30, 11, None, 0, 6, "sky"),
         (l["droplets"][0], k3a, dr(0.0, -2.6, 0.2), dr(0.25, -2.1, 0.3), dr(0, 0, 0.1), dr(0.1, 0, 0.2), 60, 60, 1.6, "drop", 0, 0, "drops"),

@@ -268,6 +268,32 @@ for poly in cloud.data.polygons:
     poly.use_smooth = True
 sky_set.append(cloud)
 
+# small distant clouds for depth
+for k, (bx, by, bz, sc) in enumerate(((-90, 260, 55, 0.9), (70, 320, 70, 1.2), (160, 220, 48, 0.7),
+                                       (-170, 340, 80, 1.4), (20, 420, 95, 1.6), (-40, 180, 40, 0.6))):
+    mb2 = bpy.data.metaballs.new(f"FarMeta{k}")
+    mb2.resolution = 0.5
+    r2 = random.Random(30 + k)
+    for i in range(16):
+        el = mb2.elements.new()
+        a_ = r2.uniform(0, 6.28)
+        rr = 6.0 * math.sqrt(r2.random())
+        el.co = (rr * math.cos(a_), 0.5 * rr * math.sin(a_), r2.uniform(0, 3.5 * (1 - rr / 7)))
+        el.radius = r2.uniform(2.0, 3.0)
+    fo = bpy.data.objects.new(f"FarCloud{k}", mb2)
+    fo.location = (bx, by, bz)
+    fo.scale = (sc, sc, sc)
+    col.objects.link(fo)
+    bpy.context.view_layer.objects.active = fo
+    fo.select_set(True)
+    bpy.ops.object.convert(target="MESH")
+    fo = bpy.context.view_layer.objects.active
+    fo.data.materials.clear()
+    fo.data.materials.append(cloud_m)
+    for poly in fo.data.polygons:
+        poly.use_smooth = True
+    sky_set.append(fo)
+
 # giant crane scale above the cloud: hook, dial housing, face, ticks, needle, cables
 brass_m, _ = pmat("Brass", (0.82, 0.58, 0.26), rough=0.25, metal=1.0)
 steel_m, _ = pmat("Steel", (0.6, 0.62, 0.65), rough=0.3, metal=1.0)
@@ -293,7 +319,7 @@ ticks = b.build("Ticks", ink_m, smooth=False)
 FONT = bpy.data.fonts.load(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "viral-hooks", "fonts",
                                         "Montserrat-ExtraBold.otf"))
 dial_labels = []
-for k, (txt, size) in enumerate([(str(v), 0.42) for v in range(0, 700, 100)] + [("×1000 KG", 0.34)]):
+for k, (txt, size) in enumerate([(f"{v:,}", 0.38) for v in range(0, 1400, 200)] + [("×1000 LB", 0.34)]):
     cu = bpy.data.curves.new(f"DialText{k}", "FONT")
     cu.body, cu.font, cu.size = txt, FONT, size
     cu.align_x, cu.align_y = "CENTER", "CENTER"
@@ -342,15 +368,22 @@ def elephant(b, m):
 
 
 b = Builder()
+elephant(b, Matrix())
+ele_mesh = b.build("ElephantMesh", porcelain_m)
+ele_mesh.hide_render = True
 hrnd = random.Random(4)
+herd = []
 for ix in range(10):
     for iy in range(10):
         x = (ix - 4.5) * 4.2 + hrnd.uniform(-0.6, 0.6)
         y = (iy - 4.5) * 5.0 + hrnd.uniform(-0.6, 0.6)
-        m = Matrix.Translation((x, y, -1.0)) @ Euler((0, 0, hrnd.uniform(-0.35, 0.35))).to_matrix().to_4x4()
-        elephant(b, m)
-herd = b.build("Herd", porcelain_m)
-sky_set.append(herd)
+        o = bpy.data.objects.new(f"Elephant{ix}{iy}", ele_mesh.data)
+        o.location = (x, y, -1.0)
+        o.rotation_euler = (0, 0, hrnd.uniform(-0.35, 0.35))
+        col.objects.link(o)
+        herd.append((o, math.hypot(x, y + 30)))            # rank: front rows (towards camera) first
+herd.sort(key=lambda e: e[1])
+sky_set += [o for o, _ in herd]
 
 # glass air-cube around the cloud: glowing edges + faint glass faces
 edge_m, EDGE_A = glow_mat("CubeEdges", (0.55, 0.85, 1.0), 6.0, alpha=0.0)
@@ -362,9 +395,12 @@ edges = [(a, b2) for a in range(8) for b2 in range(a + 1, 8) if bin(a ^ b2).coun
 edge_objs = []
 for k, (a, b2) in enumerate(edges):
     bb = Builder()
-    cylinder(bb, corners[a], corners[b2], 0.09, seg=8)
+    L_ = (corners[b2] - corners[a]).length
+    cylinder(bb, (0, 0, 0), (0, 0, L_), 0.09, seg=8)
     o = bb.build(f"CubeEdge{k}", edge_m)
-    edge_objs.append((o, corners[a], corners[b2]))
+    o.location = corners[a]
+    o.rotation_euler = (corners[b2] - corners[a]).to_track_quat("Z", "Y").to_euler()
+    edge_objs.append(o)
     sky_set.append(o)
 bpy.ops.mesh.primitive_cube_add(size=2 * hs, location=C)
 glass = bpy.context.active_object
@@ -489,9 +525,18 @@ for f in range(T.NFRAMES):
         key(o, "hide_render", st != "drops")
     # cloud gently breathing, needle, cube, feather
     key(cloud, "rotation_euler", (0, 0, 0.02 * math.sin(t * 0.4)))
+    key(cloud, "location", Vector(T.CLOUD) - Vector((0, 0, 2.5 - T.cloud_dz(t))))
+    for rank, (o, _) in enumerate(herd):
+        sc = T.herd_scale(t, rank)
+        key(o, "scale", (max(sc, 1e-3),) * 3)
+        key(o, "hide_render", st != "sky" or sc < 0.01)
+    for k, o in enumerate(edge_objs):
+        g = T.edge_draw(t, k, len(edge_objs))
+        key(o, "scale", (1, 1, max(g, 1e-3)))
+        key(o, "hide_render", st != "sky" or g < 0.01)
     key(needle, "rotation_euler", (0, T.needle(t), 0))
     cd = T.cube_draw(t)
-    key_socket(EDGE_A, min(1.0, cd * 3))
+    key_socket(EDGE_A, 1.0)
     key_socket(GLASS_A, 0.18 * cd)
     key(feather, "hide_render", T.shot_index(t) != len(T.SHOTS) - 1)
     key(quill, "hide_render", T.shot_index(t) != len(T.SHOTS) - 1)

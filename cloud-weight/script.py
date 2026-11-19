@@ -1,14 +1,14 @@
-"""Narration: 'This Fluffy Cloud Weighs Half a Million Kilos'.
+"""Narration: 'This Fluffy Cloud Weighs Over a Million Pounds'.
 (key, spoken text, on-screen caption, pause after). Captions: CAPS / digits = highlighted keywords.
 Every number is checked in RESEARCH.md. Works in a flat, neutral voice (no irony, no colons).
 The last line flows back into the first (loop).
 """
 
 LINES = [
-    ("hook",     "This fluffy cloud weighs half a million kilos.",
-                 "This fluffy cloud weighs HALF A MILLION kilos.", 0.3),
-    ("pounds",   "That's over a million pounds.", "That's over 1 MILLION POUNDS.", 0.3),
-    ("elephants", "As heavy as nearly a hundred elephants.", "As heavy as nearly 100 ELEPHANTS.", 0.4),
+    ("hook",     "This fluffy cloud weighs over a million pounds.",
+                 "This fluffy cloud weighs over 1 MILLION POUNDS.", 0.35),
+    ("elephants", "That's as heavy as nearly a hundred elephants.",
+                 "That's as heavy as nearly 100 ELEPHANTS.", 0.45),
     ("why",      "So why doesn't it fall?", "So why doesn't it FALL?", 0.45),
     ("droplets", "Its water is split into trillions of tiny droplets.",
                  "Its water is split into TRILLIONS of tiny droplets.", 0.3),
