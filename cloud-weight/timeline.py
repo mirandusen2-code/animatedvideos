@@ -50,10 +50,10 @@ def cloud_dz(t):
     """Vertical offset of the cloud: drops onto the hook at the start, rises off it at the end (seamless loop)."""
     if t < LAND:
         x = t / LAND
-        return 7.0 * (1 - x * x)                       # falls with gravity
+        return 3.2 * (1 - x * x)                       # falls with gravity
     lift0 = L["feather"][0] + 0.2
     bounce = -0.35 * math.exp(-(t - LAND) * 5.0) * math.sin((t - LAND) * 11.0)
-    return bounce + 7.0 * smoother((t - lift0) / (DUR - lift0))
+    return bounce + 3.2 * smoother((t - lift0) / (DUR - lift0))
 
 
 def needle_value(t):
@@ -95,8 +95,8 @@ def cube_draw(t):
 def feather_pos(t):
     """Feather drifting down past the cloud in the last line (sways side to side)."""
     t0 = L["feather"][0] - 0.3
-    u = clamp((t - t0) / (DUR - t0))
-    z = lerp(CLOUD[2] + 2.0, CLOUD[2] - 9.0, u)
+    u = clamp((t - t0) / (DUR - 0.45 - t0))           # gone (below the frame) before the loop restarts
+    z = lerp(CLOUD[2] + 2.0, CLOUD[2] - 18.0, u ** 1.25)
     x = 1.0 + 1.8 * math.sin(u * 6.0)
     return (x, -11.0, z), (1.45 + 0.35 * math.sin(u * 6.0 + 1.2), 0.3 * math.cos(u * 5), 0.5 + 0.6 * math.sin(u * 3))
 
