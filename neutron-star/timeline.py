@@ -132,7 +132,7 @@ def ns_visible(t):
 def pulsar_spin(t):
     """Accumulated rotation angle (rad): accelerates during 'spin ... every second'."""
     t0 = T_PULSAR
-    a, b = 0.3, 1.2                                   # rev/s start / end (slow enough to stay smooth, no strobing)
+    a, b = 0.6, 5.5                                   # rev/s start / end
     t1, t2 = L["spin"][0], L["second"][1]
     ang = 0.0
     # integrate angular speed numerically (cheap: ~100 steps)

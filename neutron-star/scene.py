@@ -826,9 +826,7 @@ for f in FRAMES:
     t = f / T.FPS
     scene.frame_set(f)
     sh = T.shot(t)
-    last = T.shot_index((f + 1) / T.FPS) != T.shot_index(t)
-    r.use_motion_blur = sh != "pulsar"                  # pulsar: crisp beams, no strobing blur
-    r.motion_blur_position = "END" if last else "START"  # blur always stays inside the current shot
+    r.use_motion_blur = T.shot_index((f + 1) / T.FPS) == T.shot_index(t)   # no blur smear across a cut
     c.samples = max(4, int(SPP[sh] * QUALITY))
     bpy.context.view_layer.update()
     v = world_to_camera_view(scene, cam, Vector(T.STAR))
