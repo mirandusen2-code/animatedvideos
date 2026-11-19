@@ -537,9 +537,7 @@ r.engine = "CYCLES"
 r.resolution_x, r.resolution_y = RES
 r.resolution_percentage = 100
 r.image_settings.file_format = "PNG"
-r.use_motion_blur = True
-r.motion_blur_shutter = 0.5
-r.motion_blur_position = "START"     # blur only looks forward: the first frame of a shot never mixes in the previous shot
+r.use_motion_blur = False              # no motion blur at all: every frame is a clean, sharp image
 r.use_persistent_data = False
 c = scene.cycles
 c.device = "CPU"
@@ -562,7 +560,6 @@ proj = json.load(open(proj_path)) if os.path.exists(proj_path) else {}
 for f in FRAMES:
     t = f / T.FPS
     scene.frame_set(f)
-    r.use_motion_blur = T.shot_index((f + 1) / T.FPS) == T.shot_index(t)
     c.samples = max(4, int(SPP[T.shot_set(t)] * QUALITY))
     bpy.context.view_layer.update()
     pts = {"cloud": T.CLOUD, "dial": T.DIAL, "herd": (0, 0, 2.5)}

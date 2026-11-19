@@ -95,6 +95,32 @@ def text_block(img, lines, cx, cy, size, alpha=1.0, scale=1.0, colors=None, kind
     img.alpha_composite(layer, (x0, y0))
 
 
+def number(img, text, cx, cy, size, color, alpha=1.0, suffix=""):
+    """Counter with fixed-width digits (no horizontal jitter while it counts) + optional unit."""
+    if alpha <= 0.01:
+        return
+    f = font(size)
+    cell = max(f.getlength(d) for d in "0123456789")
+    widths = [cell if ch.isdigit() else f.getlength(ch) for ch in text]
+    gap = f.getlength(" ")
+    total = sum(widths) + (gap + f.getlength(suffix) if suffix else 0)
+    sw = max(4, size // 10)
+    layer = Image.new("RGBA", (int(total + 6 * sw), int(size * 1.6)), (0, 0, 0, 0))
+    d = ImageDraw.Draw(layer)
+    x, y = 3 * sw, layer.height / 2
+    for ch, w_ in zip(text, widths):
+        for dx, dy, fill, stroke in ((size * 0.05, size * 0.07, (0, 0, 0, 140), (0, 0, 0, 140)), (0, 0, color, INK)):
+            d.text((x + w_ / 2 + dx, y + dy), ch, font=f, fill=fill, anchor="mm", stroke_width=sw, stroke_fill=stroke)
+        x += w_
+    if suffix:
+        x += gap
+        for dx, dy, fill, stroke in ((size * 0.05, size * 0.07, (0, 0, 0, 140), (0, 0, 0, 140)), (0, 0, WHITE, INK)):
+            d.text((x + dx, y + dy), suffix, font=f, fill=fill, anchor="lm", stroke_width=sw, stroke_fill=stroke)
+    if alpha < 1:
+        layer.putalpha(layer.getchannel("A").point(lambda v: int(v * alpha)))
+    img.alpha_composite(layer, (int(cx - layer.width / 2), int(cy - layer.height / 2)))
+
+
 def pill(img, text, cx, cy, size=40, fg=WHITE, bg=(10, 16, 32, 200), alpha=1.0, accent=None):
     """Label chip (>= 56 px tall, <= 4 words)."""
     if alpha <= 0.01:
@@ -199,7 +225,7 @@ def overlays(img, t):
     if a > 0:
         u = clamp((t - 0.55) / 1.3)
         n = 500000 * (1 - (1 - u) ** 3)
-        text_block(img, [[fmt(round(n, -3)), "KG"]], CX, 400, 100, alpha=a, colors={0: AMBER})
+        number(img, fmt(round(n, -3)), CX, 400, 100, AMBER, alpha=a, suffix="KG")
         lb = window(t, L["pounds"][0], s1, 0.2)
         if lb > 0:
             pill(img, "= 1,100,000 LB", CX, 500, 36, alpha=lb, accent=AMBER)
@@ -248,6 +274,11 @@ def finish(src, t):
     # subtle grade: cool shadows, warm highlights
     lum = a.mean(axis=2, keepdims=True)
     a = a + (0.015 * (1 - lum)) * np.array([-0.4, 0.1, 0.6]) + (0.02 * lum) * np.array([0.5, 0.2, -0.4])
+    # the only dissolve in the video: white "through the cloud" as the camera enters it
+    tc = T.SHOTS[5][0]
+    w_ = T.smoother(1 - abs(t - tc) / (8 / T.FPS)) if abs(t - tc) < 8 / T.FPS else 0.0
+    if w_ > 0:
+        a = a + (np.array([0.97, 0.98, 1.0]) - a) * w_
     # film grain
     # (no film grain: the image must stay perfectly clean)
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).convert("RGBA")

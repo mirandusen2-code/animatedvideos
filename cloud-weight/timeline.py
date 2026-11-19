@@ -118,7 +118,7 @@ def drift(t, amp):
             amp * math.sin(t * 1.1 + 2) + amp * 0.4 * math.sin(t * 2.9))
 
 
-SHAKES = [(0.25, 0.4), (L["crazy"][0] - 0.05, 0.7)]
+SHAKES = []          # no camera shake: clean and smooth (design brief)
 
 
 def camera(t):
