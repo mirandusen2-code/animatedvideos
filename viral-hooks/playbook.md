@@ -94,7 +94,9 @@ The structure that keeps coming back in every source is **hook → context → p
    title and buttons. → Keep all essential text inside **x 92–860, y 300–1540**. No HUD at the very top.
    Captions ~72 px (not bigger), max 2 text elements on screen at once.
 10. **Render at full 1080×1920, no upscaling and no film grain**: phones are sharp, and soft or grainy images look amateur.
-11. Keep a recognizable style (the same character, colors and font): that builds a brand, *not* repetitive slop.
+11. **Length: aim for 20–25 s.** A tighter cut raises % viewed and rewatches. Running 30 s+? Add an extra
+    mid-video hook (comparison, plot twist or big visual change) so the middle never sags.
+12. Keep a recognizable style (the same character, colors and font): that builds a brand, *not* repetitive slop.
 
 ## 5. Ten title formulas
 

@@ -12,6 +12,13 @@ the invisible air around it. The tone is *wonder*, not *lecture*: calm camera, b
 
 **One idea per shot.** The viewer should be able to describe each shot in five words.
 
+## 1b. Pacing (viewer feedback)
+- Target **20–25 s**: a tighter cut raises the average % viewed and makes rewatches more likely.
+  Pauses 0.2–0.3 s; only a short breath after the question and before the twist.
+- If a video runs 30 s or longer, it needs an **extra mid-video hook** (a comparison, plot twist or big
+  visual change) so the middle never sags. In this video: open question + dive into the cloud (~6 s),
+  new information inside the cloud (~9–13 s), the twist with the cube and the bars (~14 s), loop (end).
+
 ## 2. Visual language
 | Element | Rule |
 |---|---|
