@@ -425,7 +425,7 @@ def write_srt(path):
     wt = TIMING["words"]
     k = 0
     for i, (key, spoken, cap, _p) in enumerate(LINES, 1):
-        n = len(cap.split())
+        n = len([w for w in cap.split() if w != "|"])
         a, b = wt[k][0], wt[k + n - 1][1]                 # measured start of first word, end of last word
         k += n
         proper = {"SUN": "Sun", "EARTH": "Earth", "KM": "km"}
@@ -436,7 +436,7 @@ def write_srt(path):
             if core.isupper() and len(core) > 1:
                 core = proper.get(core, core.lower())
             return pre + core + post_
-        words = [norm(w) for w in cap.split()]
+        words = [norm(w) for w in cap.split() if w != "|"]
         text = " ".join(words)
         text = text[0].upper() + text[1:]
         out.append(f"{i}\n{ts(a)} --> {ts(b)}\n{text}\n")
