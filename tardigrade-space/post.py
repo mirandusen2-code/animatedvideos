@@ -163,28 +163,20 @@ def line_of(t):
 
 
 def caption_groups():
+    """Caption chunks as written in the script ('|' marks), never across narration lines."""
     words = TIMING["words"]
     groups, cur = [], []
     for i, w in enumerate(words):
         cur.append(w)
-        pause = i + 1 < len(words) and line_of(words[i + 1][0]) != line_of(w[0])   # never across lines
-        ends = w[2][-1] in ".,!?" or len(cur) == 3 or pause
-        # never end a group on a bare number ("1 | MILLION") or a small word ("HALF A | MILLION")
-        small = w[2].lower().strip(".,!?") in {"a", "an", "the", "of", "to", "into", "on", "in", "as", "and", "so", "than"}
-        if ends and len(cur) > 1 and not pause and w[2][-1] not in ".,!?" and (any(ch.isdigit() for ch in w[2]) or small):
-            nxt = cur.pop()
-            groups.append(cur)
-            cur = [nxt]
-            continue
-        if ends:
+        last_of_line = i + 1 == len(words) or line_of(words[i + 1][0]) != line_of(w[0])
+        if (len(w) > 4 and w[4]) or last_of_line:
             groups.append(cur)
             cur = []
     if cur:
         groups.append(cur)
     out = []
     for i, g in enumerate(groups):
-        t0 = g[0][0]
-        t1 = g[-1][1]
+        t0, t1 = g[0][0], g[-1][1]
         if i + 1 < len(groups):
             t1 = max(t1, min(groups[i + 1][0][0], t1 + 0.5))
         out.append((t0, t1, g))
@@ -218,31 +210,23 @@ def fmt(n):
 
 
 def overlays(img, t):
-    """At most one number/label at a time, always inside the safe column."""
-    # dial reading counts up with the needle: 1,100,000 LB
-    s1 = T.SHOTS[1][1]
-    a = window(t, T.LAND, s1, 0.2)
+    """Big, readable infographics (labels >= 44 px, numbers >= 110 px), max 2 text elements at once."""
+    sh = T.shot_index(t)
+    # hook: when it happened (new info, not in the voice)
+    pill(img, "ESA SPACE MISSION · 2007", CX, 380, 44, alpha=window(t, 0.4, T.SHOTS[1][1], 0.2), accent=AMBER)
+    # size: bracket label on the ruler
+    s2 = T.SHOTS[2]
+    pill(img, "0.5 MM", CX, 400, 54, alpha=window(t, s2[0] + 0.5, s2[1], 0.2), accent=AMBER)
+    # dries: water counter drops to ~5 % left
+    d0 = T.L["dries"][0] + 0.5
+    a = window(t, d0, T.SHOTS[3][1], 0.2)
     if a > 0:
-        u = clamp((t - T.LAND) / 1.3)
-        n = 1100000 * (1 - (1 - u) ** 3)
-        number(img, fmt(round(n, -3)), CX, 400, 100, AMBER, alpha=a, suffix="LB")
-    # droplet size label (new information, not said in the voice)
-    d0, d1 = L["droplets"]
-    pill(img, "EACH DROP: THINNER THAN A HAIR", CX, 400, 36, alpha=window(t, d0 + 0.6, T.SHOTS[6][1], 0.2))
-    # bar comparison: water in the cloud vs air in the same space
-    a0 = L["air"][0] + 1.0
-    a = window(t, a0, T.SHOTS[-1][0], 0.15) if t < T.SHOTS[-1][0] else 0.0     # gone exactly at the cut
-    if a > 0:
-        grow = clamp((t - a0) / 0.9)
-        d = ImageDraw.Draw(img, "RGBA")
-        x0, x1 = SAFE[0] + 40, SAFE[2] - 40
-        for y, lab, frac, col in ((360, "WATER: 1.1 MILLION LB", 0.0005, WHITE), (490, "AIR: 2+ BILLION LB", 1.0, ICE)):
-            wbar = max(16, (x1 - x0) * frac * (1 - (1 - grow) ** 3))
-            d.rounded_rectangle([x0, y + 34, x0 + wbar, y + 72], radius=19, fill=col + (int(235 * a),),
-                                outline=INK + (int(200 * a),), width=3)
-            f = font(46, "ExtraBold")
-            d.text((x0, y), lab, font=f, fill=WHITE + (int(255 * a),), anchor="lm", stroke_width=4,
-                   stroke_fill=INK + (int(255 * a),))
+        u = clamp((t - d0) / 2.6)
+        number(img, f"{int(round(95 * (1 - (1 - u) ** 2)))}%", CX, 400, 120, AMBER, alpha=a)
+        pill(img, "OF ITS WATER: GONE", CX, 510, 44, alpha=a)
+    # moon: when
+    m0 = T.L["moon"][0]
+    pill(img, "ISRAELI LANDER · APRIL 2019", CX, 380, 44, alpha=window(t, m0 + 0.3, T.SHOTS[8][1], 0.2), accent=AMBER)
 
 
 # ---------------------------------------------------------------- image finishing
@@ -271,11 +255,6 @@ def finish(src, t):
     # subtle grade: cool shadows, warm highlights
     lum = a.mean(axis=2, keepdims=True)
     a = a + (0.015 * (1 - lum)) * np.array([-0.4, 0.1, 0.6]) + (0.02 * lum) * np.array([0.5, 0.2, -0.4])
-    # the only dissolve in the video: white "through the cloud" as the camera enters it
-    tc = T.SHOTS[5][0]
-    w_ = T.smoother(1 - abs(t - tc) / (8 / T.FPS)) if abs(t - tc) < 8 / T.FPS else 0.0
-    if w_ > 0:
-        a = a + (np.array([0.97, 0.98, 1.0]) - a) * w_
     # film grain
     # (no film grain: the image must stay perfectly clean)
     return Image.fromarray((np.clip(a, 0, 1) * 255).astype(np.uint8)).convert("RGBA")
@@ -356,9 +335,9 @@ def make_music_and_sfx():
         j = min(n, i + len(sig))
         buf[i:j] += g * sig[: j - i]
 
-    # bright, warm major-key bed: C  G  Am  F (96 bpm), soft keys in 8ths
-    chords = [[48, 55, 60, 64], [43, 50, 55, 59], [45, 52, 57, 60], [41, 48, 53, 57]]
-    bpm = 96
+    # wondrous minor bed: Am  F  C  G (88 bpm), soft keys in 8ths
+    chords = [[45, 52, 57, 60], [41, 48, 53, 57], [48, 55, 60, 64], [43, 50, 55, 59]]
+    bpm = 88
     bar = 60 / bpm * 4
     k = 0
     t0 = 0.0
@@ -418,12 +397,11 @@ def make_music_and_sfx():
         st = np.arange(len(x)) / SR
         return x / (np.abs(x).max() + 1e-9) * (st / d) ** 1.5 * env(len(x), 0.01, 0.15)
 
-    add(sfx, 0.2, clink(), 0.35)                                       # the scale takes the weight
-    add(sfx, 0.2, thump(90, 40, 1.0), 0.35)
-    add(sfx, T.SHOTS[2][0], thump(70, 32, 1.4), 0.3)                   # herd reveal
-    add(sfx, L["droplets"][0], shimmer(2.0), 0.08)                     # inside the cloud
+    add(sfx, 0.0, shimmer(2.0), 0.08)                                  # space opening
+    add(sfx, L["wakes"][0] + 0.05, clink(), 0.18)                      # the water drop lands
+    add(sfx, L["babies"][0] + 0.5, shimmer(1.6), 0.07)                 # babies hatch
     add(sfx, L["crazy"][0], thump(80, 28, 2.0), 0.85)                  # twist hit
-    add(sfx, L["air"][0], shimmer(1.6), 0.07)                          # the glass cube draws itself
+    add(sfx, L["moon"][0] + 0.9, thump(110, 30, 1.8), 0.6)             # lander crash
     sfx = reverb(sfx, 1.8, 0.3, seed=2)
     return music, sfx
 
