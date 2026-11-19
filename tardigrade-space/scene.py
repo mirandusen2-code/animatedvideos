@@ -465,12 +465,14 @@ moss_bg = bpy.context.active_object
 moss_bg.data.materials.append(mbg_m)
 mk = bpy.data.lights.new("MossKey", "AREA")
 mk.energy, mk.size, mk.color = 900, 4.0, (1.0, 0.9, 0.75)
+mk.shape = "DISK"                                        # round, soft highlight in the water drop
 mk_o = bpy.data.objects.new("MossKey", mk)
 mk_o.location = M0 + V((-4, -3, 6))
 mk_o.rotation_euler = V((-4, -3, 6)).to_track_quat("Z", "Y").to_euler()
 col.objects.link(mk_o)
 mr = bpy.data.lights.new("MossRim", "AREA")
 mr.energy, mr.size, mr.color = 1200, 2.5, (1.0, 0.7, 0.45)
+mr.shape = "DISK"
 mr_o = bpy.data.objects.new("MossRim", mr)
 mr_o.location = M0 + V((3, 5, 2.5))
 mr_o.rotation_euler = V((3, 5, 2.5)).to_track_quat("Z", "Y").to_euler()
@@ -613,8 +615,10 @@ for f in range(T.NFRAMES):
     dz = T.drop_fall(t)
     sp_ = T.drop_spread(t)
     key(drop, "location", M0 + V((0, 0, 0.55 + dz - 0.1 * sp_)))
-    key(drop, "scale", (1 + 0.55 * sp_, 1 + 0.4 * sp_, 1 - 0.12 * sp_))     # settles around the bear
-    key(drop, "hide_render", st != "moss" or t < T.L["wakes"][0] - 0.4)
+    soak = T.smoother((t - (T.L["wakes"][0] + 1.0)) / 0.9)              # water soaks in: the drop shrinks away
+    k_ = max(1e-3, 1 - soak)
+    key(drop, "scale", ((1 + 0.25 * sp_) * k_, (1 + 0.2 * sp_) * k_, (1 - 0.3 * sp_) * k_))
+    key(drop, "hide_render", st != "moss" or t < T.L["wakes"][0] - 0.4 or k_ < 0.01)
     pose_bear(bear_drop, t, tun=0.0)
     hb = T.babies(t)
     for k, e in enumerate(eggs):
