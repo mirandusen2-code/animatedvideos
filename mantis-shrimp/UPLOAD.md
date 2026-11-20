@@ -31,7 +31,12 @@ If you could punch like a mantis shrimp, what's the first thing you'd break? �
 | `thumb_snail.png` | 50 MPH PUNCH | Speed claim + a shell smashed |
 
 ## QA passed
-QA_PLACEHOLDER
+Facts vs. sources (RESEARCH.md; 7,000 °F is an estimate, phrased "over seven thousand degrees") · Whisper: final
+mix = script word for word · captions aligned to the measured word times, last caption held until the loop
+restarts · all text inside the measured phone safe zone · rendered at 1080×1920 (no upscaling, no grain, no
+motion blur) · all 623 frames reviewed on contact sheets · no black frames / freezes; the only hard jump is the
+intended flash on "pop" (11.0 s) · video ends 0.08 s after the last word, so "…all because" flows straight
+into "this shrimp punches at 50 miles per hour" · −14.0 LUFS, peak −1.5 dB · 20.8 s.
 
 ## Files
 - `mantis-shrimp-punch.mp4`: final video

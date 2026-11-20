@@ -179,6 +179,8 @@ def caption_groups():
         t0, t1 = g[0][0], g[-1][1]
         if i + 1 < len(groups):
             t1 = max(t1, min(groups[i + 1][0][0], t1 + 0.5))
+        else:
+            t1 = T.DUR + 1                         # last chunk stays until the loop restarts
         out.append((t0, t1, g))
     return out
 

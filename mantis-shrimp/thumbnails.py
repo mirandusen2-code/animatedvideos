@@ -10,7 +10,7 @@ import timeline as T
 
 frames, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
-f_glass = int((T.T_GLASS + 0.9) * T.FPS)
+f_glass = int((T.T_GLASS + 0.5) * T.FPS)
 f_flash = int((T.T_POP + 0.12) * T.FPS)
 f_snail = int((T.T_SNAIL + 0.25) * T.FPS)
 for name, f, lines, colors, y in [
