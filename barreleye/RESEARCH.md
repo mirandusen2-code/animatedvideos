@@ -1,0 +1,13 @@
+# Barreleye · Why the apparent eyes are the wrong pair
+
+**Selection.** We compared a barreleye's rotating eyes, the case of the Hawaiian bone-collector caterpillar, pistol-shrimp cavitation, archerfish jets, the trap-jaw ant's mandibles, a glass frog's resting transparency, the wood frog's freeze tolerance, the peacock spider's courtship fans, a gecko's adhesive toes, and the star-nosed mole's touch organs. These were candidate visual mechanisms. Only the selected claims below enter the film. The barreleye offers a recent 4K research encounter and a reveal that can be understood in a single continuous view.
+
+| Claim in the film | Evidence and scope |
+|---|---|
+| The dark structures above the mouth detect smells. | MBARI identifies them as paired nares, olfactory organs analogous to nostrils. The green structures farther back are the eyes. [MBARI's account of the researchers' observations](https://www.mbari.org/news/researchers-solve-mystery-of-deep-sea-fish-with-tubular-eyes-and-transparent-head/) |
+| The tubular eyes lie under a transparent shield. | Observations of living *Macropinna microstoma* show a clear, fluid-filled shield around the eyes. “Clear head” in the narration refers to this upper part of the head. The body and jaw in the reconstruction are opaque. [Robison & Reisenbichler, 2008, Copeia 780–784](https://doi.org/10.1643/CG-07-082) |
+| The eyes point upward to look for shadows. | The authors describe upward-directed eyes adapted to detecting food overhead against faint downwelling light. Seeing a silhouette is a way of illustrating this mechanism. [MBARI species profile](https://www.mbari.org/animal/barreleye-fish/) |
+| The eyes rotate forward and can follow food toward the mouth. | The 2008 observations established mobility of the eyes. The authors describe feeding interpretations including tracking food descending toward the mouth. Our animation illustrates this interpretation; the small drifting organism is a representative visual. [Original paper](https://doi.org/10.1643/CG-07-082) |
+| Relevance in 2026. | MBARI described a recent 4K encounter from ROV Doc Ricketts. Its research team watched the fish for about twenty minutes. The eye-rotation finding dates to 2008. [2026 field report](https://www.mbari.org/news/mbari-researchers-film-rarely-seen-deep-sea-barreleye-fish-in-4k/) |
+
+The film makes no numerical biological claims. It does not claim the entire skull is invisible, that the lenses emit light, that the animal detects every kind of prey by silhouette, or that scientists observed this particular feeding sequence in 2026. No MBARI footage or photographs appear in the export. The reconstruction is original.

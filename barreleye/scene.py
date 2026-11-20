@@ -38,10 +38,10 @@ cheek=mat('Silvery lower head',(.32,.255,.211),.32,.35,15)
 gill=mat('Operculum shadow',(.062,.042,.034),.45,.1,10)
 dark=mat('Olfactory chamber',(.012,.009,.008),.34)
 rim=mat('Mucosal fold',(.19,.127,.091),.31,.17,23)
-shield=thin('Transparent fluid shield',(.49,.67,.75),.39,.15)
+shield=thin('Transparent fluid shield',(.42,.56,.65),.30,.17)
 silver=mat('Tapetal sleeve',(.19,.235,.14),.29,.28,11)
 lens=mat('Green lens pigment',(.35,.64,.079),.17,.24,7)
-core=mat('Olive lens centre',(.20,.36,.028),.24,.23,11)
+core=mat('Olive lens centre',(.25,.39,.036),.29,.15,10)
 mem=thin('Translucent fin membrane',(.44,.37,.27),.83,.36)
 ray=mat('Fin rays',(.33,.24,.145),.46,.16)
 silk=mat('Silver skin folds',(.50,.42,.28),.38,.26)
@@ -75,8 +75,10 @@ def hull(name,stations,m,half=False):
     vals.append(.5*((2*p1)+(-p0+p2)*t+(2*p0-5*p1+4*p2-p3)*t*t+(-p0+3*p1-3*p2+p3)*t**3))
    x,z,ry,rz=vals
    for k in range(K):
-    ang=(pi*k/(K-1) if half else 2*pi*k/K);vs.append((x,max(.003,ry)*cos(ang),z+max(.003,rz)*sin(ang)))
+    ang=(pi*k/(K-1) if half else 2*pi*k/K);vs.append((x,max(.003,ry)*cos(ang),z+max(.003,rz)*sin(ang)-(.056*abs(cos(ang))**3 if half else 0)))
  rows=len(vs)//K
+ if not half:
+  faces.append(tuple(reversed(range(K))));faces.append(tuple((rows-1)*K+j for j in range(K)))
  for j in range(rows-1):
   for k in range(K-1 if half else K):
    l=(k+1)%K;faces.append((j*K+k,j*K+l,(j+1)*K+l,(j+1)*K+k))
@@ -86,16 +88,33 @@ hull('Opaque cheek and lower jaw',[(.03,-.13,.15,.26),(.24,-.15,.46,.37),(.68,-.
 hull('Continuous cephalic shield',[(-.21,.045,.49,.59),(.06,.06,.56,.68),(.44,.065,.55,.67),(.82,.057,.50,.60),(1.14,.065,.42,.46),(1.41,.038,.30,.28),(1.56,-.004,.18,.14),(1.61,-.045,.025,.035)],shield,True)
 for side in [-1,1]:
  p=empty('Eye pivot',hero);p.location=(.63,side*.235,.074);eyes.append(p)
- sphere('Tubular eye shaft',(0,0,.11),(.136,.150,.252),silver,p)
- sphere('Lens collar',(0,0,.297),(.141,.154,.102),silver,p)
- sphere('Dorsal green lens',(0,0,.351),(.143,.152,.083),lens,p)
- sphere('Optical centre',(.003,0,.404),(.066,.074,.018),core,p)
+ # One continuous optical organ, with the olive lens blending into its silver-green tube.
+ eye_mat=mat('Retinal tube and lens',(.24,.34,.10),.245,.21)
+ nodes=eye_mat.node_tree.nodes;links=eye_mat.node_tree.links
+ coord=nodes.new('ShaderNodeTexCoord');sep=nodes.new('ShaderNodeSeparateXYZ');links.new(coord.outputs['Generated'],sep.inputs[0])
+ ramp=nodes.new('ShaderNodeValToRGB');rr=ramp.color_ramp;rr.elements[0].color=(.045,.060,.055,1);rr.elements[1].color=(.47,.62,.11,1)
+ for pos,color in [(.40,(.10,.14,.104,1)),(.69,(.19,.24,.12,1)),(.81,(.23,.38,.063,1)),(.93,(.43,.61,.10,1))]:rr.elements.new(pos).color=color
+ rr.interpolation='EASE';links.new(sep.outputs['Z'],ramp.inputs[0]);links.new(ramp.outputs[0],nodes.get('Principled BSDF').inputs['Base Color'])
+ profile=[(-.12,.015),(-.08,.072),(.00,.108),(.11,.125),(.20,.132),(.278,.143),(.321,.149),(.357,.15),(.385,.138),(.407,.115),(.422,.083),(.434,.043),(.437,.003)]
+ vs=[];fs=[]
+ for zz,rrad in profile:
+  for j in range(48):
+   ang=j*2*pi/48;vs.append((rrad*cos(ang)+.02*zz,rrad*1.04*sin(ang),zz))
+ for k in range(len(profile)-1):
+  for j in range(48):fs.append((k*48+j,k*48+(j+1)%48,(k+1)*48+(j+1)%48,(k+1)*48+j))
+ mesh('Pigmented tubular eye',vs,fs,eye_mat,p)
  loc=(1.40,side*.24,.108);o=sphere('Raised olfactory fold',loc,(.100,.055,.096),rim);o.rotation_euler.y=.30
  o=sphere('Dark olfactory opening',(1.435,side*.273,.124),(.064,.037,.055),dark);o.rotation_euler.y=.33
  line('Opercular boundary',[(.24,side*.51,.15),(.27,side*.54,-.01),(.18,side*.50,-.29),(-.01,side*.42,-.45)],.017,gill)
  for i in range(4):
   line('Branchiostegal fold',[(.77+i*.08,side*(.47-i*.025),-.20),(.64+i*.09,side*.43,-.33),(.40+i*.11,side*.36,-.40)],.008,silk)
  line('Mouth commissure',[(1.39,side*.31,-.096),(1.54,side*.195,-.112),(1.62,0,-.085)],.012,dark)
+# Soft rostral folds seal the jaw; the tiny mouth has a lateral, shallow opening.
+sphere('Upper lip',(1.591,0,-.060),(.061,.170,.044),cheek)
+sphere('Lower lip',(1.585,0,-.123),(.060,.151,.039),cheek)
+line('Mouth aperture',[(1.579,-.153,-.088),(1.632,-.078,-.095),(1.641,0,-.099),(1.632,.078,-.095),(1.579,.153,-.088)],.009,gill)
+for s in (-1,1):
+ line('Clear cowl crease',[(.26,s*.51,.00),(.61,s*.518,.004),(.96,s*.445,.006),(1.24,s*.355,.02)],.008,shield)
 def fan(name,base,vecs):
  pivot=empty(name,hero);pivot.location=base;fins.append(pivot)
  vs=[];faces=[]
