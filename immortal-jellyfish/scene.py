@@ -325,7 +325,7 @@ def principled(name, base, rough=0.5, coat=0.0, emit=None, emit_s=0.0, bump=0.0,
         p.inputs["Emission Strength"].default_value = emit_s
     if bump:
         tc = node(nt, "ShaderNodeTexCoord")
-        nz = node(nt, "ShaderNodeTexNoise", Scale=bump_scale, Detail=6.0)
+        nz = node(nt, "ShaderNodeTexNoise", Scale=bump_scale, Detail=3.0)
         nt.links.new(tc.outputs["Object"], nz.inputs["Vector"])
         bp = node(nt, "ShaderNodeBump", Strength=bump, Distance=0.05)
         nt.links.new(nz.outputs["Fac"], bp.inputs["Height"])
@@ -428,23 +428,29 @@ fm, fnt, fout = new_mat("Sand")
 fp = node(fnt, "ShaderNodeBsdfPrincipled", Roughness=0.9)
 fp.inputs["Specular IOR Level"].default_value = 0.1
 ftc = node(fnt, "ShaderNodeTexCoord")
-fnz = node(fnt, "ShaderNodeTexNoise", Scale=1.6, Detail=5.0)
+fnz = node(fnt, "ShaderNodeTexNoise", Scale=1.6, Detail=2.0)
 fnt.links.new(ftc.outputs["Object"], fnz.inputs["Vector"])
 frp = ramp(fnt, [(0.35, (0.10, 0.10, 0.085)), (0.65, (0.22, 0.20, 0.16))])
 fnt.links.new(fnz.outputs["Fac"], frp.inputs[0])
 fvo = fnt.nodes.new("ShaderNodeTexVoronoi")
-fvo.voronoi_dimensions = "4D"
+fvo.voronoi_dimensions = "3D"
 fvo.feature = "DISTANCE_TO_EDGE"
 fvo.inputs["Scale"].default_value = 1.9
-fdn = node(fnt, "ShaderNodeTexNoise", Scale=0.8, Detail=2.0)
+fdn = node(fnt, "ShaderNodeTexNoise", Scale=0.8, Detail=0.0)
 fnt.links.new(ftc.outputs["Object"], fdn.inputs["Vector"])
 fdm = fnt.nodes.new("ShaderNodeVectorMath")
 fdm.operation = "MULTIPLY_ADD"
 fdm.inputs[1].default_value = (0.6, 0.6, 0.6)
 fnt.links.new(fdn.outputs["Color"], fdm.inputs[0])
 fnt.links.new(ftc.outputs["Object"], fdm.inputs[2])
-fnt.links.new(fdm.outputs[0], fvo.inputs["Vector"])
-CAUSTIC_W = fvo.inputs["W"]
+fcz = fnt.nodes.new("ShaderNodeCombineXYZ")          # caustics drift: animated z offset (cheaper than 4D)
+fva = fnt.nodes.new("ShaderNodeVectorMath")
+fva.operation = "ADD"
+fnt.links.new(fdm.outputs[0], fva.inputs[0])
+fnt.links.new(fcz.outputs[0], fva.inputs[1])
+fnt.links.new(fva.outputs[0], fvo.inputs["Vector"])
+CAUSTIC_W = fcz.inputs["Z"]
+
 fcr = ramp(fnt, [(0.0, (1.0, 1.0, 1.0)), (0.05, (0.0, 0.0, 0.0))])
 fnt.links.new(fvo.outputs["Distance"], fcr.inputs[0])
 fadd = fnt.nodes.new("ShaderNodeMix")
@@ -454,7 +460,7 @@ fadd.inputs["Factor"].default_value = 0.16
 fnt.links.new(frp.outputs[0], fadd.inputs["A"])
 fnt.links.new(fcr.outputs[0], fadd.inputs["B"])
 fnt.links.new(fadd.outputs["Result"], fp.inputs["Base Color"])
-fnz2 = node(fnt, "ShaderNodeTexNoise", Scale=40.0, Detail=4.0)
+fnz2 = node(fnt, "ShaderNodeTexNoise", Scale=40.0, Detail=1.0)
 fnt.links.new(ftc.outputs["Object"], fnz2.inputs["Vector"])
 fbp = node(fnt, "ShaderNodeBump", Strength=0.25, Distance=0.02)
 fnt.links.new(fnz2.outputs["Fac"], fbp.inputs["Height"])
@@ -1064,7 +1070,9 @@ try:
     scene.view_settings.exposure = -0.3
 except Exception:
     pass
-SPP = {"ocean": 12, "cells": 10}
+SPP = {"ocean": 8, "cells": 8}
+if os.environ.get("JF_EXP"):                       # performance experiments
+    exec(os.environ["JF_EXP"])
 for f in FRAMES:
     t = f / T.FPS
     path = os.path.join(OUT, f"f_{f:04d}.png")
