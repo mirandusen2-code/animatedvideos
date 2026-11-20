@@ -1188,12 +1188,12 @@ lnt.links.new(lp.outputs[0], lout.inputs[0])
 
 NJ = 14                                        # rings per piece
 PIECE_U = np.linspace(-1, 1, NJ)
-N_PIECES = 13
+N_PIECES = 9
 PIECE_X0 = -6.0                                # piece 0 centre at T_STIFF
 
 
 def piece_center(k, t):
-    return PIECE_X0 + k * PITCH + LOG_V * (t - T.T_STIFF)
+    return PIECE_X0 + k * PITCH + LOG_V * (t - T.T_STIFF) + 0.25 * max(0.0, t - T.T_SQUEEZE)
 
 
 def pinch(x, t):
