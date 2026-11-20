@@ -663,7 +663,8 @@ area("ReefFill", R0 + V((4.0, -3.0, 1.2)), R0 + V((0.8, 0, 0.3)), 120, 3.0, (1.0
 # ================================================================= MACRO set: club vs. shell in ultra slow motion
 C0 = V(T.MACRO)
 M_BIGSHELL, nt_bs, out_bs = new_mat("BigShell")
-pbs = shell_bsdf(nt_bs, (0.5, 0.36, 0.22), rough=0.35, coat=0.5)
+pbs = shell_bsdf(nt_bs, (0.5, 0.36, 0.22), rough=0.4, coat=0.25)
+pbs.inputs["Coat Roughness"].default_value = 0.45        # no hard light hotspot that reads as an early flash
 tbs = node(nt_bs, "ShaderNodeTexCoord")
 wbs = node(nt_bs, "ShaderNodeTexWave", Scale=0.6, Distortion=3.0, Detail=4.0)
 nt_bs.links.new(tbs.outputs["Object"], wbs.inputs["Vector"])
@@ -676,7 +677,8 @@ bpb = node(nt_bs, "ShaderNodeBump", Strength=0.3, Distance=0.05)
 nt_bs.links.new(nzb.outputs["Fac"], bpb.inputs["Height"])
 nt_bs.links.new(bpb.outputs["Normal"], pbs.inputs["Normal"])
 nt_bs.links.new(pbs.outputs[0], out_bs.inputs[0])
-bigshell = sph("BigShell", C0 + V((30.0, 0, 0)), 30.0, M_BIGSHELL, u=128, v=64)
+SHELL_R = 150.0                                           # huge radius: reads as a wall, not a planet
+bigshell = sph("BigShell", C0 + V((SHELL_R, 0, 0)), SHELL_R, M_BIGSHELL, u=512, v=256)
 SETS["macro"].append(bigshell)
 club_rig = empty("MacroClub", C0 + V((-3.0, 0, 0)))
 BIG_CLUB_R = 0.6
@@ -717,7 +719,8 @@ FLASH_M, FLASH_A, FLASH_S = fade_emit_mat("Flash", (1.0, 0.93, 0.8), 40.0)
 soften(FLASH_M)
 flash_o = sph("FlashCore", GAP, 1.0, FLASH_M, u=32, v=16)
 no_bounce([flash_o])
-RING_M, RING_A, RING_S = fade_emit_mat("Ring", (0.6, 0.85, 1.0), 6.0)
+RING_M, RING_A, RING_S = fade_emit_mat("Ring", (0.6, 0.85, 1.0), 2.5)
+soften(RING_M)
 bpy.ops.mesh.primitive_torus_add(major_radius=1.0, minor_radius=0.02, major_segments=96, minor_segments=8,
                                  location=GAP, rotation=(0, math.pi / 2, 0))
 ring_o = bpy.context.active_object
@@ -817,8 +820,8 @@ for f in range(T.NFRAMES):
     fl.energy = 9000.0 * fv_
     fl.keyframe_insert("energy", frame=f)
     rg = T.ring(t)
-    key(ring_o, "scale", (max(1e-3, 0.15 + 3.2 * T.ease_out(rg)),) * 3)
-    key_socket(RING_A, (1 - rg) ** 1.5 if 0 < rg < 1 else 0.0)
+    key(ring_o, "scale", (max(1e-3, 0.15 + 1.6 * T.ease_out(rg)),) * 3)
+    key_socket(RING_A, (1 - rg) ** 2.5 if 0 < rg < 1 else 0.0)
     key(ring_o, "hide_render", st != "macro" or rg <= 0 or rg >= 1)
     # camera
     loc, tgt, lens, fstop, focus, roll = T.camera(t)
