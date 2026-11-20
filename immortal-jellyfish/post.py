@@ -177,6 +177,8 @@ def caption_groups():
     out = []
     for i, g in enumerate(groups):
         t0, t1 = g[0][0], g[-1][1]
+        if i == 0:
+            t0 = 0.0                               # on screen from frame 0: no empty flash at the loop
         if i + 1 < len(groups):
             t1 = max(t1, min(groups[i + 1][0][0], t1 + 0.5))
         else:
