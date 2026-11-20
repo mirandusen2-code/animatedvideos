@@ -1,12 +1,12 @@
-# Upload: "This Beetle Shoots Boiling Spray Out of Its Butt"
+# Upload: "Never Eat This Beetle"
 
 ## Title (recommended)
-**This Beetle Shoots Boiling Spray Out of Its Butt 🪲🔥**
+**Never Eat This Beetle 🪲🔥**
 
 Alternatives (A/B-test after 1–2 days if "viewed vs. swiped" is low):
-1. This Beetle Explodes Inside a Toad… and Survives
-2. Toad Eats Beetle, Instantly Regrets It 🐸
-3. The Beetle With a 212°F Chemical Weapon
+1. This Beetle Shoots Boiling Spray Out of Its Butt
+2. This Beetle Explodes Inside a Toad… and Survives
+3. Toad Eats Beetle, Instantly Regrets It 🐸
 
 ## Description
 The bombardier beetle defends itself with a boiling hot spray: two chemicals mix in a chamber at the tip of its abdomen and explode, blasting out a pulsing jet at about 212 °F (100 °C), the boiling point of water. 🪲🔥
@@ -33,5 +33,5 @@ Which animal has the weirdest defense: this beetle, the mantis shrimp, or the ta
 QA_PLACEHOLDER
 
 ## Files
-- `bombardier-beetle-spray.mp4`: final video
-- `bombardier-beetle-spray.srt`: subtitles
+- `never-eat-this-beetle.mp4`: final video
+- `never-eat-this-beetle.srt`: subtitles

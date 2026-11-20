@@ -21,7 +21,7 @@ sys.path.insert(0, HERE)
 from script import LINES  # noqa: E402
 
 SR = 44100
-LEAD_IN = 0.15
+LEAD_IN = 0.1
 VO = os.path.join(HERE, "vo")
 NUM = {"two": "212", "hundred": "212", "twelve": "212"}
 

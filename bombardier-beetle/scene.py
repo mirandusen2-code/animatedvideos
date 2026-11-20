@@ -893,24 +893,25 @@ def key_socket(sock, value):
 
 
 WALK_SPEED = 0.2
+WALK2 = T.T_REVEAL - 0.3                         # walking again when the toad shot starts
 STRIDE = 0.11
 
 
 def beetle_state(t):
     """(location, heading, roll, walked distance, wiggle, visible) of the ground beetle."""
     if t < T.T_TONGUE:
-        if t < 4.0:
+        if t < T.L["temp"][0]:
             walked = WALK_SPEED * (min(t, T.T_SPRAY1) + max(0.0, t - (T.T_SPRAY1 + 0.95)))
             x = -0.3 + walked
         else:
-            walked = WALK_SPEED * max(0.0, t - 8.3)
+            walked = WALK_SPEED * max(0.0, t - WALK2)
             x = 0.12 + walked
         return G0 + V((x, 0.05, 0)), 0.0, 0.0, walked, 0.0, True
     if t < T.T_EJECT:                                   # on the tongue, then inside the toad
-        start = G0 + V((0.12 + WALK_SPEED * (T.T_TONGUE - 8.3), 0.05, 0))
+        start = G0 + V((0.12 + WALK_SPEED * (T.T_TONGUE - WALK2), 0.05, 0))
         u = T.smoother((t - T.T_TONGUE) / 0.22)
         p = start.lerp(MOUTH_W + V((0.1, 0, 0.05)), u)
-        p.z += 0.25 * math.sin(math.pi * u)
+        p.z += 0.06 * math.sin(math.pi * u)
         return p, 0.0, 0.0, 0.0, 1.0, t < T.T_TONGUE + 0.22
     tau = T.eject(t)                                    # thrown back up: arc, land on its back, flip, walk
     land = G0 + V((0.75, 0.6, 0.0))
@@ -988,7 +989,10 @@ for f in range(T.NFRAMES):
         for o in toad["all"]:
             key(o, "hide_render", True)
     tg = T.tongue(t)
-    target = G0 + V((0.12 + WALK_SPEED * (T.T_TONGUE - 8.3) + 0.15, 0.05, 0.12))
+    target = G0 + V((0.12 + WALK_SPEED * (T.T_TONGUE - WALK2) + 0.15, 0.05, 0.12))
+    if T.T_TONGUE <= t < T.T_TONGUE + 0.25:          # the tongue stays stuck to the beetle while pulling back
+        target = bl + V((0.12, 0, 0.14))
+        tg = 1.0 if (target - MOUTH_W).length > 0.05 else 0.0
     dvec = target - MOUTH_W
     key(tongue_o, "location", MOUTH_W)
     key(tongue_o, "rotation_euler", dvec.to_track_quat("X", "Z").to_euler())

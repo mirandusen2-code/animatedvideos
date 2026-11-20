@@ -223,8 +223,8 @@ def overlays(img, t):
         u = clamp((t - S[3][0] - 0.1) / 1.6)
         number(img, f"{int(round(212 * (1 - (1 - u) ** 3)))}", CX, 410, 130, AMBER, alpha=a, suffix="°F")
     pill(img, "= BOILING WATER", CX, 540, 46, alpha=window(t, S[3][0] + 1.8, S[3][1], 0.2), accent=AMBER)
-    pill(img, "INSIDE THE TOAD", CX, 380, 50, alpha=window(t, S[6][0] + 0.1, S[6][1], 0.15), accent=ICE)
-    pill(img, "STILL ALIVE", CX, 380, 54, alpha=window(t, T.T_ALIVE + 0.05, S[8][1], 0.12), accent=(120, 230, 120))
+    pill(img, "INSIDE THE TOAD", CX, 380, 50, alpha=window(t, S[5][0] + 0.1, S[5][1], 0.15), accent=ICE)
+    pill(img, "STILL ALIVE", CX, 380, 54, alpha=window(t, T.T_ALIVE + 0.05, S[7][1], 0.12), accent=(120, 230, 120))
 
 
 # ---------------------------------------------------------------- image finishing
@@ -339,7 +339,7 @@ def make_music_and_sfx():
     bar = 60 / bpm * 4
     k = 0
     t0 = 0.0
-    stop0, stop1 = L["crazy"][0] - 0.45, L["crazy"][0]      # the music stops before the twist line
+    stop0, stop1 = L["twist"][0] - 0.4, L["twist"][0]      # the music stops before the twist line
     while t0 < T.DUR:
         ch = chords[k % 4]
         dur = bar + 1.2
@@ -457,7 +457,7 @@ def make_music_and_sfx():
     add(sfx, T.T_BOOM - 0.01, thump(240, 40, 1.2), 0.75)                        # the chamber explodes
     add(sfx, T.T_BOOM, crackle(0.5, 13), 0.25)
     add(sfx, T.T_BOOM + 0.1, pops(2.8, 6, 14), 0.15)                           # pulsing jet
-    add(sfx, L["crazy"][0], thump(80, 28, 2.0), 0.85)                           # twist hit
+    add(sfx, L["twist"][0], thump(80, 28, 2.0), 0.85)                           # twist hit
     add(sfx, T.T_REVEAL, croak(0.7), 0.18)                                      # the toad wakes up
     add(sfx, T.T_TONGUE - 0.12, thwip(), 0.3)                                   # tongue strike
     add(sfx, T.T_TONGUE + 0.33, thump(90, 40, 0.5), 0.6)                        # gulp

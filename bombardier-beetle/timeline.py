@@ -10,7 +10,7 @@ L = {k: tuple(v) for k, v in TIMING["lines"].items()}
 WORDS = TIMING["words"]
 
 FPS = 30
-DUR = round(L["loop"][1] + 0.08, 2)           # loop restarts right after the last word
+DUR = round(L["loop"][1] + 0.05, 2)           # loop restarts right after the last word
 NFRAMES = int(DUR * FPS)
 
 # set origins (each world lives far from the others)
@@ -60,14 +60,14 @@ def add(a, b):
 
 
 # ---------------------------------------------------------------- key moments (all on spoken words)
-T_SPRAY1 = W("hook", "shoots")[0]              # first blast at the ant
-T_SPRAY2 = W("hook", "out")[0] + 0.05          # close-up blast: "out of its BUTT"
+T_SPRAY1 = L["hook"][0] + 0.05                 # first blast at the ant, right on "Never"
+T_SPRAY2 = W("spray", "shoots")[0]             # close-up blast on "shoots"
 T_CHEM = W("temp", "chemicals")[0]             # x-ray: the two reservoirs light up
 T_MIX = W("temp", "mix")[0]                    # they flow into the chamber
 T_BOOM = W("temp", "explode")[0] + 0.05        # the chamber explodes
-T_REVEAL = W("crazy", "crazy")[0]              # the toad opens its eyes
-T_TONGUE = W("swallow", "swallows")[0]         # tongue strike
-T_FIRE = W("swallow", "firing")[0]             # explosions inside the stomach
+T_REVEAL = L["twist"][0]                       # the toad opens its eyes on "Even if a toad"
+T_TONGUE = W("twist", "swallows")[0]           # tongue strike
+T_FIRE = W("twist", "firing")[0]               # explosions inside the stomach
 T_OPEN = W("vomit", "throws")[0] - 0.1         # the toad opens its mouth...
 T_EJECT = W("vomit", "back")[0]                # ...and throws the beetle back up
 T_ALIVE = W("vomit", "alive")[0]               # the beetle flips back onto its feet
@@ -190,16 +190,14 @@ def _shots():
     g = lambda x, y, z: add(GROUND, (x, y, z))
     b = lambda x, y, z: add(LAB, (x, y, z))
     x_ = lambda x, y, z: add(XRAY, (x, y, z))
-    t1 = W("hook", "out")[0] - 0.05
     return [
         # t0, t1, loc0, loc1, target0, target1, lens0, lens1, fstop, focus, roll0, roll1, set
-        (0.0, t1, g(-0.45, -4.2, 0.75), g(-0.6, -3.8, 0.62), g(-0.7, 0, 0.22), g(-0.75, 0, 0.2), 32, 32, 2.8, "beetle", 0, 0, "ground"),
-        (t1, l["temp"][0] - 0.07, g(-1.55, -1.25, 0.35), g(-1.45, -1.05, 0.32), g(-0.35, 0, 0.18), g(-0.4, 0, 0.18), 50, 50, 2.8, "tip", 0, 0, "ground"),
+        (0.0, l["spray"][0] - 0.05, g(-0.55, -2.7, 0.42), g(-0.65, -2.35, 0.36), g(-0.6, 0, 0.2), g(-0.65, 0, 0.18), 26, 26, 2.8, "beetle", 0, 0, "ground"),
+        (l["spray"][0] - 0.05, l["temp"][0] - 0.07, g(-1.55, -1.25, 0.35), g(-1.45, -1.05, 0.32), g(-0.35, 0, 0.18), g(-0.4, 0, 0.18), 50, 50, 2.8, "tip", 0, 0, "ground"),
         (l["temp"][0] - 0.07, T_BOOM + 0.32, b(0.25, -2.5, 0.8), b(0.05, -2.1, 0.62), b(-0.08, 0, 0.2), b(-0.12, 0, 0.2), 38, 38, 8, "lab", 0, 0, "lab"),
-        (T_BOOM + 0.32, l["crazy"][0] - 0.08, b(-0.95, -1.7, 0.75), b(-1.25, -1.45, 0.55), b(-0.4, 0, 0.22), b(-0.55, 0, 0.18), 45, 45, 8, "chamber", 0, 0, "lab"),
-        (l["crazy"][0] - 0.08, l["swallow"][0] - 0.04, g(-1.6, -0.9, 0.35), g(-1.2, -0.7, 0.42), g(1.2, 0, 0.6), g(2.0, 0, 1.0), 32, 32, 4.0, "toadeye", 0, 0, "ground"),
-        (l["swallow"][0] - 0.04, T_TONGUE + 0.85, g(0.9, -5.2, 1.0), g(1.1, -4.8, 1.0), g(1.5, 0, 0.6), g(1.6, 0, 0.65), 32, 32, 5.6, "mouth", 0, 0, "ground"),
-        (T_TONGUE + 0.85, l["vomit"][0] - 0.05, x_(3.4, -8.6, 2.0), x_(3.6, -7.8, 1.8), x_(3.7, 0, 1.1), x_(3.75, 0, 1.1), 35, 35, 8, "stomach", 0, 0, "xray"),
+        (T_BOOM + 0.32, l["twist"][0] - 0.08, b(-0.95, -1.7, 0.75), b(-1.25, -1.45, 0.55), b(-0.4, 0, 0.22), b(-0.55, 0, 0.18), 45, 45, 8, "chamber", 0, 0, "lab"),
+        (l["twist"][0] - 0.08, T_TONGUE + 0.6, g(-1.6, -0.9, 0.35), g(-1.3, -0.75, 0.42), g(1.2, 0, 0.6), g(1.7, 0, 0.8), 30, 30, 4.0, "toadeye", 0, 0, "ground"),
+        (T_TONGUE + 0.6, l["vomit"][0] - 0.05, x_(3.4, -8.6, 2.0), x_(3.6, -7.8, 1.8), x_(3.7, 0, 1.1), x_(3.75, 0, 1.1), 35, 35, 8, "stomach", 0, 0, "xray"),
         (l["vomit"][0] - 0.05, T_ALIVE - 0.22, g(0.1, -2.6, 0.45), g(0.2, -2.4, 0.45), g(1.9, 0, 0.8), g(1.8, 0, 0.7), 24, 24, 4.0, "mouth", 0, 0, "ground"),
         (T_ALIVE - 0.22, l["loop"][0] - 0.07, g(0.0, -1.7, 0.45), g(0.1, -1.5, 0.4), g(0.75, 0.6, 0.1), g(0.75, 0.6, 0.12), 45, 45, 3.2, "landed", 0, 0, "ground"),
         (l["loop"][0] - 0.07, DUR + 0.1, g(0.2, -3.0, 0.8), g(0.0, -2.7, 0.7), g(0.6, 0.4, 0.25), g(0.3, 0.2, 0.25), 38, 38, 4.0, "walker", 0, 0, "ground"),
