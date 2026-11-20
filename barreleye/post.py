@@ -99,4 +99,4 @@ if __name__=='__main__':
  if mode in ('audio','all'):sound();subtitles()
  if mode in ('video','all'):
   picture()
-  ff(['-loglevel','error','-i','picture.mp4','-i','vo/master.wav','-map','0:v:0','-map','1:a:0','-c:v','copy','-c:a','aac','-b:a','192k','-ar','44100','-ac','2','-shortest','-movflags','+faststart','barreleye.mp4'])
+  ff(['-loglevel','error','-i','picture.mp4','-i','vo/master.wav','-map','0:v:0','-map','1:a:0','-c:v','copy','-af','volume=1.19dB','-c:a','aac','-b:a','192k','-ar','44100','-ac','2','-shortest','-movflags','+faststart','barreleye.mp4'])
