@@ -587,7 +587,8 @@ def pose_toad(P, t, eyes=1.0, mouth=0.0, gulp=0.0, heave=0.0, breathe=True):
         key(piv, "scale", (1.0, 1.0, max(0.12, eyes)))
     key(P["jaw"], "rotation_euler", (0, 0.62 * mouth, 0))
     b = 0.03 * math.sin(t * 2.2) if breathe else 0.0
-    key(P["throat"], "scale", (1 + 0.3 * gulp, 1 + 0.25 * gulp + b * 2, 1 + 0.9 * gulp + b * 3))
+    # throat is a radius-1 sphere (base scale 1, as in all approved toad frames); the gulp is a subtle swell
+    key(P["throat"], "scale", (1 + 0.04 * gulp, 1 + 0.05 * gulp + b * 2, 1 + 0.10 * gulp + b * 3))
     key(P["body"], "scale", (1 - 0.05 * heave, 1 + 0.06 * heave + b * 0.3, 1 + 0.10 * heave + b * 0.5))
     key(P["body"], "rotation_euler", (0, -0.12 * heave - 0.08 * mouth, 0))
 
