@@ -30,7 +30,15 @@ If you could restart your life like this jellyfish, at what age would you go bac
 | `thumb_life.png` | LIFE #4 | Curiosity: "how is it on life #4?" |
 
 ## QA passed
-QA_PLACEHOLDER
+- **Video:** 1080×1920, 30 fps, 575 frames, 19.17 s, H.264 + AAC 44.1 kHz. Rendered at full resolution: no upscaling, no motion blur, no grain.
+- **Frame check:** every frame was reviewed on contact sheets (raw renders and the final mp4). No glitches, no intersecting parts, no blown-out areas.
+- **Motion (qa_motion):** 8 planned cuts, no unplanned jumps, no frozen frames. blackdetect found no black frames.
+- **Captions:** every caption stays inside the safe zone (asserted in code) and is synced word by word to the voice. Line breaks are fixed per caption group, so a caption never re-wraps while it pops in.
+- **Loudness:** −14.0 LUFS integrated, LRA 1.4 LU.
+- **Speech (Whisper small.en on the final mix, played twice in a row):** the text matches the script exactly. Across the seam it is heard as one sentence: "…So unless something eats it, this jellyfish can live forever."
+- **Loop seam, picture:** the change from the last frame to the first frame (2.14) is smaller than the median change between consecutive frames (2.75). The last shot is a match cut into the opening camera, all motion is phase-locked, and the fish leaves the frame before the seam. The ending does not stop abruptly; it keeps moving.
+- **Loop seam, sound:** the music is exactly 7 bars per loop and resolves A → D on the seam. The audio is circular (folded tail), with no click: the sample jump at the seam (0.07) is below the 99th-percentile sample step (0.22). The gap between "eats it," and "This jellyfish" is about 0.15 s, the same rhythm as a normal sentence pause.
+- **Thumbnails:** "IT NEVER DIES" (frame 22), "IT TURNS BACK INTO A BABY" (frame 325), "LIFE #4" (frame 523). All text is inside the safe zone.
 
 ## Files
 - `this-jellyfish-can-live-forever.mp4`: final video

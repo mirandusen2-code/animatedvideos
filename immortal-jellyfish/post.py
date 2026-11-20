@@ -201,8 +201,8 @@ def draw_captions(img, t):
                 elif w[3]:
                     colors[i] = ICE
             s = 0.88 + 0.12 * back_out((t - t0) / 0.14)
-            # one line if it fits, else two
-            f = font(int(72 * s))
+            # one line if it fits at full size, else two (decided once per group, so the pop-in never re-wraps)
+            f = font(72)
             lines = [words] if f.getlength(" ".join(words)) <= 700 else [words[:2], words[2:]]
             text_block(img, lines, CX, SAFE[3] - 95, 72, scale=s, colors=colors, maxw=700)
             return

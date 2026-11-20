@@ -1,0 +1,27 @@
+1
+00:00:00,100 --> 00:00:02,100
+This jellyfish can live forever.
+
+2
+00:00:02,589 --> 00:00:04,879
+When it gets old or hurt, it doesn't die.
+
+3
+00:00:05,379 --> 00:00:09,000
+It melts into a tiny blob, sinks to the sea floor,
+
+4
+00:00:09,099 --> 00:00:10,580
+And turns back into a baby.
+
+5
+00:00:11,060 --> 00:00:15,199
+Its old cells become brand new ones, and it grows up all over again.
+
+6
+00:00:15,599 --> 00:00:17,260
+Again, and again, and again.
+
+7
+00:00:17,760 --> 00:00:19,100
+So unless something eats it,

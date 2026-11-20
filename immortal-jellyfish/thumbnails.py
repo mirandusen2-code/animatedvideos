@@ -16,7 +16,7 @@ f_polyp = int((T.SHOTS[4][1] - 0.15) * T.FPS)
 f_life = int((T.T_AGAIN[2] + 0.5) * T.FPS)
 for name, f, lines, colors, y in [
     ("thumb_forever", f_hero, [["IT", "NEVER"], ["DIES"]], {1: post.AMBER, 2: post.AMBER}, 1250),
-    ("thumb_baby", f_polyp, [["IT", "TURNS"], ["BACK", "INTO", "A"], ["BABY"]], {4: post.ICE}, 1250),
+    ("thumb_baby", f_polyp, [["IT", "TURNS"], ["BACK", "INTO", "A"], ["BABY"]], {5: post.AMBER}, 1250),
     ("thumb_life", f_life, [["LIFE", "#4"]], {1: GREEN}, 1250),
 ]:
     t = f / T.FPS
