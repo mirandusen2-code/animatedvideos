@@ -30,7 +30,11 @@ Which animal has the weirdest defense: this beetle, the mantis shrimp, or the ta
 | `thumb_tongue.png` | BAD IDEA, TOAD | Humour, the tongue strike |
 
 ## QA passed
-QA_PLACEHOLDER
+Facts vs. sources (RESEARCH.md) · Whisper: final mix = script word for word · captions aligned to the measured
+word times, last caption held until the loop restarts · all text inside the measured phone safe zone · rendered at
+1080×1920 (no upscaling, no grain, no motion blur) · all 531 frames reviewed on contact sheets · no black frames /
+freezes; the only brightness jump is the intended spray flash on "shoots" (1.8 s) · video ends 0.05 s after the last
+word, so "…so whatever you do," flows straight into "never eat this beetle." · −14.5 LUFS · 17.7 s.
 
 ## Files
 - `never-eat-this-beetle.mp4`: final video
