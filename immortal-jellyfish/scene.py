@@ -959,7 +959,9 @@ def blob_center_local(scale):
 def main_state(t):
     """Where the hero jellyfish is and what it is doing at time t."""
     s7 = T.SHOTS[7][0]
-    if t >= s7:                                    # the grown-up jellyfish (new life)
+    if T.shot_index(t) == len(T.SHOTS) - 1:
+        t = T.env_t(t)                             # last shot: same young swimmer as the opening (loop)
+    elif t >= s7:                                    # the grown-up jellyfish (new life)
         shrink, glow, _n = T.cycle(t)
         bob = 0.03 * math.sin(t * 1.4)
         p = T.pulse(t % 1.05 + 0.0) if shrink < 0.05 else 0.0
@@ -984,15 +986,16 @@ def pose(t):
     for name, objs in SETS.items():
         for o in objs:
             o.hide_render = name != st
-    CAUSTIC_W.default_value = t * 0.35
-    snow.location = (0.02 * math.sin(t * 0.3), 0.0, -0.025 * t)
+    te = T.env_t(t)
+    CAUSTIC_W.default_value = te * 0.35
+    snow.location = (0.02 * math.sin(te * 0.3), 0.0, -0.025 * te)
     if st == "cells":
         pose_cells(t)
         return
-    pose_weeds(t)
+    pose_weeds(te)
     s = main_state(t)
-    HERO_J.pose(t, s["loc"], 1.0, s["p"], s["ag"], s["hu"], s["m"], s["glow"],
-                tilt=(0.06 * math.sin(t * 0.7), 0.05 * math.sin(t * 0.9), 0), squash=s["squash"])
+    HERO_J.pose(te, s["loc"], 1.0, s["p"], s["ag"], s["hu"], s["m"], s["glow"],
+                tilt=(0.06 * math.sin(te * 0.7), 0.05 * math.sin(te * 0.9), 0), squash=s["squash"])
     # polyp colony + bud only in the floor shots
     i = T.shot_index(t)
     floor_time = 4 <= i <= 6
@@ -1024,10 +1027,10 @@ def pose(t):
     for o in FISH_OBJS:
         o.hide_render = not fon
     if fon:
-        u = T.fish(t)
-        p0, p1 = V((3.0, 2.6, 2.2)), V((0.95, 0.75, 1.95))
-        pos = p0.lerp(p1, T.ease_out(u))
-        d = (p1 - p0).normalized()
+        pos = V(T.fish_pos(t))
+        d = V(T.fish_pos(t + 0.04)) - V(T.fish_pos(t - 0.04))
+        if d.length < 1e-4:
+            d = V(T.FISH_PA) - V(T.FISH_P0)
         fish_root.location = pos
         fish_root.rotation_euler = (0, 0.05, math.atan2(d.y, d.x) + 0.12 * math.sin(t * 6))
         fish_root.scale = (1.3, 1.3, 1.3)

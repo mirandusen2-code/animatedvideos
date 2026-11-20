@@ -322,27 +322,40 @@ def keys(freq, dur=1.6):
     return x * np.exp(-tt * 2.2) * env(len(tt), 0.005, 0.2)
 
 
+def fold(x, n):
+    """Wrap everything that rings on past the loop point back onto the start (circular buffer)."""
+    out = x[:n].copy()
+    k = n
+    while k < len(x):
+        seg = x[k:k + n]
+        out[:len(seg)] += seg
+        k += n
+    return out
+
+
 def make_music_and_sfx():
-    n = int(T.DUR * SR)
-    music = np.zeros(n)
-    sfx = np.zeros(n)
+    """Music + effects as one exact loop period: tails past the end continue at the start."""
+    n = int(round(T.DUR * SR))
+    ext = n + int(6 * SR)
+    music = np.zeros(ext)
+    sfx = np.zeros(ext)
 
     def add(buf, t0, sig, g=1.0):
         i = int(t0 * SR)
-        if i >= n:
-            return
-        j = min(n, i + len(sig))
+        j = min(ext, i + len(sig))
         buf[i:j] += g * sig[: j - i]
 
-    # dreamy, weightless bed: Dmaj7  Bm9  Gmaj7  A6 (88 bpm), soft keys in 8ths
-    chords = [[50, 57, 61, 64], [47, 54, 61, 62], [43, 50, 54, 59], [45, 52, 54, 61]]
-    bpm = 88
-    bar = 60 / bpm * 4
+    # dreamy, weightless bed: Dmaj7 Bm9 Gmaj7 A | Dmaj7 Gmaj7 A  -> back to Dmaj7 at the loop.
+    # Exactly 7 bars per loop (tempo fitted to the video, ~88 bpm), so the last A resolves into the first D.
+    chords = [[50, 57, 61, 64], [47, 54, 61, 62], [43, 50, 54, 59], [45, 52, 57, 61],
+              [50, 57, 61, 64], [43, 50, 54, 59], [45, 52, 57, 61]]
+    bar = T.DUR / 7
+    bpm = 240 / bar
     k = 0
     t0 = 0.0
     stop0, stop1 = T.T_DIE + 0.42, L["melt"][0]            # a breath of silence after "it doesn't die"
-    while t0 < T.DUR:
-        ch = chords[k % 4]
+    while t0 < T.DUR - 1e-6:
+        ch = chords[k % 7]
         dur = bar + 1.5
         for m in ch:
             v = pad_voice(note_hz(m), dur, bright=3.5)
@@ -359,16 +372,15 @@ def make_music_and_sfx():
         add(music, t0, np.sin(2 * np.pi * note_hz(ch[0] - 12) * st) * np.exp(-st * 4), 0.16)
         k += 1
         t0 += bar
-    tt = np.arange(n) / SR
-    gate = np.ones(n)
+    tt = np.arange(ext) / SR
+    gate = np.ones(ext)
     gate[(tt >= stop0) & (tt < stop1)] = 0.0
     edge = int(0.08 * SR)
     i0, i1 = int(stop0 * SR), int(stop1 * SR)
     gate[i0 - edge:i0] = np.linspace(1, 0, edge)
     gate[i1:i1 + edge] = np.linspace(0, 1, edge)
     music *= gate
-    music *= np.clip(tt / 0.12, 0, 1) * np.clip((T.DUR - tt) / 0.12, 0, 1)   # tiny fades: no dip at the loop
-    music = reverb(music, 3.0, 0.45, seed=1)
+    music = fold(reverb(music, 3.0, 0.45, seed=1), n)            # no fades: the loop is circular
 
     # --- sound effects (only key moments)
     def thump(f0=110, f1=38, d=1.1, g=1.0):
@@ -441,7 +453,7 @@ def make_music_and_sfx():
         add(sfx, ta, clink(1175 * (1.26 ** k_), 0.7), 0.08)
     add(sfx, L["loop"][0], swoosh(0.8, 26, up=False), 0.10)                     # the fish arrives
     add(sfx, T.T_EATS, chomp(), 0.35)                                           # "eats"
-    sfx = reverb(sfx, 2.2, 0.35, seed=2)
+    sfx = fold(reverb(sfx, 2.2, 0.35, seed=2), n)
     return music, sfx
 
 
@@ -489,10 +501,16 @@ def main():
             render_frame(frames, f).save(f"{out}_{f:04d}.png")
         return
     music, sfx = make_music_and_sfx()
-    mw, sw = out + ".music.wav", out + ".sfx.wav"
-    write_wav(mw, music / (np.abs(music).max() + 1e-9) * 0.8)
-    write_wav(sw, sfx / (np.abs(sfx).max() + 1e-9) * 0.8)
-    vo = os.path.join(HERE, "vo", "vo_raw.wav")
+    n = len(music)
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", os.path.join(HERE, "vo", "vo_raw.wav"), "-ac", "1",
+                          "-ar", str(SR), "-f", "f32le", "-"], capture_output=True, check=True).stdout
+    voice = fold(np.frombuffer(raw, np.float32).astype(float), n)
+    # Mix three loop periods back to back and keep the middle one: echo tails, ducking and compressor
+    # state then carry straight across the loop point, exactly as when the Short replays.
+    mw, sw, vo = out + ".music.wav", out + ".sfx.wav", out + ".voice.wav"
+    write_wav(mw, np.tile(music / (np.abs(music).max() + 1e-9) * 0.8, 3))
+    write_wav(sw, np.tile(sfx / (np.abs(sfx).max() + 1e-9) * 0.8, 3))
+    write_wav(vo, np.tile(voice / (np.abs(voice).max() + 1e-9) * 0.89, 3))
     filt = (
         # voice: warm documentary chain
         "[1:a]aformat=sample_rates=44100:channel_layouts=mono,highpass=f=75,"
@@ -503,7 +521,7 @@ def main():
         "[2:a]volume=0.27[mu];[mu][v1]sidechaincompress=threshold=0.03:ratio=6:attack=25:release=420[md];"
         "[3:a]volume=0.42[fx];"
         "[v2][md][fx]amix=inputs=3:normalize=0,aformat=channel_layouts=stereo,"
-        "loudnorm=I=-14:TP=-1.5:LRA=11[a]")
+        f"loudnorm=I=-14:TP=-1.5:LRA=11,aresample=44100,atrim=start_sample={n}:end_sample={2 * n},asetpts=PTS-STARTPTS[a]")
     cmd = ["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
            "-r", str(T.FPS), "-i", "-", "-i", vo, "-i", mw, "-i", sw, "-filter_complex", filt,
            "-map", "0:v", "-map", "[a]", "-c:v", "libx264", "-preset", "slow", "-crf", "19",
@@ -516,8 +534,8 @@ def main():
             print(f"post {f}/{T.NFRAMES}", flush=True)
     ff.stdin.close()
     ff.wait()
-    os.remove(mw)
-    os.remove(sw)
+    for p_ in (mw, sw, vo):
+        os.remove(p_)
     write_srt(os.path.splitext(out)[0] + ".srt")
     print("done:", out)
 

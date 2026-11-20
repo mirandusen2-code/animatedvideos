@@ -10,8 +10,8 @@ L = {k: tuple(v) for k, v in TIMING["lines"].items()}
 WORDS = TIMING["words"]
 
 FPS = 30
-DUR = round(L["loop"][1] + 0.05, 2)           # loop restarts right after the last word
-NFRAMES = int(DUR * FPS)
+NFRAMES = round((L["loop"][1] + 0.05) * FPS)  # loop restarts right after the last word
+DUR = NFRAMES / FPS                            # exact loop period: picture, sound and motion share it
 
 OCEAN = (0.0, 0.0, 0.0)
 CELLS = (500.0, 0.0, 0.0)
@@ -151,9 +151,20 @@ def cycle(t):
     return s, g, n
 
 
-def fish(t):
-    """Fish progress 0..1 (swims in during the loop line)."""
-    return clamp((t - L["loop"][0] + 0.45) / (DUR - L["loop"][0] + 0.45))
+FISH_P0 = (2.7, 2.1, 2.3)       # enters behind, right
+FISH_PA = (0.85, 0.75, 1.98)    # lunges at the jellyfish on "eats"
+FISH_P2 = (3.4, 0.9, 2.35)      # gives up and darts out of frame before the loop restarts
+
+
+def fish_pos(t):
+    ta, tb = L["loop"][0] - 0.12, T_EATS + 0.12
+    if t <= tb:
+        u = smoother((t - ta) / (tb - ta)) * 0.7 + 0.3 * clamp((t - ta) / (tb - ta))
+        return lerpv(FISH_P0, FISH_PA, u)
+    u = clamp((t - tb) / (DUR - 0.12 - tb))
+    u = u * u * (3 - 2 * u)
+    bend = (0.0, -0.35 * math.sin(math.pi * u), 0.0)
+    return add(lerpv(FISH_PA, FISH_P2, u), bend)
 
 
 def fish_mouth(t):
@@ -177,7 +188,8 @@ def _shots():
         (T_CELLS - 0.06, T_GROWS - 0.42, c(0.0, -3.2, 0.25), c(0.0, -2.6, 0.15), c(0, 0, 0), c(0, 0, 0), 45, 45, 11, "cells", "cells"),
         (T_GROWS - 0.42, l["again"][0] - 0.1, o(fx - 0.6, fy - 1.3, 0.55), o(fx - 0.8, fy - 2.6, 1.6), o(fx, fy, 0.62), o(fx, fy, 1.45), 38, 38, 3.5, "baby", "ocean"),
         (l["again"][0] - 0.1, l["loop"][0] - 0.12, o(-0.6, -3.0, 1.75), o(-0.45, -2.7, 1.85), o(0, 0, 1.9), o(0, 0, 1.92), 40, 40, 3.2, "hero", "ocean"),
-        (l["loop"][0] - 0.12, DUR + 0.1, o(0.9, -3.3, 1.6), o(0.7, -2.9, 1.7), o(0.5, 0.6, 1.85), o(0.45, 0.6, 1.85), 34, 34, 4.0, "hero", "ocean"),
+        # last shot glides back into the exact opening framing: the loop restarts as a match cut
+        (l["loop"][0] - 0.12, DUR, o(0.95, -3.4, 1.62), o(0.35, -2.6, 1.55), o(0.45, 0.45, 1.88), o(0, 0, 1.92), 34, 40, 3.2, "hero", "ocean"),
     ]
 
 
@@ -200,9 +212,25 @@ def drift(t, amp):
             amp * math.sin(t * 1.1 + 2) + amp * 0.4 * math.sin(t * 2.9))
 
 
+def env_t(t):
+    """Clock for everything that moves on its own (swimming, tentacles, snow, caustics, weeds).
+    In the last shot it runs from -1.6 s up to 0, so the final frame flows straight into frame 0."""
+    return t - DUR if shot_index(t) == len(SHOTS) - 1 else t
+
+
 def camera(t):
-    t0, t1, p0, p1, a0, a1, l0, l1, fstop, focus, _set = SHOTS[shot_index(t)]
-    u = smoother((t - t0) / (t1 - t0)) * 0.85 + 0.15 * clamp((t - t0) / (t1 - t0))
+    i = shot_index(t)
+    t0, t1, p0, p1, a0, a1, l0, l1, fstop, focus, _set = SHOTS[i]
+    x = clamp((t - t0) / (t1 - t0))
+    if i == len(SHOTS) - 1:
+        # ease in, then arrive with the same slow speed the opening push-in starts with
+        h0 = SHOTS[0]
+        v0 = 0.15 / (h0[1] - h0[0])                         # opening shot's start speed (fraction / s)
+        d_end = math.dist(p0, p1)
+        k = clamp(v0 * math.dist(h0[2], h0[3]) / max(d_end, 1e-6) * (t1 - t0), 0.0, 0.9)
+        u = (1 - k) * smoother(x) + k * x
+    else:
+        u = smoother(x) * 0.85 + 0.15 * x
     p = lerpv(p0, p1, u)
-    p = tuple(a + b for a, b in zip(p, drift(t, 0.008)))
+    p = tuple(a + b for a, b in zip(p, drift(env_t(t), 0.008)))
     return p, lerpv(a0, a1, u), lerp(l0, l1, u), fstop, focus
