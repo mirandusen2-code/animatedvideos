@@ -1,0 +1,146 @@
+name: Pufferfish final film
+on:
+  push:
+    branches: [codex/pufferfish-sand-circle]
+    paths: ['.github/workflows/pufferfish-film.yml']
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    working-directory: pufferfish-sand-circle
+    shell: bash
+env:
+  OMP_NUM_THREADS: '3'
+  HF_HUB_DISABLE_XET: '1'
+jobs:
+  batch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      max-parallel: 10
+      fail-fast: false
+      matrix:
+        start: [0, 40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560, 600, 640, 680]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: pufferfish-sand-circle
+          persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            pufferfish-sand-circle/vo/timing.json
+            pufferfish-sand-circle/vo/narration.wav
+          key: pufferfish-voice-v1-${{ hashFiles('pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/voiceover.py') }}
+          fail-on-cache-miss: true
+      - name: Restore a completed native batch
+        id: clip
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/puffer-clip-${{ matrix.start }}
+          key: puff-native-v3-${{ hashFiles('pufferfish-sand-circle/scene.py','pufferfish-sand-circle/timeline.py','pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/post.py','pufferfish-sand-circle/thumbnails.py','pufferfish-sand-circle/voiceover.py') }}-${{ matrix.start }}
+      - uses: actions/setup-python@v5
+        if: steps.clip.outputs.cache-hit != 'true'
+        with:
+          python-version: '3.13'
+      - name: Render forty frames outside the checkout
+        if: steps.clip.outputs.cache-hit != 'true'
+        env:
+          START: ${{ matrix.start }}
+          FRAME_DIR: ${{ runner.temp }}/puffer-frames-${{ matrix.start }}
+          CLIP_DIR: ${{ runner.temp }}/puffer-clip-${{ matrix.start }}
+        run: |
+          pip install -q 'bpy==5.2.3' pillow
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          curl -fsSL --retry 3 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf' -o Montserrat.ttf
+          bash render_missing.sh "$START" "$((START+40))"
+          python post.py clip "$START" "$((START+40))"
+      - name: Keep the verified clip for resumable assembly
+        if: steps.clip.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/puffer-clip-${{ matrix.start }}
+          key: puff-native-v3-${{ hashFiles('pufferfish-sand-circle/scene.py','pufferfish-sand-circle/timeline.py','pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/post.py','pufferfish-sand-circle/thumbnails.py','pufferfish-sand-circle/voiceover.py') }}-${{ matrix.start }}
+  master:
+    needs: batch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: pufferfish-sand-circle
+          persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            pufferfish-sand-circle/vo/timing.json
+            pufferfish-sand-circle/vo/narration.wav
+          key: pufferfish-voice-v1-${{ hashFiles('pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/voiceover.py') }}
+          fail-on-cache-miss: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore the native encoded segments
+        uses: actions/github-script@v7
+        env:
+          PREFIX: puff-native-v3-${{ hashFiles('pufferfish-sand-circle/scene.py','pufferfish-sand-circle/timeline.py','pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/post.py','pufferfish-sand-circle/thumbnails.py','pufferfish-sand-circle/voiceover.py') }}
+        with:
+          script: |
+            const cp=require('node:child_process');
+            const path=require('node:path');
+            const fs=require('node:fs');
+            const tools=path.join(process.env.RUNNER_TEMP,'cache-tools');
+            cp.execFileSync('npm',['install','--prefix',tools,'@actions/cache@4'],{stdio:'inherit'});
+            const cache=require(path.join(tools,'node_modules','@actions/cache'));
+            const timing=JSON.parse(fs.readFileSync('pufferfish-sand-circle/vo/timing.json','utf8'));
+            for(let i=0;i<timing.NFRAMES;i+=40){
+              const folder=path.join(process.env.RUNNER_TEMP,'puffer-clip-'+i);
+              const key=process.env.PREFIX+'-'+i;
+              if(await cache.restoreCache([folder],key)!==key) throw Error('Missing batch '+i);
+            }
+      - name: Mix and check the completed film
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          pip install -q numpy scipy pillow soundfile faster-whisper
+          python post.py finish
+          python qa_motion.py
+          python realign.py pufferfish-sand-circle.mp4
+          python qa_sheets.py
+          python - <<'PY'
+          from pathlib import Path
+          import json,base64
+          p=Path('pufferfish-sand-circle.mp4');assert 0<p.stat().st_size<100000000 and p.read_bytes()[4:8]==b'ftyp'
+          q=json.loads(Path('qa/measurements.json').read_text());m=Path('UPLOAD.md');m.write_text(m.read_text()+'\n## QA passed\n\n'+f"{q['frames']} frames, {q['seconds']:.2f} seconds, H.264 1080 × 1920, 30 fps, AAC. {q['integrated_LUFS']:.2f} LUFS and {q['true_peak_dBTP']:.2f} dBTP. Final transcript matched the script. No black frames, unexpected jumps or freezes.\n")
+          print('ATLAS '+base64.b64encode(Path('qa/contact-overview.jpg').read_bytes()).decode()+' ENDATLAS')
+          PY
+          sha256sum pufferfish-sand-circle.mp4
+      - name: Single MP4 for mobile download
+        id: movie
+        uses: actions/upload-artifact@v7
+        with:
+          path: pufferfish-sand-circle/pufferfish-sand-circle.mp4
+          archive: false
+          retention-days: 30
+      - name: Verify the mobile download against the original bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.movie.outputs.artifact-id }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/download.mp4"
+          cmp "$RUNNER_TEMP/download.mp4" pufferfish-sand-circle.mp4
+          file "$RUNNER_TEMP/download.mp4"
+      - name: Upload subtitle, thumbnails, research and quality measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pufferfish-publishing-materials
+          retention-days: 30
+          path: |
+            pufferfish-sand-circle/pufferfish-sand-circle.srt
+            pufferfish-sand-circle/thumbnails/
+            pufferfish-sand-circle/RESEARCH.md
+            pufferfish-sand-circle/DESIGN_BRIEF.md
+            pufferfish-sand-circle/UPLOAD.md
+            pufferfish-sand-circle/vo/timing.json
+            pufferfish-sand-circle/qa/
