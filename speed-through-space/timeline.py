@@ -71,12 +71,12 @@ def add(a, b):
 # ---------------------------------------------------------------- key moments (all on spoken words)
 T_500 = W("hook", "500000")[0]
 T_SPINS = W("spin", "spins")[0]
-T_1000 = W("spin", "1000")[0]
+T_1000 = W("spin", "around")[0]       # (no numbers in the middle any more: labels land on these words)
 T_RACES = W("orbit", "races")[0]
-T_67 = W("orbit", "67000")[0]
+T_67 = W("orbit", "sun")[0]
 T_DRAGS = W("galaxy", "drags")[0]
 T_GALAXY = W("galaxy", "galaxy")[0]
-T_500B = W("galaxy", "500000")[0]
+T_500B = W("galaxy", "galaxy")[0]
 T_TRIP = W("lap", "trip")[0]
 T_230 = W("lap", "230")[0]
 T_YEARS = W("lap", "years")[1]
@@ -111,7 +111,7 @@ STREAK_V = 9.0                      # streaking stars: speed past the Earth (sce
 def orbit_angle(t):
     t0, t1 = SHOTS[2][0], SHOTS[2][1]
     u = t - t0
-    return math.radians(12) + 0.10 * u + 0.006 * u * u
+    return math.radians(12) + 0.22 * u + 0.02 * u * u
 
 
 # ---------------------------------------------------------------- the Sun's galactic orbit (S3, S4)
@@ -147,9 +147,9 @@ def _shots():
         # S1 Earth spins (time-lapse), the beacon draws its latitude circle
         (l["spin"][0] - 0.15, l["orbit"][0] - 0.02, (2.2, -3.4, 2.6), (2.0, -3.6, 2.2), (0, 0, 0.1), (0, 0, 0.05), 30, 30, "earth"),
         # S2 the Earth races around the Sun
-        (l["orbit"][0] - 0.02, l["galaxy"][0] - 0.12, o(6.6, -10.2, 6.4), o(6.0, -9.4, 5.6), o(2.3, 0.6, -0.4), o(2.7, 0.9, -0.4), 26, 26, "orbit"),
+        (l["orbit"][0] - 0.02, W("galaxy", "drags")[0] - 0.05, o(6.6, -10.2, 6.4), o(6.0, -9.4, 5.6), o(2.3, 0.6, -0.4), o(2.7, 0.9, -0.4), 26, 26, "orbit"),
         # S3 pull back from the Sun's neighbourhood to the whole Milky Way
-        (l["galaxy"][0] - 0.12, l["lap"][0] - 0.12, g(sgx * 1.08, sgy * 1.08 - 3.0, 2.0), g(4.0, -62.0, 34.0), g(sgx, sgy, 0), g(0, -1.0, 0), 30, 30, "galaxy"),
+        (W("galaxy", "drags")[0] - 0.05, l["lap"][0] - 0.12, g(sgx * 1.08, sgy * 1.08 - 3.0, 2.0), g(4.0, -62.0, 34.0), g(sgx, sgy, 0), g(0, -1.0, 0), 30, 30, "galaxy"),
         # S4 one lap around the galaxy (time-lapse, seen from above)
         (l["lap"][0] - 0.12, l["dino"][0] - 0.12, g(2.0, -40.0, 58.0), g(1.0, -30.0, 63.0), g(0, -2.0, 0), g(0, -1.5, 0), 30, 30, "galaxy"),
         # S5 230 million years ago: Pangaea

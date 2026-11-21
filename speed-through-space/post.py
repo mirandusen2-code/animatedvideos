@@ -241,15 +241,11 @@ def overlays(img, t):
         if SAFE[0] + 60 < x < SAFE[2] - 60 and SAFE[1] + 200 < y < SAFE[3] - 300:
             pill(img, "YOU", x, y - 62, 40, alpha=a, accent=ICE)
     if i == 1:
-        a = window(t, T.T_1000 - 0.05, S[1][1], 0.15)
-        speed(img, 1000, t, a)
-        pill(img, "EARTH'S SPIN", CX, 380, 44, alpha=window(t, S[1][0] + 0.15, T.T_1000 - 0.1, 0.15), accent=ICE)
+        pill(img, "EARTH'S SPIN", CX, 400, 52, alpha=window(t, S[1][0] + 0.1, S[1][1], 0.15), accent=ICE)
     if i == 2:
-        pill(img, "ORBIT AROUND THE SUN", CX, 380, 44, alpha=window(t, T.T_RACES, T.T_67 - 0.05, 0.15), accent=ICE)
-        speed(img, 67000, t, window(t, T.T_67, S[2][1], 0.15))
+        pill(img, "ORBIT AROUND THE SUN", CX, 400, 50, alpha=window(t, S[2][0] + 0.1, S[2][1], 0.15), accent=AMBER)
     if i == 3:
-        pill(img, "THE MILKY WAY", CX, 380, 48, alpha=window(t, T.T_GALAXY - 0.1, T.T_500B - 0.05, 0.15), accent=ICE)
-        speed(img, 500000, t, window(t, T.T_500B, S[3][1], 0.15))
+        pill(img, "THE MILKY WAY", CX, 400, 52, alpha=window(t, T.T_GALAXY - 0.1, S[3][1], 0.15), accent=ICE)
     if i in (3, 4):                              # "you are here" tag following the Sun's marker
         a_ = T.gal_angle(t)
         p = (T.GAL[0] + T.SUN_GAL_R * math.cos(a_), T.GAL[1] + T.SUN_GAL_R * math.sin(a_), T.GAL[2])

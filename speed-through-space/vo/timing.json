@@ -1,5 +1,5 @@
 {
- "voice": "chatterbox (timbre of the reference clip), 7% faster (atempo 1.07), pauses x0.8",
+ "voice": "chatterbox (timbre of the reference clip)",
  "lines": {
   "hook": [
    0.1,
@@ -7,27 +7,27 @@
   ],
   "spin": [
    2.613,
-   5.576
+   4.261
   ],
   "orbit": [
-   5.616,
-   8.618
+   4.301,
+   5.552
   ],
   "galaxy": [
-   8.858,
-   12.796
+   5.592,
+   7.981
   ],
   "lap": [
-   13.036,
-   16.418
+   8.221,
+   11.603
   ],
   "dino": [
-   16.658,
-   20.018
+   11.843,
+   15.203
   ],
   "loop": [
-   20.298,
-   22.203
+   15.483,
+   17.898
   ]
  },
  "words": [
@@ -40,411 +40,341 @@
   ],
   [
    0.28,
-   0.5,
+   0.48,
    "MOVING",
    true,
    false
   ],
   [
-   0.5,
-   0.72,
+   0.48,
+   0.74,
    "at",
    false,
    true
   ],
   [
-   0.72,
-   1.44,
+   0.74,
+   1.42,
    "500,000",
    true,
    false
   ],
   [
-   1.44,
-   2.24,
+   1.42,
+   2.26,
    "MPH.",
    true,
    true
   ],
   [
-   2.61,
-   2.76,
+   2.7,
+   2.96,
    "EARTH",
    true,
-   false
+   true
   ],
   [
-   2.76,
-   3.1,
+   2.96,
+   3.38,
    "spins",
    false,
    false
   ],
   [
-   3.1,
-   3.32,
+   3.38,
+   3.58,
    "you",
    false,
    false
   ],
   [
-   3.32,
-   3.66,
-   "around",
+   3.58,
+   4.0,
+   "around,",
    false,
    true
   ],
   [
-   3.66,
-   3.86,
-   "at",
-   false,
-   false
-  ],
-  [
-   3.86,
-   3.96,
-   "up",
-   false,
-   false
-  ],
-  [
-   3.96,
-   4.12,
-   "to",
-   false,
-   false
-  ],
-  [
-   4.12,
-   4.58,
-   "1,000",
-   true,
-   false
-  ],
-  [
-   4.58,
-   5.42,
-   "MPH,",
-   true,
-   true
-  ],
-  [
-   5.66,
-   5.98,
-   "while",
-   false,
-   false
-  ],
-  [
-   5.98,
-   6.08,
+   4.3,
+   4.4,
    "it",
    false,
    false
   ],
   [
-   6.08,
-   6.36,
+   4.4,
+   4.7,
    "RACES",
    true,
    true
   ],
   [
-   6.36,
-   6.7,
+   4.7,
+   5.0,
    "around",
    false,
    false
   ],
   [
-   6.7,
-   6.94,
+   5.0,
+   5.18,
    "the",
    false,
    false
   ],
   [
-   6.94,
-   7.14,
-   "SUN",
+   5.18,
+   5.4,
+   "SUN,",
    true,
    true
   ],
   [
-   7.14,
-   7.36,
-   "at",
+   5.59,
+   5.7,
+   "and",
    false,
    false
   ],
   [
-   7.36,
-   8.48,
-   "67,000.",
-   true,
-   true
-  ],
-  [
-   8.858,
-   8.96,
-   "And",
-   false,
-   false
-  ],
-  [
-   8.96,
-   9.08,
+   5.7,
+   5.82,
    "the",
    false,
    false
   ],
   [
-   9.08,
-   9.36,
+   5.82,
+   6.14,
    "SUN",
    true,
-   true
+   false
   ],
   [
-   9.36,
-   9.86,
+   6.14,
+   6.52,
    "drags",
    false,
-   false
+   true
   ],
   [
-   9.86,
-   10.2,
+   6.52,
+   6.78,
    "all",
    false,
    false
   ],
   [
-   10.2,
-   10.34,
+   6.78,
+   6.92,
    "of",
    false,
    false
   ],
   [
-   10.34,
-   10.48,
+   6.92,
+   7.04,
    "us",
    false,
    true
   ],
   [
-   10.48,
-   10.78,
+   7.04,
+   7.28,
    "around",
    false,
    false
   ],
   [
-   10.78,
-   10.94,
+   7.28,
+   7.42,
    "the",
    false,
    false
   ],
   [
-   10.94,
-   11.26,
-   "GALAXY",
+   7.42,
+   7.72,
+   "GALAXY.",
    true,
    true
   ],
   [
-   11.26,
-   11.58,
-   "at",
-   false,
-   false
-  ],
-  [
-   11.58,
-   12.7,
-   "500,000.",
-   true,
-   true
-  ],
-  [
-   13.036,
-   13.24,
+   8.26,
+   8.42,
    "One",
    false,
    false
   ],
   [
-   13.24,
-   13.44,
+   8.42,
+   8.62,
    "TRIP",
    true,
    false
   ],
   [
-   13.44,
-   13.86,
+   8.62,
+   9.04,
    "around",
    false,
    true
   ],
   [
-   13.86,
-   14.18,
+   9.04,
+   9.36,
    "takes",
    false,
    false
   ],
   [
-   14.18,
-   15.14,
+   9.36,
+   10.34,
    "230",
    true,
    false
   ],
   [
-   15.14,
-   15.6,
+   10.34,
+   10.78,
    "MILLION",
    true,
    false
   ],
   [
-   15.6,
-   16.2,
+   10.78,
+   11.36,
    "YEARS.",
    true,
    true
   ],
   [
-   16.68,
-   16.86,
+   11.86,
+   12.04,
    "Last",
    false,
    false
   ],
   [
-   16.86,
-   17.08,
+   12.04,
+   12.28,
    "time",
    false,
    true
   ],
   [
-   17.08,
-   17.24,
+   12.28,
+   12.42,
    "we",
    false,
    false
   ],
   [
-   17.24,
-   17.36,
+   12.42,
+   12.54,
    "were",
    false,
    false
   ],
   [
-   17.36,
-   17.66,
+   12.54,
+   12.86,
    "HERE,",
    true,
    true
   ],
   [
-   17.94,
-   18.04,
+   13.14,
+   13.22,
    "the",
    false,
    false
   ],
   [
-   18.04,
-   18.28,
+   13.22,
+   13.48,
    "first",
    false,
    false
   ],
   [
-   18.28,
-   18.78,
+   13.48,
+   13.96,
    "DINOSAURS",
    true,
    true
   ],
   [
-   18.78,
-   19.06,
+   13.96,
+   14.24,
    "were",
    false,
    false
   ],
   [
-   19.06,
-   19.28,
+   14.24,
+   14.46,
    "just",
    false,
    false
   ],
   [
-   19.28,
-   19.76,
+   14.46,
+   14.98,
    "appearing.",
    false,
    true
   ],
   [
-   20.4,
-   20.5,
-   "And",
+   15.66,
+   15.8,
+   "So",
    false,
    false
   ],
   [
-   20.5,
-   20.68,
+   15.8,
+   16.0,
    "even",
    false,
    false
   ],
   [
-   20.68,
-   20.88,
+   16.0,
+   16.22,
    "when",
    false,
    false
   ],
   [
-   20.88,
-   21.08,
+   16.22,
+   16.48,
    "you're",
    false,
    true
   ],
   [
-   21.08,
-   21.22,
+   16.48,
+   16.7,
    "sitting",
    false,
    false
   ],
   [
-   21.22,
-   21.66,
+   16.7,
+   17.24,
    "perfectly",
    false,
    false
   ],
   [
-   21.66,
-   22.04,
+   17.24,
+   17.74,
    "STILL,",
    true,
    true
   ]
  ],
- "end": 22.203,
- "manual_fixes": "number words (500,000 / 1,000 / 67,000) and MPH spans set from Whisper word times on the full narration"
+ "end": 17.898,
+ "manual_fixes": "500,000 / MPH / EARTH / it / and set from Whisper word times on the full narration"
 }
