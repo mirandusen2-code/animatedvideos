@@ -66,7 +66,7 @@ g=(g*2.7+np.roll(g,1,0)+np.roll(g,1,1)+.5*np.roll(g,-1,1))/3.2
 grain=np.clip(.5+.19*g,0,1)
 im=bpy.data.images.new('Quartz grain microrelief',N,N,alpha=False,float_buffer=False)
 im.colorspace_settings.name='Non-Color'
-rgba=np.empty((N,N,4),np.float32);rgba[:,:,:3]=grain[:,:,None];rgba[:,:,3]=1;im.pixels.foreach_set(rgba.ravel());im.update()
+rgba=np.empty((N,N,4),np.float32);rgba[:,:,:3]=grain[:,:,None];rgba[:,:,3]=1;im.pixels.foreach_set(rgba.ravel());im.update();im.pack()
 img=nd.new('ShaderNodeTexImage');img.image=im;img.extension='REPEAT';lk.new(v.outputs['Vector'],img.inputs['Vector'])
 cr=ramp(nd,[(0,(.13,.132,.097)),(.53,(.39,.325,.197)),(.90,(.61,.525,.347))]);lk.new(img.outputs['Color'],cr.inputs[0])
 noise=nd.new('ShaderNodeTexNoise');noise.inputs['Scale'].default_value=4.5;noise.inputs['Detail'].default_value=1.4;lk.new(tex.outputs['Object'],noise.inputs[0])
@@ -77,7 +77,7 @@ ty,tx=np.mgrid[0:256,0:256].astype('f')*(2*pi/256)
 field=np.sin(3*tx+.85*np.sin(2*ty)+.22*np.cos(3*tx+ty))+np.cos(3*ty+.72*np.cos(2*tx))+.33*np.sin(4*tx+2*ty)
 light=.78+.22*np.exp(-(field/.29)**2)
 ci=bpy.data.images.new('Soft refracted skylight',256,256,alpha=False);ci.colorspace_settings.name='Non-Color'
-ca=np.ones((256,256,4),np.float32);ca[:,:,:3]=light[:,:,None];ci.pixels.foreach_set(ca.ravel());ci.update()
+ca=np.ones((256,256,4),np.float32);ca[:,:,:3]=light[:,:,None];ci.pixels.foreach_set(ca.ravel());ci.update();ci.pack()
 cu=nd.new('ShaderNodeVectorMath');cu.operation='SCALE';cu.inputs['Scale'].default_value=1.3;lk.new(tex.outputs['Object'],cu.inputs[0])
 shift=nd.new('ShaderNodeVectorMath');shift.operation='ADD';lk.new(cu.outputs[0],shift.inputs[0])
 ci_tex=nd.new('ShaderNodeTexImage');ci_tex.image=ci;lk.new(shift.outputs[0],ci_tex.inputs[0])
@@ -197,7 +197,7 @@ def makefin(name,base,direction,height,fan,side):
 tail=makefin('Caudal fan',(-.037,0,.001),(-.022,0,0),(0,0,.0095),(.002,0,0),False)
 fins=[]
 for sg in (-1,1):
-    fins.append(makefin('Pectoral fin',(.006,sg*.013,-.0005),(-.010,sg*.0090,-.005),(.004,sg*.002,.0055),(.001,0,0),True))
+    fins.append(makefin('Pectoral fin',(.006,sg*.013,-.0005),(-.011,sg*.0095,-.0105),(.004,sg*.002,.0055),(.001,0,0),True))
 dorsal=makefin('Dorsal fin',(-.019,0,.007),(-.007,0,.009),(.005,0,0),(.0002,0,-.003),False)
 anal=makefin('Anal fin',(-.023,0,-.005),(-.005,0,-.006),(.004,0,0),(.0001,0,.001),False)
 
@@ -228,7 +228,6 @@ camdata=bpy.data.cameras.new('Documentary port');camdata.type='ORTHO';camdata.cl
 cam=bpy.data.objects.new('Camera',camdata);sc.collection.objects.link(cam);sc.camera=cam
 def pose(i):
     t=i/FPS;name,u,_,_=shot(t)
-    phase=2*pi*t/DUR;shift.inputs[1].default_value=(.044*sin(phase),.034*cos(phase),0)
     coords,h=puffer_state(t);x,y,z=coords
     isclose=name in ('portrait','fins','pass','trench')
     if not isclose:z+=float(relief(x,y))
@@ -249,7 +248,7 @@ def pose(i):
         if isclose:
             ob.location=(.003-.021*v,sg*(.014+.019*v),-.014+.0104*sin(pi*v))
             k=.3+.7*sin(pi*v);ob.scale=(size*k,size*.8*k,size*.7*k)
-    tg,off,width=camera_state(t);loc=Vector(tg)+Vector(off)
+    tg,off,width=camera_state(t);loc=Vector(tg)+Vector(off)+Vector(off).normalized()*.92
     cam.location=loc;cam.rotation_euler=(-Vector(off)).to_track_quat('-Z','Y').to_euler()
     camdata.ortho_scale=width*1.7777777778
 def render(i,folder,preview=False):
