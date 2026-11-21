@@ -878,8 +878,12 @@ def pose_earth(t, te, i):
     CLOUD_W.default_value = 0.02 * te
     CLOUD_D.default_value = 0.5 if pang else 0.9
     PANG.default_value = 1.0 if pang else 0.0
+    # hide the beacon while it is round the back of the globe (its glow would peek past the limb)
+    bdir = V((math.cos(math.radians(T.YOU_LAT)) * math.cos(math.radians(T.YOU_LON) + spin),
+              math.cos(math.radians(T.YOU_LAT)) * math.sin(math.radians(T.YOU_LON) + spin), math.sin(math.radians(T.YOU_LAT))))
+    facing = bdir.dot((V(T.camera(t)[0]) - bdir).normalized())
     for o_ in (YOU, HALO, PRING):
-        o_.hide_render = pang
+        o_.hide_render = pang or facing < 0.12
     # beacon pulse (phase-locked to the loop clock)
     ph = (te / 1.2) % 1.0
     PRING.scale = (0.02 + 0.09 * ph,) * 3
@@ -996,7 +1000,7 @@ try:
     scene.view_settings.exposure = 0.0
 except Exception:
     pass
-SPP = {"earth": 16, "orbit": 16, "galaxy": 12}
+SPP = {"earth": 16, "orbit": 12, "galaxy": 8}
 if os.environ.get("SP_EXP"):                       # experiments
     exec(os.environ["SP_EXP"])
 
