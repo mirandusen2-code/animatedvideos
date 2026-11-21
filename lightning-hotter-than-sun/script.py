@@ -7,7 +7,7 @@ Loop: "...So next time you see one, remember:" -> "this is five times hotter tha
 LINES = [
     ("hook",    "This is five times hotter than the Sun.", "This is | 5X HOTTER | than the SUN.", 0.3),
     ("heat",    "A lightning bolt heats the air to fifty thousand degrees.", "A LIGHTNING bolt | heats the air | to 50,000 DEGREES.", 0.05),
-    ("sun",     "The surface of the Sun is about ten thousand.", "The SUN'S surface | is about 10,000.", 0.3),
+    ("sun",     "The surface of the Sun is about ten thousand.", "The surface | of the SUN | is about 10,000.", 0.3),
     ("boom",    "The air heats up so fast, it explodes. That's thunder.", "The air heats up | so FAST, | it EXPLODES. | That's THUNDER.", 0.3),
     ("inch",    "And the bolt is only about an inch wide.", "And the bolt | is only about | an INCH wide.", 0.3),
     ("count",   "It strikes about forty-four times every second, somewhere on Earth.",
