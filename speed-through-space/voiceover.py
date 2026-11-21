@@ -51,7 +51,7 @@ def main():
     ref = sys.argv[1]
     exag = float(sys.argv[2]) if len(sys.argv) > 2 else 0.55
     cfg = float(sys.argv[3]) if len(sys.argv) > 3 else 0.45
-    clips = os.path.join(VO, "clips")
+    clips = os.path.join(VO, os.environ.get("VO_CLIPS", "clips"))   # "clips_fast" = the same takes, 7 % faster (atempo)
     os.makedirs(clips, exist_ok=True)
     import torch
     from chatterbox.tts import ChatterboxTTS
@@ -72,7 +72,7 @@ def main():
         x = trim(load(os.path.join(clips, f"{key}.wav")))
         segs.append((t, x))
         lines[key] = [round(t, 3), round(t + len(x) / SR, 3)]
-        t += len(x) / SR + pause
+        t += len(x) / SR + pause * float(os.environ.get("VO_PAUSE", "1.0"))
     out = np.zeros(int((t + 1.0) * SR), np.float32)
     for s0, x in segs:
         i = int(s0 * SR)

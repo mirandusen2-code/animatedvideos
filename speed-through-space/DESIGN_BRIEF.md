@@ -1,6 +1,6 @@
 # Design brief: "You're Moving at 500,000 MPH"
 
-- **Format:** YouTube Short, 1080×1920, 30 fps, 23.9 s, seamless loop. English narration, captions synced to the measured word times.
+- **Format:** YouTube Short, 1080×1920, 30 fps, 22.3 s, seamless loop. English narration (7 % faster than the raw take, tighter pauses, to keep the pace up), captions synced to the measured word times.
 - **Tone:** serious and awe-inspiring. Real NASA Earth imagery, a dark cinematic score, and big, clean numbers.
 - **Hook (first second):** a bold "you" claim ("You're moving at half a million miles an hour.") with five things already happening on frame 0:
   - the camera rushes in toward Earth (a pattern interrupt);
