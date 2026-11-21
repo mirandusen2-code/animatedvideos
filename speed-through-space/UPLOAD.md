@@ -29,4 +29,19 @@ What do you think Earth will look like the next time we're back here — 230 mil
 | `thumb_pangaea.png` | LAST TIME WE WERE HERE | Pangaea curiosity |
 
 ## QA passed
-QA_PLACEHOLDER
+- **Video:** 1080×1920, 30 fps, 668 frames, 22.3 s, H.264 + AAC 44.1 kHz. Rendered at full resolution with no upscaling, no motion blur and no grain.
+- **Frame check:**
+  - Every frame was reviewed on contact sheets, both the raw renders and the final mp4.
+  - One bug was found and fixed: the beacon's glow peeked past the limb while the beacon was behind the globe.
+  - No glitches and no black frames.
+- **Hook:** from frame 0 the camera rushes in, stars streak past, a "YOU" tag sits on the beacon, the counter already climbs (244,000 after 0.3 s, 438,000 after 0.7 s) and there is a whoosh + hit.
+- **Motion (qa_motion):** 6 planned cuts, no unplanned jumps, no frozen frames.
+- **Captions:** every caption stays inside the safe zone and is synced word by word. Number words (500,000 / 1,000 / 67,000) are timed by hand from Whisper word times.
+- **Loudness:** −14.0 LUFS integrated, LRA 2.3 LU.
+- **Speech (Whisper small.en on the final mix, played twice in a row):** every line matches the script. Across the seam it is heard as one sentence: "…and even when you're sitting perfectly still you're moving at half a million miles an hour."
+- **Loop seam, picture:**
+  - The change from the last frame to the first frame (3.52) is in line with the neighbouring frame steps (3.26 / 3.40).
+  - The camera hands over to the opening rush-in with the same position and speed. Earth's spin, the clouds and the star streaks are phase-locked across the seam.
+  - The counter reads 0 MPH on "still" and fires from 0 again on the loop.
+- **Loop seam, sound:** the music is exactly 8 bars per loop, E → Am on the seam. The audio is circular, with no click: the sample jump at the seam (0.001) is smaller than a typical sample step (0.008).
+- **Thumbnails:** "500,000 MPH" (frame 42), "ONE LAP = 230 MILLION YEARS" (frame 378), "LAST TIME WE WERE HERE" (frame 563). All text is inside the safe zone.
