@@ -564,6 +564,76 @@ cnt.links.new(cpr.outputs[0], cmx.inputs[2])
 cnt.links.new(cmx.outputs[0], cout.inputs[0])
 
 
+
+# ---- bake the cloud layer once into an equirectangular texture (the procedural noise cost ~13 s per frame)
+def bake_clouds(path, w=4096, h=2048):
+    me = bpy.data.meshes.new("BakePlane")
+    me.from_pydata([(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)], [], [[0, 1, 2, 3]])
+    uvl = me.uv_layers.new()
+    for i_, uv_ in enumerate(((0, 0), (1, 0), (1, 1), (0, 1))):
+        uvl.data[i_].uv = uv_
+    ob = bpy.data.objects.new("BakePlane", me)
+    col.objects.link(ob)
+    m = cloud_m.copy()
+    nt = m.node_tree
+    mp = next(n for n in nt.nodes if n.type == "MAPPING")
+    tcn = nt.nodes.new("ShaderNodeTexCoord")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(tcn.outputs["UV"], sep.inputs[0])
+    def math_(op, a, b=None, c_=None):
+        n = nt.nodes.new("ShaderNodeMath")
+        n.operation = op
+        for k_, v_ in enumerate((a, b, c_)):
+            if v_ is None:
+                continue
+            if isinstance(v_, (int, float)):
+                n.inputs[k_].default_value = v_
+            else:
+                nt.links.new(v_, n.inputs[k_])
+        return n.outputs[0]
+    lon = math_("MULTIPLY", math_("SUBTRACT", sep.outputs["X"], 0.5), 2 * math.pi)
+    lat = math_("MULTIPLY", math_("SUBTRACT", sep.outputs["Y"], 0.5), math.pi)
+    cl = math_("COSINE", lat)
+    cmb = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(math_("MULTIPLY", math_("MULTIPLY", cl, math_("COSINE", lon)), 1.006), cmb.inputs["X"])
+    nt.links.new(math_("MULTIPLY", math_("MULTIPLY", cl, math_("SINE", lon)), 1.006), cmb.inputs["Y"])
+    nt.links.new(math_("MULTIPLY", math_("SINE", lat), 1.006), cmb.inputs["Z"])
+    nt.links.new(cmb.outputs[0], mp.inputs["Vector"])
+    mix_ = next(n for n in nt.nodes if n.type == "MIX" and n.blend_type == "MULTIPLY" and n.data_type == "RGBA")
+    em = nt.nodes.new("ShaderNodeEmission")
+    nt.links.new(mix_.outputs[2], em.inputs["Color"])
+    out_ = next(n for n in nt.nodes if n.type == "OUTPUT_MATERIAL")
+    nt.links.new(em.outputs[0], out_.inputs[0])
+    im = bpy.data.images.new("CloudBake", w, h, float_buffer=False)
+    tn = nt.nodes.new("ShaderNodeTexImage")
+    tn.image = im
+    nt.nodes.active = tn
+    ob.data.materials.append(m)
+    for o_ in list(bpy.context.view_layer.objects):
+        o_.select_set(False)
+    ob.select_set(True)
+    bpy.context.view_layer.objects.active = ob
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 1
+    bpy.ops.object.bake(type="EMIT", margin=0)
+    im.filepath_raw = path
+    im.file_format = "PNG"
+    im.save()
+    bpy.data.objects.remove(ob)
+    bpy.data.materials.remove(m)
+
+
+CLOUD_PNG = os.path.join(TEX, "clouds_baked.png")
+if not os.path.exists(CLOUD_PNG):
+    bake_clouds(CLOUD_PNG)
+cimg = cnt.nodes.new("ShaderNodeTexImage")
+cimg.image = img("clouds_baked.png", "sRGB")   # the bake was written sRGB-encoded
+cimg.interpolation = "Cubic"
+cnt.links.new(lonlat_vector(cnt, ctc.outputs["Object"]), cimg.inputs["Vector"])
+cnt.links.new(cimg.outputs["Color"], cmul.inputs[0])            # the noise nodes are now unused
+CLOUD_W = cnt.nodes.new("ShaderNodeValue").outputs[0]            # (kept so pose code can still set it)
+
+
 def atmo_mat(name, sun_pos):
     """Thin glowing shell: bright blue at the limb on the day side, fading into the night side."""
     m, nt, out = new_mat(name)
@@ -993,6 +1063,8 @@ c = scene.cycles
 c.device = "CPU"
 c.use_adaptive_sampling = True
 c.adaptive_threshold = 0.07
+c.denoising_quality = "BALANCED"
+c.denoising_prefilter = "FAST"
 c.use_denoising = True
 c.max_bounces = 4
 c.diffuse_bounces = 1
@@ -1007,7 +1079,7 @@ try:
     scene.view_settings.exposure = 0.0
 except Exception:
     pass
-SPP = {"earth": 16, "orbit": 12, "galaxy": 8}
+SPP = {"earth": 12, "orbit": 10, "galaxy": 8}
 if os.environ.get("SP_EXP"):                       # experiments
     exec(os.environ["SP_EXP"])
 
