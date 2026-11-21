@@ -1,0 +1,40 @@
+name: Download the barreleye Short as one MP4
+on:
+  push:
+    branches: [codex/barreleye-recovery-render]
+    paths: ['.github/workflows/barreleye-single-file.yml']
+permissions:
+  actions: read
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 44947444796
+          github-token: ${{ github.token }}
+          name: barreleye-mp4
+          path: output
+      - name: Verify the exact MP4 and show its checksum
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, json
+          folder = Path("output")
+          film = folder / "barreleye.mp4"
+          assert 0 < film.stat().st_size < 100_000_000
+          assert film.read_bytes()[4:8] == b"ftyp"
+          q = json.loads((folder / "qa/measurements.json").read_text())
+          assert q["size"] == [1080, 1920] and q["fps"] == 30
+          assert not any(q[key] for key in ("black", "jumps", "freezes"))
+          assert json.loads((folder / "qa/final-asr.json").read_text())["word_for_word"]
+          print(f"{film.stat().st_size} bytes, SHA256 {hashlib.sha256(film.read_bytes()).hexdigest()}")
+          print(q)
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          path: output/barreleye.mp4
+          archive: false
+          retention-days: 14
