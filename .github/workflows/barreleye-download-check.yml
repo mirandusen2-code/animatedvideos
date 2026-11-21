@@ -1,0 +1,27 @@
+name: Check the single-file movie download
+on:
+  push:
+    branches: [codex/barreleye-recovery-render]
+    paths: ['.github/workflows/barreleye-download-check.yml']
+permissions:
+  actions: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - name: Verify downloaded bytes against the original encode
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14728337264/zip" > "$RUNNER_TEMP/retrieved"
+          file "$RUNNER_TEMP/retrieved"
+          sha256sum "$RUNNER_TEMP/retrieved"
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib, os
+          b=(Path(os.environ['RUNNER_TEMP'])/'retrieved').read_bytes()
+          print('File signature:', b[:12].hex())
+          assert b[4:8] == b'ftyp'
+          assert hashlib.sha256(b).hexdigest() == 'b6754b3db26c2a449c779d9b1efe7379cf5356f2c9cd9807767e3d2f6267a517'
+          PY
