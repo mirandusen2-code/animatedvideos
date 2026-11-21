@@ -29,4 +29,13 @@ What do you think Earth will look like the next time we're back here — 230 mil
 | `thumb_pangaea.png` | LAST TIME WE WERE HERE | Pangaea curiosity |
 
 ## QA passed
-QA_PLACEHOLDER
+- **Video:** 1080×1920, 30 fps, 538 frames, 17.9 s, H.264 + AAC. Rendered at full resolution with no upscaling, no motion blur and no grain.
+- **Script:** the speed is said only once (the hook). The middle lines name each motion without numbers.
+- **Frame check:** every frame was reviewed on contact sheets. No glitches and no black frames. qa_motion: 6 planned cuts, no unplanned jumps, no frozen frames.
+- **Loudness:** −14.0 LUFS.
+- **Speech (Whisper on the final mix, played twice in a row):** every line matches the script. Across the seam it is heard as one grammatical sentence: "So even when you're sitting perfectly still, you're moving at half a million miles an hour."
+- **Loop seam, picture:**
+  - No cut after Pangaea: it turns back into today's Earth and the camera glides into the exact frame-0 framing at the same speed.
+  - The change from the last frame to the first frame (3.50) is in line with the neighbouring frame steps (3.26 / 3.39).
+- **Loop seam, sound:** the audio is circular, with no click; the jump at the seam (0.04) is well inside the normal sample range.
+- **Thumbnails:** "500,000 MPH", "ONE LAP = 230 MILLION YEARS", "LAST TIME WE WERE HERE".

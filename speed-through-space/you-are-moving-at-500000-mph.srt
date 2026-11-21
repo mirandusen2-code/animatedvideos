@@ -1,27 +1,27 @@
 1
-00:00:00,100 --> 00:00:02,240
+00:00:00,100 --> 00:00:02,259
 You're moving at 500,000 mph.
 
 2
-00:00:02,609 --> 00:00:05,419
-Earth spins you around at up to 1,000 mph,
+00:00:02,700 --> 00:00:04,000
+Earth spins you around,
 
 3
-00:00:05,660 --> 00:00:08,480
-While it races around the Sun at 67,000.
+00:00:04,299 --> 00:00:05,400
+It races around the Sun,
 
 4
-00:00:08,858 --> 00:00:12,699
-And the Sun drags all of us around the galaxy at 500,000.
+00:00:05,589 --> 00:00:07,719
+And the Sun drags all of us around the galaxy.
 
 5
-00:00:13,035 --> 00:00:16,199
+00:00:08,259 --> 00:00:11,359
 One trip around takes 230 million years.
 
 6
-00:00:16,679 --> 00:00:19,760
+00:00:11,859 --> 00:00:14,980
 Last time we were here, the first dinosaurs were just appearing.
 
 7
-00:00:20,399 --> 00:00:22,039
-And even when you're sitting perfectly still,
+00:00:15,660 --> 00:00:17,739
+So even when you're sitting perfectly still,
