@@ -1,0 +1,48 @@
+name: Pufferfish camera proof
+on:
+  push:
+    branches: [codex/pufferfish-sand-circle]
+    paths: ['.github/workflows/pufferfish-proof.yml','pufferfish-sand-circle/scene.py','pufferfish-sand-circle/timeline.py']
+permissions:
+  contents: read
+jobs:
+  proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: pufferfish-sand-circle
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: pufferfish-sand-circle
+          persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            pufferfish-sand-circle/vo/timing.json
+            pufferfish-sand-circle/vo/narration.wav
+          key: pufferfish-voice-v1-${{ hashFiles('pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/voiceover.py') }}
+          fail-on-cache-miss: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install native Cycles and imaging libraries
+        run: pip install -q 'bpy==5.2.3' pillow
+      - name: Render camera proof and benchmark a native frame
+        run: |
+          mkdir -p qa
+          python scene.py test > "$RUNNER_TEMP/proof.log" 2>&1 || { tail -40 "$RUNNER_TEMP/proof.log"; exit 1; }
+          python - <<'PY'
+          from PIL import Image,ImageDraw
+          from pathlib import Path
+          import base64,io
+          im=Image.new('RGB',(660,440),'#242426')
+          for j,p in enumerate(sorted(Path('qa/preview').glob('*.png'))):
+              pic=Image.open(p);pic.thumbnail((104,185))
+              x=(j%6)*110+3;y=(j//6)*220
+              im.paste(pic,(x,y));ImageDraw.Draw(im).text((x,y+186),p.stem,fill='white')
+          buf=io.BytesIO();im.save(buf,'JPEG',quality=77)
+          print('PROOFDATA '+base64.b64encode(buf.getvalue()).decode('ascii')+' ENDPROOF')
+          PY
+          FRAME_DIR="$RUNNER_TEMP/proof-native" /usr/bin/time -f 'BENCHMARK %e seconds' bash render_missing.sh 103 104
