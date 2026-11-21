@@ -2,7 +2,14 @@
 
 - **Format:** YouTube Short, 1080×1920, 30 fps, 23.9 s, seamless loop. English narration, captions synced to the measured word times.
 - **Tone:** serious and awe-inspiring. Real NASA Earth imagery, a dark cinematic score, and big, clean numbers.
-- **Hook (0 s):** "You're moving at half a million miles an hour." Earth from space with a glowing "you" beacon over the USA, stars streaking past, and a speed counter shooting from 0 to 500,000 MPH.
+- **Hook (first second):** a bold "you" claim ("You're moving at half a million miles an hour.") with five things already happening on frame 0:
+  - the camera rushes in toward Earth (a pattern interrupt);
+  - stars streak past;
+  - a "YOU" tag sits on the beacon over the USA;
+  - a big speed counter is already climbing from 0 (about 440,000 after 0.7 s, 500,000 on the word);
+  - a whoosh and a hit sound on frame 0.
+  
+  The counter reads "0 MPH" at the end ("…sitting perfectly still,"), so the loop restarts by firing it from 0 again.
 - **Structure:** each line zooms out one scale (Earth's spin → orbit around the Sun → orbit around the galaxy), then turns the scale into time (one trip around = 230 million years) and pays it off with Pangaea and the first dinosaurs.
 - **Loop:** "…And even when you're sitting perfectly still," → "you're moving at half a million miles an hour." The loop line was cut from the full sentence, so the intonation continues. The last shot glides back into the exact opening framing, and Earth's spin, the clouds and the streaking stars are phase-locked across the seam.
 

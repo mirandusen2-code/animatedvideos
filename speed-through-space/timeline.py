@@ -142,7 +142,8 @@ def _shots():
     return [
         # t0, t1, loc0, loc1, target0, target1, lens0, lens1, set, focus
         # S0 hook: Earth close, the beacon on the day side, stars streaking past
-        (0.0, l["spin"][0] - 0.15, (0.55, -3.05, 1.15), (0.45, -2.85, 1.05), (0.0, 0.0, 0.55), (0.0, 0.0, 0.52), 34, 34, "earth"),
+        # (the camera rushes in from frame 0: see cam0())
+        (0.0, l["spin"][0] - 0.15, (1.05, -4.7, 1.7), (0.42, -2.85, 1.02), (0.06, 0.0, 0.64), (0.0, 0.0, 0.52), 34, 34, "earth"),
         # S1 Earth spins (time-lapse), the beacon draws its latitude circle
         (l["spin"][0] - 0.15, l["orbit"][0] - 0.02, (2.2, -3.4, 2.6), (2.0, -3.6, 2.2), (0, 0, 0.1), (0, 0, 0.05), 30, 30, "earth"),
         # S2 the Earth races around the Sun
@@ -154,7 +155,7 @@ def _shots():
         # S5 230 million years ago: Pangaea
         (l["dino"][0] - 0.12, l["loop"][0] - 0.15, (1.6, -3.0, 1.4), (1.3, -3.25, 1.2), (0, 0, 0.15), (0, 0, 0.12), 32, 32, "earth"),
         # S6 last shot glides back into the exact opening framing: the loop restarts as a match cut
-        (l["loop"][0] - 0.15, DUR, (1.2, -3.7, 1.9), (0.55, -3.05, 1.15), (0.1, 0.0, 0.62), (0.0, 0.0, 0.55), 30, 34, "earth"),
+        (l["loop"][0] - 0.15, DUR, (1.6, -5.4, 2.3), None, (0.12, 0.0, 0.7), None, 30, 34, "earth"),
     ]
 
 
@@ -178,23 +179,33 @@ def env_t(t):
     return t - DUR if shot_index(t) == len(SHOTS) - 1 else t
 
 
+CAM0_K = 1.1                       # opening push-in: fast at frame 0, settling (exponential approach)
+
+
+def cam0(te):
+    """Opening camera as a function of the loop clock. It is defined for negative times too (further back on
+    the same line, moving at the same speed), so the last shot can hand over to it with no jump in position or
+    speed across the loop point."""
+    s0 = SHOTS[0]
+    f = (1 - math.exp(-CAM0_K * te)) / (1 - math.exp(-CAM0_K * s0[1]))
+    return lerpv(s0[2], s0[3], f), lerpv(s0[4], s0[5], f), s0[6]
+
+
 def camera(t):
     i = shot_index(t)
     t0, t1, p0, p1, a0, a1, l0, l1, _set = SHOTS[i]
     x = clamp((t - t0) / (t1 - t0))
+    if i == 0:
+        return cam0(t)
     if i == len(SHOTS) - 1:
-        # ease in, then arrive with the same slow speed the opening push-in starts with
-        h0 = SHOTS[0]
-        v0 = 0.15 / (h0[1] - h0[0])
-        d_end = math.dist(p0, p1)
-        k = clamp(v0 * math.dist(h0[2], h0[3]) / max(d_end, 1e-6) * (t1 - t0), 0.0, 0.9)
-        u = (1 - k) * smoother(x) + k * x
-        lens = lerp(l0, l1, smoother(x / 0.7))
+        # blend from this shot's own start into the opening camera; fully on it for the last 15 %,
+        # so position AND speed match frame 0
+        cp, ct, cl = cam0(env_t(t))
+        w = smoother(x / 0.85)
+        return lerpv(p0, cp, w), lerpv(a0, ct, w), lerp(l0, cl, w)
     elif i == 3:
         u = ease_in(x) * 0.25 + smoother(x) * 0.75       # the big pull-back accelerates away
-        lens = lerp(l0, l1, u)
     else:
         u = smoother(x) * 0.85 + 0.15 * x
-        lens = lerp(l0, l1, u)
     p = lerpv(p0, p1, u)
-    return p, lerpv(a0, a1, u), lens
+    return p, lerpv(a0, a1, u), lerp(l0, l1, u)

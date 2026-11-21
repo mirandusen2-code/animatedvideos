@@ -224,11 +224,22 @@ def overlays(img, t):
     S = T.SHOTS
     i = T.shot_index(t)
     GREEN = (120, 235, 170)
-    if i == 0:                                   # counter shoots up from 0 to 500,000 at the start of the loop
-        u = T.smoother(t / (T.T_500 + 0.55))
-        a = T.smoother(t / 0.2) * (1 - T.smoother((t - S[0][1] + 0.18) / 0.18))
+    if i == 0:                                   # frame 0: the number is already there and already climbing
+        u = T.ease_out(t / (T.T_500 + 0.55))
+        a = 1 - T.smoother((t - S[0][1] + 0.18) / 0.18)
         pop = 1 + 0.15 * math.exp(-max(0.0, t - T.T_500 - 0.55) / 0.1) * (1 if u >= 1 else 0)
         speed(img, round(500000 * u, -3), t, a, pop=pop)
+    if i == 6:                                   # "...sitting perfectly still": it reads 0, then the loop fires it up again
+        speed(img, 0, t, T.smoother((t - T.T_STILL + 0.35) / 0.3))
+    if i in (0, 6):                              # "YOU" tag on the beacon, from frame 0
+        te = T.env_t(t)
+        ang = T.spin_angle(t, te)
+        la, lo = math.radians(T.YOU_LAT), math.radians(T.YOU_LON) + ang
+        p = (1.02 * math.cos(la) * math.cos(lo), 1.02 * math.cos(la) * math.sin(lo), 1.02 * math.sin(la))
+        x, y = project(p, t)
+        a = (1 - T.smoother((t - S[0][1] + 0.25) / 0.2)) if i == 0 else 1.0
+        if SAFE[0] + 60 < x < SAFE[2] - 60 and SAFE[1] + 200 < y < SAFE[3] - 300:
+            pill(img, "YOU", x, y - 62, 40, alpha=a, accent=ICE)
     if i == 1:
         a = window(t, T.T_1000 - 0.05, S[1][1], 0.15)
         speed(img, 1000, t, a)
@@ -475,7 +486,8 @@ def make_music_and_sfx():
         st = np.arange(int(0.05 * SR)) / SR
         return np.sin(2 * np.pi * f * st) * np.exp(-st * 90)
 
-    add(sfx, 0.0, swoosh(1.2, 41, up=True), 0.16)                                # counter shoots up (loops in)
+    add(sfx, 0.0, swoosh(1.2, 41, up=True), 0.22)                                # rush in + counter (loops in)
+    add(sfx, 0.0, thump(160, 50, 0.5), 0.35)                                     # hit on frame 0
     add(sfx, T.T_500 + 0.5, thump(120, 45, 0.7), 0.5)                            # 500,000!
     add(sfx, T.T_SPINS - 0.1, swoosh(1.4, 42, up=True), 0.12)                    # the Earth spins up
     add(sfx, T.T_1000, clink(1568, 0.6), 0.06)
