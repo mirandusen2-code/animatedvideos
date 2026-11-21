@@ -29,4 +29,21 @@ Which animal should we x-ray next? 🩻
 | `thumb_why.png` | WHY CUBES? | Curiosity: cubes on the rock, the round one rolling off |
 
 ## QA passed
-QA_PLACEHOLDER
+- **Video:** 1080×1920, 30 fps, 645 frames, 21.5 s, H.264 + AAC 44.1 kHz. Rendered at full resolution with no upscaling, no motion blur and no grain.
+- **Frame check:** I reviewed every frame on contact sheets, both the raw renders and the final mp4. Two bugs were found and fixed before the final render:
+  - Round poop left the gut before it was squeezed. The log is now shorter and faster, so only square cubes come out.
+  - The fur disappeared in a single frame when the x-ray turned on. The hair now fades out with the x-ray.
+  - After these fixes: no glitches, no parts intersecting, no blown-out areas.
+- **Motion (qa_motion):** 8 planned cuts, no unplanned jumps, no frozen frames. blackdetect found no black frames.
+- **Captions:**
+  - Every caption stays inside the safe zone (asserted in code) and is synced word by word to the voice.
+  - Line breaks are fixed per caption group.
+  - Labels: BARE-NOSED WOMBAT, REAL SIZE: ABOUT 0.8 IN, X-RAY, STIFF / STRETCHY, WATER SQUEEZED OUT, a counter from 1 to 100 cubes in one night, TERRITORY MARKER, CUBES STAY PUT.
+- **Loudness:** −14.0 LUFS integrated, LRA 2.0 LU.
+- **Speech (Whisper small.en on the final mix, played twice in a row):** every line matches the script. Whisper writes "Wombats" as "Wombat's", which sounds the same.
+- **Loop seam, picture:** the change from the last frame to the first frame is 1.82, about the same as a normal frame step (median 1.67). The last shot glides back into the exact opening framing, and the wombat's walk is phase-locked across the seam.
+- **Loop seam, sound:**
+  - The music is exactly 8 bars per loop and resolves G → C on the seam.
+  - The audio is circular (folded tail), with no click: the sample jump at the seam (0.005) is smaller than a typical sample step (0.008).
+  - "…that's why" was cut from the full sentence "that's why wombats poop cubes", so the voice keeps its continuing intonation into "wombats poop cubes." The gap between the two is about 0.16 s.
+- **Thumbnails:** "WOMBATS POOP CUBES" (frame 155), "HOW POOP GETS SQUARE" (frame 353), "WHY CUBES?" (frame 540). All text is inside the safe zone.

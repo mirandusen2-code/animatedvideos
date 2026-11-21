@@ -841,7 +841,15 @@ hair_nt.links.new(hpow.outputs[0], htip.inputs["Factor"])
 hair_nt.links.new(hrand.outputs[0], htip.inputs["A"])
 htip.inputs["B"].default_value = (0.36, 0.31, 0.26, 1)
 hair_nt.links.new(htip.outputs[2], hp_.inputs["Base Color"])
-hair_nt.links.new(hp_.outputs[0], hair_out.inputs[0])
+hxv = node(hair_nt, "ShaderNodeValue")             # fades the fur out when the x-ray switches on
+hxv.outputs[0].default_value = 0.0
+HAIR_FADE = hxv.outputs[0]
+hxt = node(hair_nt, "ShaderNodeBsdfTransparent")
+hxm = hair_nt.nodes.new("ShaderNodeMixShader")
+hair_nt.links.new(hxv.outputs[0], hxm.inputs[0])
+hair_nt.links.new(hp_.outputs[0], hxm.inputs[1])
+hair_nt.links.new(hxt.outputs[0], hxm.inputs[2])
+hair_nt.links.new(hxm.outputs[0], hair_out.inputs[0])
 fog(hair_m, 0.045)
 
 def fur_modifier(obj, density, length):
@@ -969,8 +977,9 @@ def pose_wombat(pos, heading, phase, moving, t, xray=0.0):
         lo.rotation_euler = (0, -mv * 0.42 * math.sin(ph), 0)
         lo.location = HIPS[i_] + V((0, 0, mv * max(0.0, 0.03 * math.cos(ph))))
     XRAY.default_value = xray
+    HAIR_FADE.default_value = min(1.0, xray * 1.15)
     for fm_ in FUR_MODS:
-        fm_.show_render = xray < 0.5
+        fm_.show_render = xray < 0.97
     GUT_S.default_value = 3.5 * xray
     for o_ in GUT_OBJS:
         o_.hide_render = xray < 0.01
