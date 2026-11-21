@@ -1,0 +1,47 @@
+name: Pufferfish narration and word timing
+on:
+  push:
+    branches: [codex/pufferfish-sand-circle]
+    paths: ['.github/workflows/pufferfish-voice.yml','pufferfish-sand-circle/voiceover.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/script.py']
+permissions:
+  contents: read
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: pufferfish-sand-circle
+    env:
+      HF_HUB_DISABLE_XET: '1'
+      OMP_NUM_THREADS: '3'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: pufferfish-sand-circle
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg espeak-ng libsndfile1
+          pip install kokoro-onnx soundfile scipy faster-whisper
+          export KOKORO_MODEL="$RUNNER_TEMP/kokoro.onnx" KOKORO_VOICES="$RUNNER_TEMP/voices.bin"
+          curl --retry 3 -fsSL https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx -o "$KOKORO_MODEL"
+          curl --retry 3 -fsSL https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin -o "$KOKORO_VOICES"
+          python voiceover.py
+          python realign.py
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            pufferfish-sand-circle/vo/timing.json
+            pufferfish-sand-circle/vo/narration.wav
+          key: pufferfish-voice-v1-${{ hashFiles('pufferfish-sand-circle/script.py','pufferfish-sand-circle/realign.py','pufferfish-sand-circle/voiceover.py') }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pufferfish-word-times
+          path: |
+            pufferfish-sand-circle/vo/timing.json
+            pufferfish-sand-circle/vo/words-review.json
+          retention-days: 7
