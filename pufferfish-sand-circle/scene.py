@@ -230,6 +230,9 @@ def pose(i):
     t=i/FPS;name,u,_,_=shot(t)
     coords,h=puffer_state(t);x,y,z=coords
     isclose=name in ('portrait','fins','pass','trench')
+    nest.hide_render=isclose or name=='roe'
+    early.hide_render=not isclose
+    eggbed.hide_render=name!='roe'
     if not isclose:z+=float(relief(x,y))
     else:z+=float(early_base(x-4,y))-.0015
     hero.location=(x,y,z);hero.rotation_euler=(.025*sin(4*t),.02*cos(5.2*t),h+.018*sin(8.7*t))
