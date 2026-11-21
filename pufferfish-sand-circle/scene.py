@@ -72,6 +72,16 @@ cr=ramp(nd,[(0,(.13,.132,.097)),(.53,(.39,.325,.197)),(.90,(.61,.525,.347))]);lk
 noise=nd.new('ShaderNodeTexNoise');noise.inputs['Scale'].default_value=4.5;noise.inputs['Detail'].default_value=1.4;lk.new(tex.outputs['Object'],noise.inputs[0])
 wash=ramp(nd,[(.12,(.54,.67,.61)),(.60,(.94,.93,.80)),(.82,(1.0,.99,.88))]);lk.new(noise.outputs['Fac'],wash.inputs[0])
 mix=nd.new('ShaderNodeMixRGB');mix.blend_type='MULTIPLY';mix.inputs[0].default_value=.85;lk.new(cr.outputs[0],mix.inputs[1]);lk.new(wash.outputs[0],mix.inputs[2]);lk.new(mix.outputs[0],p.inputs['Base Color'])
+# A broad, softly focused refracted light field drifts across the sand in world space.
+ty,tx=np.mgrid[0:256,0:256].astype('f')*(2*pi/256)
+field=np.sin(3*tx+.85*np.sin(2*ty)+.22*np.cos(3*tx+ty))+np.cos(3*ty+.72*np.cos(2*tx))+.33*np.sin(4*tx+2*ty)
+light=.78+.22*np.exp(-(field/.29)**2)
+ci=bpy.data.images.new('Soft refracted skylight',256,256,alpha=False);ci.colorspace_settings.name='Non-Color'
+ca=np.ones((256,256,4),np.float32);ca[:,:,:3]=light[:,:,None];ci.pixels.foreach_set(ca.ravel());ci.update()
+cu=nd.new('ShaderNodeVectorMath');cu.operation='SCALE';cu.inputs['Scale'].default_value=1.3;lk.new(tex.outputs['Object'],cu.inputs[0])
+shift=nd.new('ShaderNodeVectorMath');shift.operation='ADD';lk.new(cu.outputs[0],shift.inputs[0])
+ci_tex=nd.new('ShaderNodeTexImage');ci_tex.image=ci;lk.new(shift.outputs[0],ci_tex.inputs[0])
+illum=nd.new('ShaderNodeMixRGB');illum.blend_type='MULTIPLY';illum.inputs[0].default_value=.63;lk.new(mix.outputs[0],illum.inputs[1]);lk.new(ci_tex.outputs[0],illum.inputs[2]);lk.new(illum.outputs[0],p.inputs['Base Color'])
 bump=nd.new('ShaderNodeBump');bump.inputs['Strength'].default_value=.22;bump.inputs['Distance'].default_value=.00038;lk.new(img.outputs['Color'],bump.inputs['Height']);lk.new(bump.outputs[0],p.inputs['Normal'])
 
 def relief(x,y):
@@ -79,9 +89,9 @@ def relief(x,y):
     outer=np.clip((r-.235)/.19,0,1)*np.clip((1.045+.012*np.sin(5*a)-r)/.22,0,1)
     phase=26*a+.63*np.sin(4*a+5*r)+.45*np.sin(7*a-3*r)+1.3*(r-.56)**2+.25*np.sin(18*r+2*a)
     folds=(.5+.5*np.cos(phase))**1.6
-    ring=outer*(.085*folds-.017)*(.9+.16*np.cos(4*a+2*r))
-    maze=np.sin(102*r+4.6*np.sin(9*x-12*y)+2*np.sin(16*y+1)+2.6*np.sin(14*x+9*y))
-    center=.006*np.tanh(2.2*maze)*np.clip((.37-r)/.09,0,1)
+    ring=outer*(.074*folds-.015)*(.9+.16*np.cos(4*a+2*r))
+    maze=np.sin(44*x+3.3*np.sin(11*y)+1.9*np.cos(14*x+9*y))+np.sin(43*y+2.8*np.cos(11*x-6*y))+.53*np.cos(28*(x+y)+1.5*np.sin(19*x))
+    center=.0057*(np.exp(-(maze/.32)**2)-.35)*np.clip((.37-r)/.09,0,1)
     bed=.0027*np.sin(11*x-8*y+1.8*np.sin(4*y))+.0017*np.sin(17*y+3*x)
     return ring+center+bed
 
@@ -101,7 +111,7 @@ nt=len(aa);nr=len(rs);faces=[(j*nt+i,(j+1)*nt+i,(j+1)*nt+(i+1)%nt,j*nt+(i+1)%nt)
 faces.append(tuple(reversed(range(nt))))
 nest=mesh('Twenty-six radial ridges and fine central maze',verts,faces,sand)
 def early_base(x,y):return .0014*np.sin(21*x+7*y)+.00065*np.sin(64*y+8*x)+.00055*np.sin(47*x-28*y)
-early,X,Y,early_co=grid('Sand displaced behind paired fins',np.linspace(-.6,.6,181),np.linspace(-.38,.38,121),early_base,sand,4)
+early,X,Y,early_co=grid('Sand displaced behind paired fins',np.r_[np.linspace(-1.4,-.61,20),np.linspace(-.6,.6,181),np.linspace(.61,1.4,20)],np.r_[np.linspace(-2.6,-.39,60),np.linspace(-.38,.38,121),np.linspace(.39,2.6,60)],early_base,sand,4)
 bed0=early_base(X,Y);cross=-.0065*np.exp(-(Y/.009)**2)+.0038*np.exp(-((np.abs(Y)-.017)/.0065)**2)
 eggbed,_,_,_=grid('Fine central sand macro',np.linspace(-.065,.065,91),np.linspace(-.065,.065,91),lambda x,y:.00013*np.sin(x*680+y*150)*np.cos(y*615),sand,8)
 
@@ -199,8 +209,8 @@ for i in range(28):
     radius=rng.uniform(.00010,.00031);ob.scale=(radius,radius*.8,radius*.7)
     dust.append((ob,(-1 if i%2 else 1),rng.random(),rng.uniform(.75,1.3),radius))
 
-egg,ep=material('Translucent egg casing',(.70,.63,.40),.19)
-ep.inputs['Transmission Weight'].default_value=.52;ep.inputs['IOR'].default_value=1.36
+egg,ep=material('Translucent egg casing',(.82,.73,.50),.25)
+ep.inputs['Transmission Weight'].default_value=.21;ep.inputs['IOR'].default_value=1.36
 yolk,_=material('Creamy yolk',(.69,.445,.195),.37)
 for i in range(19):
     a=rng.uniform(0,2*pi);r=.0045*rng.random()**.6;x=.0002+r*cos(a);y=r*sin(a);rr=rng.uniform(.00039,.00053)
@@ -209,15 +219,16 @@ for i in range(19):
     sphere('Yolk',(8+x,y,z-.08*rr),(rr*.67,rr*.63,rr*.64),yolk,sub=12)
 
 world=bpy.data.worlds.new('Blue-green underwater fill');world.use_nodes=True
-world.node_tree.nodes['Background'].inputs[0].default_value=(.43,.68,.73,1)
-world.node_tree.nodes['Background'].inputs[1].default_value=.48;sc.world=world
-sun=bpy.data.lights.new('Oblique filtered sunlight','SUN');sun.energy=3.3;sun.angle=.13;sun.color=(1.,.90,.72)
+world.node_tree.nodes['Background'].inputs[0].default_value=(.42,.70,.81,1)
+world.node_tree.nodes['Background'].inputs[1].default_value=.74;sc.world=world
+sun=bpy.data.lights.new('Oblique filtered sunlight','SUN');sun.energy=3.25;sun.angle=.16;sun.color=(.98,.95,.80)
 so=bpy.data.objects.new('Raking sunlight',sun);sc.collection.objects.link(so)
-so.rotation_euler=Vector((.78,.27,-.52)).to_track_quat('-Z','Y').to_euler()
+so.rotation_euler=Vector((.78,.27,-.68)).to_track_quat('-Z','Y').to_euler()
 camdata=bpy.data.cameras.new('Documentary port');camdata.type='ORTHO';camdata.clip_start=.0006;camdata.clip_end=15
 cam=bpy.data.objects.new('Camera',camdata);sc.collection.objects.link(cam);sc.camera=cam
 def pose(i):
     t=i/FPS;name,u,_,_=shot(t)
+    phase=2*pi*t/DUR;shift.inputs[1].default_value=(.044*sin(phase),.034*cos(phase),0)
     coords,h=puffer_state(t);x,y,z=coords
     isclose=name in ('portrait','fins','pass','trench')
     if not isclose:z+=float(relief(x,y))
