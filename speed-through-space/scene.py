@@ -871,22 +871,29 @@ scene.camera = cam
 def pose_earth(t, te, i):
     spin = T.spin_angle(t, te)
     pang = i == 5
+    w = T.end_w(t) if i == 6 else 0.0            # last shot: Pangaea turns back into today's Earth, no cut
     if pang:
-        spin = math.radians(-50) + 0.05 * (t - T.SHOTS[5][0])
+        spin = T.pang_spin(t)
+    elif i == 6:
+        spin = T.lerp(T.pang_spin(t), spin, w)
+    tc = T.lerp(t, te, w) if i == 6 else te       # cloud clock: continuous from S5 into the loop clock
     EARTH.rotation_euler = (0, 0, spin)
-    CLOUDS.rotation_euler = (0, 0, spin + 0.012 * te)
-    CLOUD_W.default_value = 0.02 * te
-    CLOUD_D.default_value = 0.5 if pang else 0.9
-    PANG.default_value = 1.0 if pang else 0.0
+    CLOUDS.rotation_euler = (0, 0, spin + 0.012 * tc)
+    CLOUD_W.default_value = 0.02 * tc
+    pv = 1.0 if pang else (1.0 - T.smoother(w / 0.6) if i == 6 else 0.0)
+    CLOUD_D.default_value = 0.5 + 0.4 * (1 - pv)
+    PANG.default_value = pv
+    bfade = T.smoother((w - 0.5) / 0.3) if i == 6 else 1.0
     # hide the beacon while it is round the back of the globe (its glow would peek past the limb)
     bdir = V((math.cos(math.radians(T.YOU_LAT)) * math.cos(math.radians(T.YOU_LON) + spin),
               math.cos(math.radians(T.YOU_LAT)) * math.sin(math.radians(T.YOU_LON) + spin), math.sin(math.radians(T.YOU_LAT))))
     facing = bdir.dot((V(T.camera(t)[0]) - bdir).normalized())
     for o_ in (YOU, HALO, PRING):
-        o_.hide_render = pang or facing < 0.12
+        o_.hide_render = pang or facing < 0.12 or bfade < 0.01
+    YOU.scale = HALO.scale = (bfade,) * 3
     # beacon pulse (phase-locked to the loop clock)
     ph = (te / 1.2) % 1.0
-    PRING.scale = (0.02 + 0.09 * ph,) * 3
+    PRING.scale = ((0.02 + 0.09 * ph) * bfade,) * 3
     PRING_A.default_value = (1 - ph) ** 1.5
     HALO_A.default_value = 0.55 + 0.2 * math.sin(te * 5.2)
     # latitude trail while the Earth spins
@@ -905,7 +912,7 @@ def pose_earth(t, te, i):
     STREAKS.o.hide_render = not son
     if son:
         STREAKS.set(streak_verts(te))
-        STREAK_A.default_value = 0.9
+        STREAK_A.default_value = 0.9 * (T.smoother((w - 0.25) / 0.5) if i == 6 else 1.0)
 
 
 def pose_orbit(t):

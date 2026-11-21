@@ -155,7 +155,8 @@ def _shots():
         # S5 230 million years ago: Pangaea
         (l["dino"][0] - 0.12, l["loop"][0] - 0.15, (1.6, -3.0, 1.4), (1.3, -3.25, 1.2), (0, 0, 0.15), (0, 0, 0.12), 32, 32, "earth"),
         # S6 last shot glides back into the exact opening framing: the loop restarts as a match cut
-        (l["loop"][0] - 0.15, DUR, (1.6, -5.4, 2.3), None, (0.12, 0.0, 0.7), None, 30, 34, "earth"),
+        # no cut from Pangaea: it starts exactly where S5 ends and blends into the opening camera (see camera())
+        (l["loop"][0] - 0.15, DUR, (1.3, -3.25, 1.2), None, (0, 0, 0.12), None, 32, 34, "earth"),
     ]
 
 
@@ -189,6 +190,19 @@ def cam0(te):
     s0 = SHOTS[0]
     f = (1 - math.exp(-CAM0_K * te)) / (1 - math.exp(-CAM0_K * s0[1]))
     return lerpv(s0[2], s0[3], f), lerpv(s0[4], s0[5], f), s0[6]
+
+
+def end_w(t):
+    """0 -> 1 across the last shot: how far the world has blended from Pangaea into the opening."""
+    s = SHOTS[-1]
+    return smoother(clamp((t - s[0]) / (s[1] - s[0])) / 0.85) if t >= s[0] else 0.0
+
+
+PANG_SPIN0 = math.radians(-50)
+
+
+def pang_spin(t):
+    return PANG_SPIN0 + 0.05 * (t - SHOTS[5][0])
 
 
 def camera(t):

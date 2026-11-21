@@ -237,7 +237,7 @@ def overlays(img, t):
         la, lo = math.radians(T.YOU_LAT), math.radians(T.YOU_LON) + ang
         p = (1.02 * math.cos(la) * math.cos(lo), 1.02 * math.cos(la) * math.sin(lo), 1.02 * math.sin(la))
         x, y = project(p, t)
-        a = (1 - T.smoother((t - S[0][1] + 0.25) / 0.2)) if i == 0 else 1.0
+        a = (1 - T.smoother((t - S[0][1] + 0.25) / 0.2)) if i == 0 else T.smoother((T.end_w(t) - 0.55) / 0.3)
         if SAFE[0] + 60 < x < SAFE[2] - 60 and SAFE[1] + 200 < y < SAFE[3] - 300:
             pill(img, "YOU", x, y - 62, 40, alpha=a, accent=ICE)
     if i == 1:
