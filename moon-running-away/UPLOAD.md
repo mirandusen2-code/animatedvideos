@@ -29,4 +29,8 @@ Would you rather have seen the giant young Moon, or the last total eclipse in 60
 | `thumb_eclipse.png` | NO MORE ECLIPSES | The eclipse twist |
 
 ## QA passed
-QA_PLACEHOLDER
+- 1080x1920, 30 fps, 588 frames, 19.6 s; H.264 + AAC; loudness -14.0 LUFS integrated; no black frames.
+- Every frame checked on contact sheets (shot cuts at frames 59, 150, 226, 311, 389, 512): no artifacts, captions inside the safe zone and synced word by word.
+- Loop seam: picture diff last->first 4.0 (neighbouring steps 3.0 / 3.7), distance read-out and camera continue across the seam; audio seam has no click.
+- Whisper on two looped plays hears one continuous sentence: "...And it's still leaving. Right now, the moon is running away from us."
+
