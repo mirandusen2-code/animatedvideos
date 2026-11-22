@@ -1,0 +1,16 @@
+{
+  "frames": 715,
+  "seconds": 23.833333333333332,
+  "font": "Barlow Semi Condensed",
+  "weight": 700,
+  "font_px": 72,
+  "baseline_px": 1420,
+  "center_x": 540,
+  "max_center_error_px": 0.5,
+  "right_clearance_px": 238,
+  "cues": 22,
+  "timed_words": 66,
+  "audio_sha256": "SHA256=c77fc81473619386cbfb478cb804a1b0f971960ca8d8483ba5e511ba801bcf22",
+  "outside_caption_SSIM": 0.998572,
+  "bytes": 6983304
+}
