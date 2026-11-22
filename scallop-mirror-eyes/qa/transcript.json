@@ -1,0 +1,5 @@
+{
+  "exact": true,
+  "heard": "Did you know a scallop can have up to 200 eyes? Those blue dots along the edge of its shell, each one is an eye. Look inside one. Light passes through the eye and hits a curved mirror at the back. Tiny square crystals tile its surface. The mirror bounces light back onto a retina, like a little reflecting telescope. Can you spot the eyes now?",
+  "expected": "Did you know a scallop can have up to two hundred eyes? Those blue dots along the edge of its shell? Each one is an eye. Look inside one. Light passes through the eye and hits a curved mirror at the back. Tiny square crystals tile its surface. The mirror bounces light back onto a retina, like a little reflecting telescope. Can you spot the eyes now?"
+}
