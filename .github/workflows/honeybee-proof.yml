@@ -1,0 +1,53 @@
+name: Check eight honeybee shots at phone size
+on:
+  push:
+    branches: [codex/honeybee-dance]
+    paths: ['.github/workflows/honeybee-proof.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: honeybee-dance
+          persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/bee-assets
+          key: bee-assets-v1-${{ hashFiles('honeybee-dance/scene.py') }}
+          fail-on-cache-miss: true
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            honeybee-dance/vo/timing.json
+            honeybee-dance/vo/narration.wav
+          key: honeybee-voice-v1-${{ hashFiles('honeybee-dance/script.py','honeybee-dance/realign.py','honeybee-dance/voiceover.py') }}
+          fail-on-cache-miss: true
+      - name: Preview each shot
+        working-directory: honeybee-dance
+        env:
+          BEE_ASSETS: ${{ runner.temp }}/bee-assets
+        run: |
+          pip install -q numpy pillow
+          curl -fsSL --retry 3 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf' -o Montserrat.ttf
+          python - <<'PY'
+          import io,base64
+          from PIL import Image
+          from art import frame
+          from post import compose
+          from timeline import CUTS
+          page=Image.new('RGB',(600,534))
+          for j,(a,b) in enumerate(zip(CUTS,CUTS[1:])):
+              i=round((a+.46*(b-a))*30)
+              page.paste(compose(frame(i),i).resize((150,267),Image.Resampling.LANCZOS),((j%4)*150,(j//4)*267))
+          stream=io.BytesIO();page.save(stream,'JPEG',quality=87)
+          print('BEECUTS',base64.b64encode(stream.getvalue()).decode(),'ENDCUTS')
+          PY
+      - name: Check the preceding film's public mobile download
+        run: |
+          curl -fsSL --retry 3 'https://raw.githubusercontent.com/mirandusen2-code/animatedvideos/730662dff6c76f859f8b204653fb51f501facd55/pufferfish-sand-circle/pufferfish-sand-circle.mp4' -o "$RUNNER_TEMP/first.mp4"
+          echo "3437e69652723c672c92287558b7700561b53f081b623fae00c6b9c6c8ebbb68  $RUNNER_TEMP/first.mp4" | sha256sum -c -
