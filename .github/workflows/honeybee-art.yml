@@ -1,0 +1,39 @@
+name: Honeybee native macro assets
+on:
+  push:
+    branches: [codex/honeybee-dance]
+    paths: ['.github/workflows/honeybee-art.yml','honeybee-dance/scene.py']
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: honeybee-dance
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Render the bee's articulated walking cycle and both comb plates
+        env:
+          BEE_ASSETS: ${{ runner.temp }}/bee-assets
+        run: |
+          pip install -q 'bpy==5.2.3' pillow
+          python honeybee-dance/scene.py > "$RUNNER_TEMP/art.log" 2>&1 || { tail -75 "$RUNNER_TEMP/art.log"; exit 1; }
+          python - <<'PY'
+          import os,io,base64
+          from pathlib import Path
+          from PIL import Image
+          p=Path(os.environ['BEE_ASSETS']);assert len(list(p.glob('*.png')))==14
+          bg=Image.open(p/'comb-close.png').convert('RGB').resize((350,615))
+          b=Image.open(p/'bee-03.png').convert('RGBA').resize((205,270))
+          bg.paste(b,(72,158),b);f=io.BytesIO();bg.save(f,'JPEG',quality=83)
+          print('BEEPROOF '+base64.b64encode(f.getvalue()).decode()+' ENDBEE')
+          PY
+      - uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/bee-assets
+          key: bee-assets-v1-${{ hashFiles('honeybee-dance/scene.py') }}
