@@ -1,0 +1,16 @@
+name: Verify the published mobile MP4
+on:
+  push:
+    branches: [codex/honeybee-dance]
+    paths: ['.github/workflows/honeybee-mobile-check.yml']
+permissions: {}
+jobs:
+  phone_download:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Fetch the public MP4 without credentials and check its bytes
+        run: |
+          curl --fail --location --retry 5 --retry-all-errors --silent --show-error 'https://raw.githubusercontent.com/mirandusen2-code/animatedvideos/a196aa35f338f6451fa98360e5198b770a465247/honeybee-dance/honeybee-dance.mp4' -o honeybee.mp4
+          echo '1341c39affe023261657d23ae8524d96cac46d2dbd1b3bc808e04ff8281da64e  honeybee.mp4' | sha256sum -c -
+          file honeybee.mp4
