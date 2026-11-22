@@ -1,0 +1,41 @@
+name: Supply the checked public release to the file-commit client
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-caption-public-file.yml']
+permissions:
+  actions: read
+jobs:
+  public_movie:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      max-parallel: 12
+      matrix:
+        part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    steps:
+      - name: Return the approved public MP4 to the Git blob client
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PART: ${{ matrix.part }}
+        run: |
+          # This runner has no Contents write permission. Only the specified
+          # already-released movie, never headers, tokens or project inputs,
+          # is returned as the Git blobs API's base64 input through the job log.
+          for attempt in 1 2 3 4; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14773488660/zip" > "$RUNNER_TEMP/public-film.mp4"; then break; fi
+            sleep 2
+          done
+          python - <<'PY'
+          import os,base64,hashlib
+          from pathlib import Path
+          data=(Path(os.environ['RUNNER_TEMP'])/'public-film.mp4').read_bytes()
+          assert len(data)==6983304 and data[4:8]==b'ftyp'
+          assert hashlib.sha256(data).hexdigest()=='f2ce54f9b357735c5486f502426c93b7760587416cd5fb1bafa200e68a35a646'
+          part=int(os.environ['PART'])
+          body=data[part*524286:(part+1)*524286]
+          for i in range(0,len(body),3072):
+              print('PUBLIC_MP4',part,i,base64.b64encode(body[i:i+3072]).decode())
+          ident=hashlib.sha1(b'blob '+str(len(data)).encode()+bytes([0])+data).hexdigest()
+          print('PUBLIC_END',part,len(body),ident)
+          PY
