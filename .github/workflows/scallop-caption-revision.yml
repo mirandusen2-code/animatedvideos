@@ -1,0 +1,54 @@
+name: Correct and verify the scallop film captions
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-caption-revision.yml','scallop-mirror-eyes-captions-v2/captions.py','scallop-mirror-eyes-captions-v2/cues.json']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  rebuild:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: scallop-mirror-eyes-captions-v2
+      - uses: actions/checkout@v4
+        with:
+          ref: 28d9b36f6eeb9f19894fce2fa38f7314c4120fc6
+          path: original
+          sparse-checkout: scallop-mirror-eyes
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - id: plates
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/scallop-assets
+          key: scallop-assets-v1-${{ hashFiles('original/scallop-mirror-eyes/scene.py') }}
+      - name: Reconstruct native clean plates if the cache expired
+        if: steps.plates.outputs.cache-hit != 'true'
+        env:
+          SCALLOP_ASSETS: ${{ runner.temp }}/scallop-assets
+        run: |
+          pip -q install 'bpy==5.2.3'
+          python original/scallop-mirror-eyes/scene.py > "$RUNNER_TEMP/native.log" 2>&1 || { tail -30 "$RUNNER_TEMP/native.log"; exit 1; }
+      - name: Render aligned typography and verify every frame
+        env:
+          SCALLOP_ASSETS: ${{ runner.temp }}/scallop-assets
+          ORIGINAL: original/scallop-mirror-eyes
+        run: |
+          pip -q install numpy pillow
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          curl --fail --silent --location --retry 3 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf' -o "$ORIGINAL/Montserrat.ttf"
+          python scallop-mirror-eyes-captions-v2/captions.py
+          sha256sum scallop-mirror-eyes-captions-v2/scallop-mirror-eyes-v2.mp4
+      - name: Supply the verified movie
+        uses: actions/upload-artifact@v7
+        with:
+          path: scallop-mirror-eyes-captions-v2/scallop-mirror-eyes-v2.mp4
+          archive: false
+          retention-days: 30
