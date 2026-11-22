@@ -1,0 +1,16 @@
+name: Test public scallop MP4
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-mobile-check.yml']
+permissions: {}
+jobs:
+  download:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Verify anonymous mobile download
+        run: |
+          curl --fail --silent --show-error --location --retry 4 --retry-all-errors 'https://raw.githubusercontent.com/mirandusen2-code/animatedvideos/28d9b36f6eeb9f19894fce2fa38f7314c4120fc6/scallop-mirror-eyes/scallop-mirror-eyes.mp4' -o film.mp4
+          echo 'd1a5bc4d2aabecfe1089a3ad6c761848a8ef51e04acf72a3d01c8c5494219818  film.mp4' | sha256sum -c -
+          file film.mp4
