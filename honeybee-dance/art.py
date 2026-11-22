@@ -65,13 +65,13 @@ def arrow(d,a,b,fill,width=6):
 def fields():
     rr=random.Random(663)
     # A bird's-eye atlas with surveyed field boundaries and hedgerows.
-    yy,xx=np.mgrid[:H,:W].astype('f')
+    yy,xx=np.mgrid[:H+168,:W+220].astype('f')
     qx=xx+49*np.sin(yy/311)+20*np.cos(yy/149+xx/550)
     qy=yy+63*np.sin(xx/291)+30*np.cos((xx+yy)/205)
     best=np.full_like(xx,1.e11);second=best.copy();tag=np.zeros_like(xx,dtype=np.int16)
     palette=[(66,88,64),(75,92,65),(72,90,69),(76,100,76),(59,83,68),(84,99,71),(69,89,70)]
     for i in range(42):
-        x=rr.uniform(-110,W+110);y=rr.uniform(-100,H+100)
+        x=rr.uniform(-110,W+270);y=rr.uniform(-100,H+250)
         dd=(qx-x)**2+.72*(qy-y)**2
         better=dd<best;second=np.where(better,best,np.minimum(second,dd));best=np.minimum(best,dd);tag=np.where(better,i%len(palette),tag)
     c=np.asarray(palette,dtype='f')[tag]
@@ -82,7 +82,7 @@ def fields():
     track=[(-30,1460),(150,1293),(289,1211),(433,1179),(566,1143),(719,1120),(852,1052),(1089,984)]
     d.line(track,fill=(58,68,54),width=17,joint='curve');d.line(track,fill=(132,122,86),width=8,joint='curve')
     for _ in range(1200):
-        x=rr.randint(0,W-1);y=rr.randint(0,H-1)
+        x=rr.randint(0,im.width-1);y=rr.randint(0,im.height-1)
         if hedges[y,x]<.32 and rr.random()<.95:continue
         r=rr.uniform(2.5,11);d.ellipse((x-r+3,y-r+4,x+r+3,y+r+4),fill=(45,65,48))
         d.ellipse((x-r,y-r,x+r,y+r),fill=rr.choice([(64,86,57),(73,94,64),(79,98,66)]))
@@ -105,11 +105,11 @@ def hiveglyph(d,x,y):
     d.rounded_rectangle((x-12,y+13,x+12,y+33),radius=4,fill=(55,54,41))
 def atlas(name,u,t):
     im=fields().copy();d=ImageDraw.Draw(im)
-    ox,oy=390,1110;sy=573;sun(d,ox,sy)
+    ox,oy=500,1194;sy=657;sun(d,ox,sy)
     dash(d,(ox,oy-42),(ox,sy+42),(212,214,173),5,15,15)
     d.arc((ox-132,oy-132,ox+132,oy+132),270,315,fill=(252,211,116),width=6)
     distance=365 if name=='map' else 560
-    end=(ox+D2*distance,oy-D2*distance);flowers(d,*end,1.18)
+    end=(ox+D2*distance,oy-D2*distance);flowers(d,*end,1.65)
     k=.12+.88*(.86*ease(u)+.14*u);p=vadd((ox,oy),(D2,-D2),58+(distance-65)*k)
     arrow(d,vadd((ox,oy),(D2,-D2),48),p,(252,203,81),9)
     hiveglyph(d,ox,oy)
@@ -117,8 +117,10 @@ def atlas(name,u,t):
         # One short label disambiguates the reference bearing.
         d.text((ox+56,sy-16),'SUN',font=typeface(42),fill=(251,237,191),stroke_width=2,stroke_fill=(58,76,58))
     # A small moving forager is an explicitly schematic map marker.
-    actor(im,p[0],p[1],.079,45,int(t*11)%12)
-    return im
+    actor(im,p[0],p[1],.128,45,int(t*11)%12)
+    # Track across an overscanned native field plate along the actual route.
+    cx=round(18+179*u);cy=round(141-119*u)
+    return im.crop((cx,cy,cx+W,cy+H))
 def frame(i):
     t=i/FPS;name,u,a,b=shot(t)
     if name in ('map','far'):return atlas(name,u,t)
