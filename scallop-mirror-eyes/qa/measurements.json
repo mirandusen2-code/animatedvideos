@@ -1,0 +1,23 @@
+{
+  "frames": 715,
+  "seconds": 23.833333333333332,
+  "fps": 30,
+  "size": [
+    1080,
+    1920
+  ],
+  "integrated_LUFS": -14.0,
+  "true_peak_dBTP": -4.95,
+  "black": [],
+  "unexpected_jumps": [],
+  "freezes": [],
+  "seam_raw_MAE": [
+    1.5394,
+    0.745,
+    0.769,
+    1.5394
+  ],
+  "audio_seam_step": 0.00016563385725021362,
+  "audio_step_p95": 0.06783055514097214,
+  "aac_bit_rate": 194264
+}
