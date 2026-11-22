@@ -1,0 +1,47 @@
+name: Scallop narration and word timing
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-voice.yml','scallop-mirror-eyes/voiceover.py','scallop-mirror-eyes/realign.py','scallop-mirror-eyes/script.py']
+permissions:
+  contents: read
+jobs:
+  record:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: scallop-mirror-eyes
+    env:
+      HF_HUB_DISABLE_XET: '1'
+      OMP_NUM_THREADS: '3'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scallop-mirror-eyes
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg espeak-ng libsndfile1
+          pip install kokoro-onnx soundfile scipy faster-whisper
+          export KOKORO_MODEL="$RUNNER_TEMP/kokoro.onnx" KOKORO_VOICES="$RUNNER_TEMP/voices.bin"
+          curl --retry 3 -fsSL https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx -o "$KOKORO_MODEL"
+          curl --retry 3 -fsSL https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin -o "$KOKORO_VOICES"
+          python voiceover.py
+          python realign.py
+      - uses: actions/cache/save@v4
+        with:
+          path: |
+            scallop-mirror-eyes/vo/timing.json
+            scallop-mirror-eyes/vo/narration.wav
+          key: scallop-voice-v1-${{ hashFiles('scallop-mirror-eyes/script.py','scallop-mirror-eyes/realign.py','scallop-mirror-eyes/voiceover.py') }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scallop-word-times
+          path: |
+            scallop-mirror-eyes/vo/timing.json
+            scallop-mirror-eyes/vo/words-review.json
+          retention-days: 7
