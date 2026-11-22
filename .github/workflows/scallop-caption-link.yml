@@ -1,0 +1,15 @@
+name: Check corrected MP4 on its public mobile URL
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-caption-link.yml']
+permissions: {}
+jobs:
+  phone:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - run: |
+          curl --fail --location --silent --show-error --retry 5 --retry-all-errors 'https://raw.githubusercontent.com/mirandusen2-code/animatedvideos/51c3ab693964b97b346b24b2a48785b9a0efb7bc/scallop-mirror-eyes-captions-v2/scallop-mirror-eyes-v2.mp4' -o film.mp4
+          echo 'f2ce54f9b357735c5486f502426c93b7760587416cd5fb1bafa200e68a35a646  film.mp4' | sha256sum -c -
+          file film.mp4
