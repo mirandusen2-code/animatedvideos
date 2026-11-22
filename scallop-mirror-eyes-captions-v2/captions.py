@@ -23,7 +23,7 @@ W, H = 1080, 1920
 BASELINE, CENTER = 1420, 540
 STRIP_TOP, STRIP_HEIGHT = 1300, 220
 OUTLINE = 4
-WEIGHT = 770
+WEIGHT = 700
 WHITE, ACTIVE, INK = (255, 252, 244), (255, 214, 108), (12, 23, 30)
 ORIGINAL = SOURCE / 'scallop-mirror-eyes.mp4'
 MOVIE = HERE / 'scallop-mirror-eyes-v2.mp4'
@@ -35,9 +35,8 @@ spoken = [w[2].casefold() for w in D['words']]
 assert [w[0].casefold() for c in CUES for w in c['words']] == spoken
 
 def matched_font():
-    for size in range(68, 59, -1):
-        font = ImageFont.truetype(str(SOURCE/'Montserrat.ttf'), size)
-        font.set_variation_by_axes([WEIGHT])
+    for size in range(72, 57, -1):
+        font = ImageFont.truetype(str(HERE/'BarlowSemiCondensed-Bold.ttf'), size)
         bounds = [font.getbbox(c['text'], anchor='ls', stroke_width=OUTLINE) for c in CUES]
         if max(r-l for l,t,r,b in bounds) <= 620:
             return font, size
@@ -53,14 +52,12 @@ def overlay(index, active):
     mask = Image.new('L',(W,STRIP_HEIGHT));outline = Image.new('L',mask.size)
     anchor_y = BASELINE-STRIP_TOP
     d = ImageDraw.Draw(mask)
-    d.text((0,anchor_y),text,font=FONT,anchor='ls',fill=255)
     # Use the measured ink width and compensate for the first glyph's side bearing.
     # Measure at x=40 so negative overhangs are also retained.
     temp = Image.new('L',(W,STRIP_HEIGHT))
     ImageDraw.Draw(temp).text((40,anchor_y),text,font=FONT,anchor='ls',fill=255)
     left,_,right,_ = temp.getbbox()
     x = round(CENTER - (left+right)/2 + 40)
-    mask.paste(0,(0,0,W,STRIP_HEIGHT))
     d.text((x,anchor_y),text,font=FONT,anchor='ls',fill=255)
     ImageDraw.Draw(outline).text((x,anchor_y),text,font=FONT,anchor='ls',fill=255,stroke_width=OUTLINE,stroke_fill=255)
     stage = Image.new('RGBA',mask.size,(*INK,0));stage.putalpha(outline)
@@ -135,7 +132,7 @@ def render():
     result=subprocess.run(['ffmpeg','-hide_banner','-i',str(ORIGINAL),'-i',str(MOVIE),'-filter_complex',filt,'-an','-f','null','-'],capture_output=True,text=True,check=True)
     import re
     score=float(re.findall(r'All:([0-9.]+)',result.stderr)[-1]);assert score>=.985,score
-    report=dict(frames=NFRAMES,seconds=NFRAMES/FPS,font='Montserrat',weight=WEIGHT,font_px=SIZE,baseline_px=BASELINE,center_x=CENTER,max_center_error_px=maxcenter,right_clearance_px=minright,cues=len(CUES),timed_words=len(highlighted),audio_sha256=audio(MOVIE),outside_caption_SSIM=score,bytes=MOVIE.stat().st_size)
+    report=dict(frames=NFRAMES,seconds=NFRAMES/FPS,font='Barlow Semi Condensed',weight=WEIGHT,font_px=SIZE,baseline_px=BASELINE,center_x=CENTER,max_center_error_px=maxcenter,right_clearance_px=minright,cues=len(CUES),timed_words=len(highlighted),audio_sha256=audio(MOVIE),outside_caption_SSIM=score,bytes=MOVIE.stat().st_size)
     (HERE/'QA.json').write_text(json.dumps(report,indent=2)+'\n')
     print('CAPTION_QA',json.dumps(report),flush=True)
 if __name__=='__main__':render()
