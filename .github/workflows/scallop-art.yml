@@ -1,0 +1,40 @@
+name: Scallop native macro assets
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-art.yml','scallop-mirror-eyes/scene.py']
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scallop-mirror-eyes
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Render the animal, its mantle eyes and the guanine mosaic
+        env:
+          SCALLOP_ASSETS: ${{ runner.temp }}/scallop-assets
+        run: |
+          pip install -q 'bpy==5.2.3' pillow
+          python scallop-mirror-eyes/scene.py > "$RUNNER_TEMP/art.log" 2>&1 || { tail -75 "$RUNNER_TEMP/art.log"; exit 1; }
+          python - <<'PY'
+          import os,io,base64
+          from pathlib import Path
+          from PIL import Image
+          p=Path(os.environ['SCALLOP_ASSETS']);assert len(list(p.glob('*.png')))==4
+          bg=Image.new('RGB',(680,303))
+          for j,n in enumerate(['animal','mantle','single','crystals']):
+              bg.paste(Image.open(p/(n+'.png')).convert('RGB').resize((170,303)),(170*j,0))
+          f=io.BytesIO();bg.save(f,'JPEG',quality=87)
+          print('SCALLOPPROOF '+base64.b64encode(f.getvalue()).decode()+' ENDPROOF')
+          PY
+      - uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/scallop-assets
+          key: scallop-assets-v1-${{ hashFiles('scallop-mirror-eyes/scene.py') }}
