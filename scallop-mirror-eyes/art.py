@@ -29,10 +29,10 @@ def macro_motion(im,t):
 @lru_cache(maxsize=1)
 def section_base():
     # Pigment cup, cornea, weak lens, double retinal tissue and posterior mirror.
-    yy,xx=np.ogrid[:H,:W];cx,cy=511,895
+    yy,xx=np.ogrid[:H+156,:W+156];cx,cy=511,895
     rr=np.sqrt(((xx-cx)/297)**2+((yy-cy)/322)**2)
     halo=np.exp(-rr**2/2.7);light=np.exp(-(((xx-309)/319)**2+((yy-646)/366)**2))
-    base=np.empty((H,W,3),np.uint8)
+    base=np.empty((H+156,W+156,3),np.uint8)
     for c,(lo,hi) in enumerate([(7,13),(22,40),(34,53)]):
         base[:,:,c]=np.uint8(lo+halo*hi+light*(7-c))
     im=Image.fromarray(base);d=ImageDraw.Draw(im)
@@ -82,7 +82,10 @@ def section(name,u,t):
     if name=='focus':
         rad=9+3*math.sin(8*t);d.ellipse((CX-rad,YV-FOC-rad,CX+rad,YV-FOC+rad),outline=(253,238,179),width=3)
         d.line([(599,977),(730,916),(788,916)],fill=(170,205,196),width=3);label(d,'RETINA',653,853)
-    return im
+    # Keep the section in the macro camera while the rays cross it.
+    # Native overscan supports tracking without magnification or edge repetition.
+    x=round(8+104*u);y=round(10+73*u)
+    return im.crop((x,y,x+W,y+H))
 def frame(i):
     t=i/FPS;name,u,a,b=shot(t);q=.78*ease(u)+.22*u
     if name in ('enter','reflector','focus'):return section(name,u,t)
