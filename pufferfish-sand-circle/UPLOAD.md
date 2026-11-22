@@ -22,3 +22,7 @@ Original 3D reconstruction with an English synthetic male narrator. Construction
 | A | A FISH BUILT THIS | Recommended. The wide shot makes the puzzle visible at phone size. |
 | B | MEET THE BUILDER | Portrait of the white-spotted male. |
 | C | SIX FEET OF SAND | The ridge system in raking light. |
+
+## QA passed
+
+682 frames, 22.73 seconds, H.264 1080 × 1920, 30 fps, AAC. -13.98 LUFS and -4.68 dBTP. Final transcript matched the script. No black frames, unexpected jumps or freezes.
