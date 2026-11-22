@@ -110,7 +110,7 @@ def atlas(name,u,t):
     d.arc((ox-132,oy-132,ox+132,oy+132),270,315,fill=(252,211,116),width=6)
     distance=365 if name=='map' else 560
     end=(ox+D2*distance,oy-D2*distance);flowers(d,*end,1.18)
-    k=.12+.88*ease(min(1,u*1.48));p=vadd((ox,oy),(D2,-D2),58+(distance-65)*k)
+    k=.12+.88*(.86*ease(u)+.14*u);p=vadd((ox,oy),(D2,-D2),58+(distance-65)*k)
     arrow(d,vadd((ox,oy),(D2,-D2),48),p,(252,203,81),9)
     hiveglyph(d,ox,oy)
     if name=='map':

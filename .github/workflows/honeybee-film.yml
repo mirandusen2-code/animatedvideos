@@ -1,0 +1,156 @@
+name: Honeybee final film
+on:
+  push:
+    branches: [codex/honeybee-dance]
+    paths: ['.github/workflows/honeybee-film.yml']
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    working-directory: honeybee-dance
+    shell: bash
+env:
+  OMP_NUM_THREADS: '3'
+  HF_HUB_DISABLE_XET: '1'
+jobs:
+  batch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    strategy:
+      max-parallel: 10
+      fail-fast: false
+      matrix:
+        start: [0, 40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560, 600, 640, 680]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: honeybee-dance
+          persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            honeybee-dance/vo/timing.json
+            honeybee-dance/vo/narration.wav
+          key: honeybee-voice-v1-${{ hashFiles('honeybee-dance/script.py','honeybee-dance/realign.py','honeybee-dance/voiceover.py') }}
+          fail-on-cache-miss: true
+      - uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/bee-assets
+          key: bee-assets-v1-${{ hashFiles('honeybee-dance/scene.py') }}
+          fail-on-cache-miss: true
+      - name: Restore a completed native batch
+        id: clip
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ runner.temp }}/bee-clip-${{ matrix.start }}
+          key: bee-native-v1-${{ hashFiles('honeybee-dance/scene.py','honeybee-dance/art.py','honeybee-dance/timeline.py','honeybee-dance/script.py','honeybee-dance/realign.py','honeybee-dance/post.py','honeybee-dance/thumbnails.py','honeybee-dance/voiceover.py') }}-${{ matrix.start }}
+      - uses: actions/setup-python@v5
+        if: steps.clip.outputs.cache-hit != 'true'
+        with:
+          python-version: '3.13'
+      - name: Render forty frames outside the checkout
+        if: steps.clip.outputs.cache-hit != 'true'
+        env:
+          BEE_ASSETS: ${{ runner.temp }}/bee-assets
+          START: ${{ matrix.start }}
+          FRAME_DIR: ${{ runner.temp }}/bee-frames-${{ matrix.start }}
+          CLIP_DIR: ${{ runner.temp }}/bee-clip-${{ matrix.start }}
+        run: |
+          pip install -q pillow numpy
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          curl -fsSL --retry 3 'https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf' -o Montserrat.ttf
+          bash render_missing.sh "$START" "$((START+40))"
+          python post.py clip "$START" "$((START+40))"
+      - name: Keep the verified clip for resumable assembly
+        if: steps.clip.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ runner.temp }}/bee-clip-${{ matrix.start }}
+          key: bee-native-v1-${{ hashFiles('honeybee-dance/scene.py','honeybee-dance/art.py','honeybee-dance/timeline.py','honeybee-dance/script.py','honeybee-dance/realign.py','honeybee-dance/post.py','honeybee-dance/thumbnails.py','honeybee-dance/voiceover.py') }}-${{ matrix.start }}
+  master:
+    needs: batch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: honeybee-dance
+          persist-credentials: false
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            honeybee-dance/vo/timing.json
+            honeybee-dance/vo/narration.wav
+          key: honeybee-voice-v1-${{ hashFiles('honeybee-dance/script.py','honeybee-dance/realign.py','honeybee-dance/voiceover.py') }}
+          fail-on-cache-miss: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Restore the native encoded segments
+        uses: actions/github-script@v7
+        env:
+          PREFIX: bee-native-v1-${{ hashFiles('honeybee-dance/scene.py','honeybee-dance/art.py','honeybee-dance/timeline.py','honeybee-dance/script.py','honeybee-dance/realign.py','honeybee-dance/post.py','honeybee-dance/thumbnails.py','honeybee-dance/voiceover.py') }}
+        with:
+          script: |
+            const cp=require('node:child_process');
+            const path=require('node:path');
+            const fs=require('node:fs');
+            const tools=path.join(process.env.RUNNER_TEMP,'cache-tools');
+            cp.execFileSync('npm',['install','--prefix',tools,'@actions/cache@4'],{stdio:'inherit'});
+            const cache=require(path.join(tools,'node_modules','@actions/cache'));
+            const timing=JSON.parse(fs.readFileSync('honeybee-dance/vo/timing.json','utf8'));
+            for(let i=0;i<timing.NFRAMES;i+=40){
+              const folder=path.join(process.env.RUNNER_TEMP,'bee-clip-'+i);
+              const key=process.env.PREFIX+'-'+i;
+              if(await cache.restoreCache([folder],key)!==key) throw Error('Missing batch '+i);
+            }
+      - name: Mix and check the completed film
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          pip install -q numpy scipy pillow soundfile faster-whisper
+          python post.py finish
+          python qa_motion.py
+          python realign.py honeybee-dance.mp4
+          python qa_sheets.py
+          python - <<'PY'
+          from pathlib import Path
+          import json,base64
+          p=Path('honeybee-dance.mp4');assert 0<p.stat().st_size<100000000 and p.read_bytes()[4:8]==b'ftyp'
+          q=json.loads(Path('qa/measurements.json').read_text());m=Path('UPLOAD.md');m.write_text(m.read_text()+'\n## QA passed\n\n'+f"{q['frames']} frames, {q['seconds']:.2f} seconds, H.264 1080 × 1920, 30 fps, AAC. {q['integrated_LUFS']:.2f} LUFS and {q['true_peak_dBTP']:.2f} dBTP. Final transcript matched the script. No black frames, unexpected jumps or freezes.\n")
+          print('ATLAS '+base64.b64encode(Path('qa/contact-overview.jpg').read_bytes()).decode()+' ENDATLAS')
+          PY
+          sha256sum honeybee-dance.mp4
+      - name: Single MP4 for mobile download
+        id: movie
+        uses: actions/upload-artifact@v7
+        with:
+          path: honeybee-dance/honeybee-dance.mp4
+          archive: false
+          retention-days: 30
+      - name: Verify the mobile download against the original bytes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_ID: ${{ steps.movie.outputs.artifact-id }}
+        run: |
+          ok=0
+          for attempt in 1 2 3 4; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$ARTIFACT_ID/zip" > "$RUNNER_TEMP/download.mp4" && cmp "$RUNNER_TEMP/download.mp4" honeybee-dance.mp4; then ok=1; break; fi
+            sleep 2
+          done
+          test "$ok" = 1
+          file "$RUNNER_TEMP/download.mp4"
+      - name: Upload subtitle, thumbnails, research and quality measurements
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: honeybee-publishing-materials
+          retention-days: 30
+          path: |
+            honeybee-dance/honeybee-dance.srt
+            honeybee-dance/thumbnails/
+            honeybee-dance/RESEARCH.md
+            honeybee-dance/DESIGN_BRIEF.md
+            honeybee-dance/UPLOAD.md
+            honeybee-dance/vo/timing.json
+            honeybee-dance/qa/
