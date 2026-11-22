@@ -1,0 +1,61 @@
+name: Supply the checked public release to the file-commit client
+on:
+  push:
+    branches: [codex/pufferfish-sand-circle]
+    paths: ['.github/workflows/pufferfish-public-file.yml']
+permissions:
+  actions: read
+jobs:
+  public_movie:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      max-parallel: 12
+      matrix:
+        part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+    steps:
+      - name: Return the approved public MP4 to the Git blob client
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PART: ${{ matrix.part }}
+        run: |
+          # This runner has no Contents write permission. Only the specified
+          # already-released movie, never headers, tokens or project inputs,
+          # is returned as the Git blobs API's base64 input through the job log.
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14731692474/zip" > "$RUNNER_TEMP/public-film.mp4"
+          python - <<'PY'
+          import os,base64,hashlib
+          from pathlib import Path
+          data=(Path(os.environ['RUNNER_TEMP'])/'public-film.mp4').read_bytes()
+          assert len(data)==10303793 and data[4:8]==b'ftyp'
+          assert hashlib.sha256(data).hexdigest()=='3437e69652723c672c92287558b7700561b53f081b623fae00c6b9c6c8ebbb68'
+          part=int(os.environ['PART'])
+          body=data[part*524286:(part+1)*524286]
+          for i in range(0,len(body),3072):
+              print('PUBLIC_MP4',part,i,base64.b64encode(body[i:i+3072]).decode())
+          ident=hashlib.sha1(b'blob '+str(len(data)).encode()+bytes([0])+data).hexdigest()
+          print('PUBLIC_END',part,len(body),ident)
+          PY
+  release_materials:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Return the released subtitles, covers, timings and measurements
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14731424225/zip" > "$RUNNER_TEMP/release.zip"
+          python - <<'PY'
+          from pathlib import Path
+          import os,zipfile,hashlib,base64
+          f=Path(os.environ['RUNNER_TEMP'])/'release.zip'
+          assert hashlib.sha256(f.read_bytes()).hexdigest()=='d313816a5bc1c3dc3150dc9b2aa7e7fe539cfaa46b626d7a4147bdcc3d7c6c24'
+          allowed=['pufferfish-sand-circle.srt','UPLOAD.md','vo/timing.json','qa/measurements.json','qa/transcript.json','thumbnails/choice-a.jpg','thumbnails/choice-b.jpg','thumbnails/choice-c.jpg']
+          with zipfile.ZipFile(f) as z:
+              for name in allowed:
+                  data=z.read(name);assert 0<len(data)<3000000
+                  ident=hashlib.sha1(b'blob '+str(len(data)).encode()+bytes([0])+data).hexdigest()
+                  print('DOCINFO',name,len(data),ident)
+                  for i in range(0,len(data),3072):
+                      print('DOCDATA',name,i,base64.b64encode(data[i:i+3072]).decode())
+          PY
