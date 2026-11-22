@@ -1,0 +1,53 @@
+name: Pufferfish mobile MP4
+on:
+  push:
+    branches: [codex/pufferfish-sand-circle]
+    paths: ['.github/workflows/pufferfish-mobile.yml']
+permissions:
+  actions: read
+  contents: read
+jobs:
+  encode:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Make a native-resolution mobile copy and compare it to the master
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          cd "$RUNNER_TEMP"
+          gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14731459077/zip" > master.mp4
+          echo '528441cbe808ccee68a601704f0d28e5eb746135414207255069ba04bc91bfdd  master.mp4' | sha256sum -c -
+          mkdir -p mobile
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess,re,json,hashlib
+          def run(args,**kw):return subprocess.run(args,check=True,**kw)
+          output='mobile/pufferfish-sand-circle.mp4'
+          def probe(p):return json.loads(subprocess.check_output(['ffprobe','-v','error','-show_streams','-of','json',p]))['streams']
+          master=probe('master.mp4')
+          for bitrate in (3400,4600,5900,7600):
+              enc=['ffmpeg','-hide_banner','-y','-loglevel','error','-i','master.mp4','-map','0:v:0','-c:v','libx264','-preset','medium','-threads','3','-b:v',f'{bitrate}k','-pix_fmt','yuv420p','-passlogfile','pass-mobile']
+              run(enc+['-pass','1','-an','-f','null','-'])
+              run(enc+['-pass','2','-map','0:a:0','-c:a','copy','-movflags','+faststart',output])
+              cmp=run(['ffmpeg','-hide_banner','-i','master.mp4','-i',output,'-filter_complex','[0:v][1:v]ssim','-an','-f','null','-'],capture_output=True,text=True)
+              sim=float(re.findall(r'All:([0-9.]+)',cmp.stderr)[-1])
+              print('Mobile encode',bitrate,'kbps; SSIM',sim,flush=True)
+              if sim>=.93:break
+          assert sim>=.92
+          mv=probe(output)
+          def vid(streams):return next(s for s in streams if s['codec_type']=='video')
+          v=vid(mv);assert all(v[k]==vid(master)[k] for k in ('width','height','pix_fmt','r_frame_rate','nb_frames'))
+          def audio_digest(p):
+              return subprocess.check_output(['ffmpeg','-loglevel','error','-i',p,'-map','0:a','-c','copy','-f','hash','-hash','sha256','-']).strip()
+          assert audio_digest('master.mp4')==audio_digest(output)
+          dat=Path(output).read_bytes();assert dat[4:8]==b'ftyp' and len(dat)<100000000
+          m=dict(bytes=len(dat),SHA256=hashlib.sha256(dat).hexdigest(),git_blob=hashlib.sha1(b'blob '+str(len(dat)).encode()+bytes([0])+dat).hexdigest(),ssim=sim,width=v['width'],height=v['height'],frames=int(v['nb_frames']),audio_identical=True)
+          print('MOBILE_RESULT '+json.dumps(m),flush=True)
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          path: ${{ runner.temp }}/mobile/pufferfish-sand-circle.mp4
+          archive: false
+          retention-days: 30
