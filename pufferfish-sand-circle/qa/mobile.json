@@ -1,0 +1,11 @@
+{
+  "bytes": 10303793,
+  "sha256": "3437e69652723c672c92287558b7700561b53f081b623fae00c6b9c6c8ebbb68",
+  "width": 1080,
+  "height": 1920,
+  "frames": 682,
+  "fps": 30,
+  "seconds": 22.733333333333334,
+  "ssim_against_master": 0.973229,
+  "identical_aac_packets": true
+}
