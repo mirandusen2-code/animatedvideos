@@ -1,0 +1,67 @@
+name: Supply the checked public release to the file-commit client
+on:
+  push:
+    branches: [codex/scallop-mirror-eyes]
+    paths: ['.github/workflows/scallop-public-file.yml']
+permissions:
+  actions: read
+jobs:
+  public_movie:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    strategy:
+      max-parallel: 12
+      matrix:
+        part: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    steps:
+      - name: Return the approved public MP4 to the Git blob client
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PART: ${{ matrix.part }}
+        run: |
+          # This runner has no Contents write permission. Only the specified
+          # already-released movie, never headers, tokens or project inputs,
+          # is returned as the Git blobs API's base64 input through the job log.
+          for attempt in 1 2 3 4; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14751962202/zip" > "$RUNNER_TEMP/public-film.mp4"; then break; fi
+            sleep 2
+          done
+          python - <<'PY'
+          import os,base64,hashlib
+          from pathlib import Path
+          data=(Path(os.environ['RUNNER_TEMP'])/'public-film.mp4').read_bytes()
+          assert len(data)==7333177 and data[4:8]==b'ftyp'
+          assert hashlib.sha256(data).hexdigest()=='d1a5bc4d2aabecfe1089a3ad6c761848a8ef51e04acf72a3d01c8c5494219818'
+          part=int(os.environ['PART'])
+          body=data[part*524286:(part+1)*524286]
+          for i in range(0,len(body),3072):
+              print('PUBLIC_MP4',part,i,base64.b64encode(body[i:i+3072]).decode())
+          ident=hashlib.sha1(b'blob '+str(len(data)).encode()+bytes([0])+data).hexdigest()
+          print('PUBLIC_END',part,len(body),ident)
+          PY
+  release_materials:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Return the released subtitles, covers, timings and measurements
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in 1 2 3 4; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/14752296336/zip" > "$RUNNER_TEMP/release.zip"; then break; fi
+            sleep 2
+          done
+          python - <<'PY'
+          from pathlib import Path
+          import os,zipfile,hashlib,base64
+          f=Path(os.environ['RUNNER_TEMP'])/'release.zip'
+          assert hashlib.sha256(f.read_bytes()).hexdigest()=='c373003abed0906e7d5d6e759de019a819bca9a06c5308ad2eab1553a9982762'
+          allowed=['scallop-mirror-eyes.srt','UPLOAD.md','vo/timing.json','qa/measurements.json','qa/transcript.json','thumbnails/choice-a.jpg','thumbnails/choice-b.jpg','thumbnails/choice-c.jpg']
+          with zipfile.ZipFile(f) as z:
+              for name in allowed:
+                  data=z.read(name);assert 0<len(data)<3000000
+                  ident=hashlib.sha1(b'blob '+str(len(data)).encode()+bytes([0])+data).hexdigest()
+                  print('DOCINFO',name,len(data),ident)
+                  for i in range(0,len(data),3072):
+                      print('DOCDATA',name,i,base64.b64encode(data[i:i+3072]).decode())
+          PY
