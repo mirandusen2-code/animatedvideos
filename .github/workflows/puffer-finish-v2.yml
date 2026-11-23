@@ -49,3 +49,5 @@ jobs:
           path: pufferfish-sand-circle-v2/pufferfish-sand-circle-v2.mp4
           archive: false
           retention-days: 15
+
+# Wrap the closing question into two spoken phrases.

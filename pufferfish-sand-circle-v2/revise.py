@@ -13,6 +13,7 @@ def loud(path):
     res=run(['-i',str(path),'-vn','-af','loudnorm=print_format=json','-f','null','-'],capture_output=True,text=True)
     return json.loads(res.stderr[res.stderr.rfind('{'):])
 def main():
+    for j in range(len(CUES)):overlay(j,-1)
     subtitles(N,'pufferfish-sand-circle-v2.srt')
     source=sp.Popen(['ffmpeg','-v','error','-i',str(src),'-an','-fps_mode','passthrough','-f','rawvideo','-pix_fmt','rgb24','-'],stdout=sp.PIPE)
     video=HERE/'silent.mp4'
