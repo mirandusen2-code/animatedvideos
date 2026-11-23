@@ -1,0 +1,15 @@
+{
+  "frames": 646,
+  "seconds": 21.533333333333335,
+  "words": 65,
+  "wpm": 181.1,
+  "font_px": 72,
+  "baseline": 1420,
+  "cues": 22,
+  "LUFS": -14.02,
+  "peak": -4.76,
+  "black_frames": [],
+  "unexpected_jumps": [],
+  "freezes": [],
+  "seam_MAE": 0.30126157407407406
+}

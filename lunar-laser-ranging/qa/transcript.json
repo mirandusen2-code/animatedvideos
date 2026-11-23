@@ -1,0 +1,5 @@
+{
+  "exact": true,
+  "heard": "Did you know there's a mirror on the moon? Apollo astronauts left glass reflectors on its surface. A telescope on Earth fires a laser pulse. About two and a half seconds later, a little light returns. Timing that round trip revealed the moon is drifting away about an inch and a half each year. Why divide the travel time by two to find the distance?",
+  "expected": "Did you know there's a mirror on the Moon? Apollo astronauts left glass reflectors on its surface. A telescope on Earth fires a laser pulse. About two and a half seconds later, a little light returns. Timing that round trip revealed the Moon is drifting away about an inch and a half each year. Why divide the travel time by two to find the distance?"
+}
