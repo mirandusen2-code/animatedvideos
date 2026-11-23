@@ -114,11 +114,11 @@ def _shots():
         # S0 hook: the head is bursting into glittering powder, the crack front has just raced down the tail
         (0.0, s1, (0.35, -6.0, 0.45), (1.3, -8.8, 1.5), (0.0, 0.0, 0.35), (0.0, 0.0, 1.1), 50, 50, "drop"),
         # S1 hot glass dripped into cold water
-        (s1, s2, w(0.9, -11.5, 4.6), w(0.3, -9.6, 3.4), w(0.0, 0.0, 4.6), w(0.0, 0.0, 3.2), 50, 50, "water"),
+        (s1, s2, w(0.9, -13.5, 5.2), w(0.3, -11.8, 4.2), w(0.0, 0.0, 4.4), w(0.0, 0.0, 3.4), 38, 42, "water"),
         # S2 the cut drop: the skin cools first and squeezes (3/4 view swinging to face-on, pushing in)
         (s2, s3, s(5.2, -8.6, 3.4), s(0.35, -5.6, 0.5), s(0.0, 0.0, 2.2), s(0.0, 0.0, 0.25), 50, 50, "section"),
         # S3 the hammer hits the head, nothing happens
-        (s3, s4, h(1.1, -8.4, 2.7), h(0.5, -7.4, 2.1), h(0.4, 0.0, 1.9), h(0.2, 0.0, 1.5), 50, 50, "hammer"),
+        (s3, s4, h(0.4, -11.0, 3.6), h(-0.2, -9.6, 3.0), h(0.6, 0.0, 2.6), h(0.3, 0.0, 2.0), 50, 50, "hammer"),
         # S4 the tail is its weak spot: the whole drop, tilting up to the tail
         (s4, s5, (0.2, -15.5, 3.8), (0.9, -8.6, 5.6), (0.0, 0.0, 3.6), (0.1, 0.0, 5.7), 50, 50, "drop"),
         # S5 snip: the cutters close, the crack races down, the camera follows it into the opening shot
@@ -172,7 +172,7 @@ def camera(t):
 # ---------------------------------------------------------------- shared event lists (picture AND sound use these)
 TE_SNIP = T_SNIP - DUR                 # the snip, on the loop clock (negative)
 TE_HEAD = -0.12                        # the crack front reaches the head (just before frame 0)
-TE_GONE = 1.35                         # the last of the head has burst
+TE_GONE = 2.3                         # the last of the head has burst
 Z_HEAD = 0.95
 
 
@@ -188,7 +188,7 @@ def front_z(t):
         x = (te - TE_SNIP) / (TE_HEAD - TE_SNIP)
         return lerp(Z_SNIP, Z_HEAD, x ** 1.15)
     x = clamp((te - TE_HEAD) / (TE_GONE - TE_HEAD))
-    return lerp(Z_HEAD, -1.08, 1 - (1 - x) ** 1.6)
+    return lerp(Z_HEAD, -1.08, x ** 0.9)
 
 
 def front_time(z):
@@ -197,7 +197,7 @@ def front_time(z):
         x = ((Z_SNIP - z) / (Z_SNIP - Z_HEAD)) ** (1 / 1.15)
         return TE_SNIP + x * (TE_HEAD - TE_SNIP)
     y = (Z_HEAD - z) / (Z_HEAD + 1.08)
-    x = 1 - (1 - clamp(y)) ** (1 / 1.6)
+    x = clamp(y) ** (1 / 0.9)
     return TE_HEAD + x * (TE_GONE - TE_HEAD)
 
 
@@ -215,7 +215,7 @@ def cutter_in(t):
     """0 = cutters out of frame (right), 1 = at the tail."""
     i = shot_index(t)
     if i == 4:
-        return smoother((t - T_WEAK) / 0.7)
+        return smoother((t - T_TAIL) / 0.9)
     if i == len(SHOTS) - 1 or i == 0:
         return 1.0
     return 0.0

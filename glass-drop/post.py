@@ -1,4 +1,4 @@
-"""Post-production for the burning-diamond Short: grade + bloom + grain, captions & counters in the Shorts
+"""Post-production for the Prince Rupert's drop Short: grade + bloom + grain, captions & counters in the Shorts
 safe zone, original music + sound effects + processed voice, loudness -14 LUFS, H.264 1080x1920.
 
 Usage: python3 post.py <frames_dir> <out.mp4> [--preview f1,f2,...]   (preview writes PNGs only)
@@ -123,6 +123,7 @@ def number(img, text, cx, cy, size, color, alpha=1.0, suffix=""):
 
 def pill(img, text, cx, cy, size=40, fg=WHITE, bg=(10, 16, 32, 200), alpha=1.0, accent=None):
     """Label chip (>= 56 px tall, <= 4 words)."""
+    assert size >= 44, "label text must be >= 44 px"
     if alpha <= 0.01:
         return
     f = font(size, "ExtraBold")
@@ -213,8 +214,9 @@ def fmt(n):
     return f"{int(n):,}"
 
 
-def big(img, value, unit, alpha, pop=1.0, color=AMBER):
-    text_block(img, [[value]], CX, 420, 132, alpha=alpha, scale=pop, colors={0: color})
+def big(img, value, unit, alpha, pop=1.0, color=AMBER, size=132):
+    assert size >= 96, "numbers must be >= 96 px"
+    text_block(img, [[value]], CX, 420, size, alpha=alpha, scale=pop, colors={0: color})
     pill(img, unit, CX, 530, 46, alpha=alpha, accent=color)
 
 
@@ -229,31 +231,32 @@ def overlays(img, t):
     S = T.SHOTS
     i = T.shot_index(t)
     last = len(S) - 1
-    if i == 0:                                   # the hook: the temperature on screen from frame 0
-        big(img, "1,500\u00b0F", "DIAMOND ON FIRE", 1 - T.smoother((t - S[0][1] + 0.25) / 0.2), color=AMBER)
+    if i == 0:                                   # the hook: the shatter speed on screen from frame 0
+        big(img, "3,000+ MPH", "SHATTER SPEED", 1 - T.smoother((t - S[0][1] + 0.25) / 0.2), color=AMBER)
     if i == last:
-        big(img, "1,500\u00b0F", "DIAMOND ON FIRE", T.smoother((t - T.T_LOOK + 0.25) / 0.3), color=AMBER)
+        big(img, "3,000+ MPH", "SHATTER SPEED", T.smoother((t - (T.DUR - 0.45)) / 0.3), color=AMBER)
     if i == 1:
-        big(img, "C", "100% CARBON ATOMS", window(t, T.T_PURE - 0.1, S[1][1], 0.15), color=ICE)
+        wx = T.WATER
+        pill(img, "PRINCE RUPERT'S DROP", CX, 400, 48, alpha=window(t, T.T_PRINCE - 0.1, S[1][1], 0.15), accent=AMBER)
+        if t < T.T_WATER:
+            label_at(img, "HOT GLASS", (wx[0], 0, T.drip_z(t)), t, window(t, T.T_HOT - 0.1, T.T_WATER, 0.12),
+                     accent=AMBER, dy=170)
+        else:
+            label_at(img, "COLD WATER", (wx[0] - 1.2, 0, 1.4), t, window(t, T.T_WATER - 0.05, S[1][1], 0.12), dy=0)
     if i == 2:
-        a = window(t, S[2][0] + 0.05, S[2][1], 0.12)
-        label_at(img, "DIAMOND", (0.0, 0.0, 1.5), t, a)
-        label_at(img, "CHARCOAL", (2.75, 0.5, 1.4), t, a)
+        sx = T.SECTION[0]
+        a = window(t, T.T_OUTSIDE + 0.2, T.T_50 - 0.1, 0.15)
+        label_at(img, "COOL SKIN", (sx - 0.5, 0, 1.5), t, a, accent=ICE, dy=0)
+        label_at(img, "HOT INSIDE", (sx + 0.05, 0, 0.35), t, a, accent=AMBER, dy=0)
+        big(img, "50 TONS", "PER SQUARE INCH", window(t, T.T_50 - 0.1, S[2][1], 0.15), color=ICE,
+            pop=1 + 0.2 * math.exp(-max(0, t - T.T_50 + 0.1) / 0.1))
     if i == 3:
-        u = T.smoother((t - T.T_1500 + 0.3) / (T.T_BURNS - T.T_1500 + 0.1))
-        v = 70 + (1500 - 70) * u
-        v = 1500 if u > 0.999 else int(round(v / 10) * 10)
-        pop = 1 + 0.25 * math.exp(-max(0, t - T.T_BURNS) / 0.08) if t > T.T_BURNS else 1.0
-        big(img, f"{v:,}\u00b0F", "IN PURE OXYGEN" if t > T.T_OXY - 0.05 else "HEATING UP",
-            window(t, T.T_1500 - 0.35, S[3][1], 0.15), pop=pop, color=AMBER if t > T.T_BURNS - 0.05 else ICE)
+        hx = T.HAMMER[0]
+        label_at(img, "THE HEAD", (hx, 0, 1.0), t, window(t, S[3][0] + 0.1, T.T_HIT - 0.15, 0.12), dy=-200)
+        pill(img, "NOT A SCRATCH", CX, 420, 52, alpha=window(t, T.T_NOTHING - 0.05, S[3][1], 0.12), accent=AMBER)
     if i == 4:
-        big(img, "CO2", "CARBON DIOXIDE GAS", window(t, T.T_CO2 - 0.1, S[4][1], 0.15), color=AMBER)
-    if i == 6:
-        big(img, "GRAPHITE", "PENCIL LEAD IS CARBON TOO", window(t, S[6][0] + 0.1, S[6][1], 0.12), color=ICE)
-    if i == 7:
-        u = T.smoother((t - S[7][0] - 0.1) / (S[7][1] - S[7][0] - 0.35))
-        n = int(round(1_000_000 * u ** 2 / 1000) * 1000) if u < 0.999 else 1_000_000
-        big(img, f"{n:,} YEARS", "STILL A DIAMOND", window(t, S[7][0] + 0.05, S[7][1], 0.12), color=AMBER)
+        label_at(img, "WEAK SPOT", (T.bend(5.0), 0, 5.0), t, window(t, T.T_WEAK - 0.1, S[4][1] + 0.3, 0.12),
+                 accent=(255, 80, 70), dy=0)
 
 
 # ---------------------------------------------------------------- image finishing
@@ -528,60 +531,76 @@ def make_music_and_sfx():
         v = np.convolve(v, np.ones(k) / k, mode="same")
         return np.interp(tt, g, v)
 
-    fire = curve(lambda x: 1.0 if T.shot_set(x) == "fire" else 0.0, 0.06)
-    atoms = curve(lambda x: 1.0 if T.shot_set(x) == "atoms" else 0.0, 0.06)
-    # the oxygen torch: a roaring hiss exactly while the flame is on screen
     rng_ = np.random.default_rng(70)
     noise = rng_.standard_normal(ext)
-    roar = noise - np.convolve(noise, np.ones(5) / 5, mode="same") * 0.7
-    low = np.convolve(noise, np.ones(80) / 80, mode="same") * 6
-    torch_env = curve(T.torch) * fire
-    sfx[:] += (0.10 * roar + 0.12 * low) * torch_env
-    # the burning diamond: crackles whose density follows the heat (none when it is cold)
-    heat_env = curve(lambda x: T.heat(x) ** 2) * fire
-    clicks = (rng_.random(ext) < 45 / SR).astype(float) * rng_.uniform(0.3, 1.0, ext)
-    ck = np.exp(-np.arange(int(0.006 * SR)) / SR * 900)
-    crack_bed = np.convolve(clicks, ck, mode="same") * rng_.choice([-1, 1], ext)
-    sfx[:] += 0.5 * crack_bed * heat_env
-    # heating up: a sizzle that rises in pitch with the temperature counter (S3)
-    a3, b3 = T.T_1500 - 0.3, T.bursts()[0]
-    st = np.arange(int((b3 - a3) * SR)) / SR
-    f_ = 180 + 900 * (st / st[-1]) ** 2
-    sizzle = np.sin(2 * np.pi * np.cumsum(f_) / SR) * (st / st[-1]) ** 1.5 * 0.5 + hiss(len(st) / SR, 71) * (st / st[-1])
-    add(sfx, a3, sizzle, 0.12)
-    # every spark burst: a whoomp of flame + a shower of sparks
-    for b in T.bursts():
-        add(sfx, b, whoomp(), 0.55)
-        add(sfx, b, crackle(0.9, 72, 40), 0.35)
-    add(sfx, 0.0, thump(140, 45, 0.8), 0.45)                                  # the hit on frame 0
-    # atom scale: a soft airy bed
-    air = np.convolve(noise, np.ones(30) / 30, mode="same") * 4
-    sfx[:] += 0.05 * air * atoms
-    for k in range(1, len(S)):                                                # every cut: a short air swish
-        add(sfx, S[k][0] - 0.12, pulse_swish(0.35, 80 + k), 0.07)
-    add(sfx, T.T_PURE, shimmer(1.2), 0.04)                                    # "pure carbon"
-    add(sfx, S[2][0] + 0.05, clink(1760, 0.5), 0.10)                          # the two labels pop on
-    add(sfx, S[2][0] + 0.12, plop(300, 140, 0.15), 0.12)
-    add(sfx, S[3][0] + 0.15, swoosh(0.35, 73, up=True), 0.10)                 # the torch lights
-    add(sfx, S[last][0] + 0.3, swoosh(0.35, 74, up=True), 0.10)
-    for j in range(T.N_MOL):                                                  # each CO2 molecule
-        td = T.mol_depart(j)
-        add(sfx, td - 0.45, beep(1300 + 37 * (j % 7), 0.08), 0.018)           # oxygens swoop in
-        add(sfx, td, plop(620 + 23 * (j % 9), 260, 0.14), 0.09)               # ... and it pops off
-    add(sfx, S[5][0] + 0.1, shimmer(2.4), 0.07)                               # the ring sparkles
-    for k, dt in enumerate((0.35, 1.25, 2.1)):
-        add(sfx, S[5][0] + dt, clink(2637 + 300 * k, 0.9), 0.05)
-    # the pencil: scratching while it moves
-    pen = curve(lambda x: 1.0 if T.shot_index(x) == 6 and 0 < T.pencil_u(x) < 1 else 0.0, 0.03)
-    scratch = noise - np.convolve(noise, np.ones(3) / 3, mode="same")
-    grain = 0.6 + 0.4 * np.sin(2 * np.pi * 13 * tt) ** 2
-    sfx[:] += 0.10 * scratch * pen * grain
-    # the time-lapse: each day the sun sweeps over with a whoosh, the counter ticks
-    for tp in T.day_peaks():
-        add(sfx, tp - 0.3, swoosh(0.6, 75, up=True), 0.12)
-    for k in range(12):
-        add(sfx, S[7][0] + 0.06 + k * 0.12, beep(2600, 0.06), 0.03)
-    add(sfx, T.DUR - 0.8, swoosh(0.8, 76, up=True), 0.12)                    # rising into the loop
+
+    def tinkles(d, seed, rate, f_lo=2500, f_hi=7000, decay=2.2):
+        """Glass powder: many tiny high pings whose density dies away."""
+        r = np.random.default_rng(seed)
+        out_ = np.zeros(int(d * SR))
+        for _ in range(int(d * rate)):
+            t0 = d * r.random() ** decay
+            st_ = np.arange(int(0.08 * SR)) / SR
+            k = np.sin(2 * np.pi * r.uniform(f_lo, f_hi) * st_) * np.exp(-st_ * r.uniform(40, 90))
+            i = int(t0 * SR)
+            out_[i:i + len(k)] += k[: len(out_) - i] * r.uniform(0.2, 1.0)
+        return out_
+
+    def clang(d=1.8):
+        st = np.arange(int(d * SR)) / SR
+        x = sum(a * np.sin(2 * np.pi * f * st + p) * np.exp(-st * dk) for f, a, p, dk in
+                ((523, 0.5, 0, 3.0), (1187, 0.35, 1, 4.0), (1906, 0.25, 2, 5.5), (2843, 0.18, 3, 7.0), (3720, 0.1, 4, 9.0)))
+        return x * env(len(st), 0.001, 0.3)
+
+    # ---- the snip and the crack racing down the tail into the head (loop clock wraps into frame 0)
+    t_snip, t_head = T.T_SNIP, T.DUR + T.TE_HEAD
+    add(sfx, t_snip, snap(0.25, 90), 0.5)
+    add(sfx, t_snip, clink(3200, 0.25), 0.15)
+    d_run = t_head - t_snip
+    st = np.arange(int(d_run * SR)) / SR
+    rise = (st / st[-1]) ** 1.5
+    run = crackle(d_run, 91, 260) * (0.3 + 0.7 * rise) + 0.6 * hiss(d_run, 92, 3) * rise
+    add(sfx, t_snip, run, 0.4)
+    # the head bursts: a deep whoomp, a crack, and a long rain of glass powder
+    add(sfx, t_head, whoomp(1.6), 0.6)
+    add(sfx, t_head, snap(0.3, 93), 0.4)
+    add(sfx, t_head, crackle(1.6, 94, 120) * np.exp(-np.arange(int(1.6 * SR)) / SR * 1.6), 0.4)
+    add(sfx, t_head, tinkles(2.6, 95, 220), 0.12)
+    # ---- water: the gob falls, hits the water, sizzles and boils
+    add(sfx, S[1][0] + 0.05, swoosh(T.T_WATER - S[1][0], 96, up=False), 0.10)
+    add(sfx, T.T_WATER, splash_snd(1.2, 97), 0.22)
+    add(sfx, T.T_WATER, plop(220, 70, 0.3), 0.35)
+    sizz = curve(lambda x: (1.0 if T.shot_index(x) == 1 and x > T.T_WATER else 0.0) * T.glass_heat(x), 0.05)
+    hs = noise - np.convolve(noise, np.ones(3) / 3, mode="same")
+    sfx[:] += 0.06 * hs * sizz
+    add(sfx, T.T_WATER + 0.1, bubbles(2.0, 98), 0.12)
+    # ---- section: the skin cools (a soft falling tone), then each squeeze pulse thumps
+    a2 = T.T_OUTSIDE
+    st = np.arange(int((T.T_SQ - a2) * SR)) / SR
+    cool = np.sin(2 * np.pi * np.cumsum(900 - 500 * st / st[-1]) / SR) * np.sin(np.pi * st / st[-1]) ** 2
+    add(sfx, a2, cool, 0.03)
+    for tp in T.squeeze_pulses():
+        add(sfx, tp, thump(120, 50, 0.5), 0.22)
+    add(sfx, T.T_50 - 0.1, boom(1.4), 0.35)
+    # ---- hammer: the swing, the clang on the head, the ring of steel
+    add(sfx, T.T_HIT - 0.38, swoosh(0.38, 99, up=False), 0.16)
+    add(sfx, T.T_HIT, clang(1.8), 0.32)
+    add(sfx, T.T_HIT, thump(200, 60, 0.5), 0.5)
+    add(sfx, T.T_NOTHING, ping(1568, 1.2), 0.05)
+    # ---- the tail: a warning pulse with every glow beat, the cutters slide in
+    w0 = T.T_WEAK - 0.15
+    k = 0
+    while w0 + k * (2 * math.pi / 9.0) < T.SHOTS[5][0]:
+        add(sfx, w0 + k * (2 * math.pi / 9.0) + 0.17, beep(440, 0.12), 0.05)
+        k += 1
+    add(sfx, T.T_TAIL, swoosh(0.9, 100, up=True), 0.09)
+    add(sfx, T.T_TAIL + 0.9, clink(1900, 0.3), 0.06)
+    for k_ in range(1, len(S)):                                               # every cut: a short air swish
+        if k_ != last:
+            add(sfx, S[k_][0] - 0.12, pulse_swish(0.35, 80 + k_), 0.07)
+    # labels popping on
+    for tl in (T.T_PRINCE - 0.1, T.T_HOT - 0.1, T.T_OUTSIDE + 0.2, S[3][0] + 0.1, T.T_NOTHING - 0.05, T.T_WEAK - 0.1):
+        add(sfx, tl, plop(420, 180, 0.12), 0.06)
     sfx = fold(reverb(sfx, 2.2, 0.35, seed=2), n)
     return music, sfx
 
@@ -608,7 +627,7 @@ def write_srt(path):
         n = len([w for w in cap.split() if w != "|"])
         a, b = wt[k][0], wt[k + n - 1][1]                 # measured start of first word, end of last word
         k += n
-        proper = {"LOOK.": "Look."}
+        proper = {"RUPERT'S": "Rupert's", "PRINCE": "Prince"}
 
         def norm(w):
             m = re.match(r"^(\W*)(.*?)(\W*)$", w)

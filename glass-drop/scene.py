@@ -455,8 +455,9 @@ def drop_vf(seg=72, a0=0.0, a1=2 * math.pi, closed=True, scale=1.0):
     return verts, faces
 
 
-RAINBOW = [(0.00, (0.55, 0.0, 0.9)), (0.14, (0.0, 0.25, 1.0)), (0.28, (0.0, 0.85, 0.9)), (0.42, (0.15, 1.0, 0.15)),
-           (0.56, (1.0, 0.92, 0.0)), (0.70, (1.0, 0.35, 0.0)), (0.84, (1.0, 0.0, 0.25)), (1.00, (0.55, 0.0, 0.9))]
+RAINBOW = [(0.00, (0.45, 0.0, 1.0)), (0.12, (0.0, 0.15, 1.0)), (0.24, (0.0, 0.8, 1.0)), (0.36, (0.0, 1.0, 0.2)),
+           (0.48, (1.0, 0.85, 0.0)), (0.60, (1.0, 0.25, 0.0)), (0.72, (1.0, 0.0, 0.3)), (0.80, (0.02, 0.0, 0.04)),
+           (0.92, (0.02, 0.0, 0.04)), (1.00, (0.45, 0.0, 1.0))]
 
 
 def glass_mat(name, rb_strength, with_front=False):
@@ -489,7 +490,7 @@ def glass_mat(name, rb_strength, with_front=False):
     tg = value(nt, 0.0)
     tm = math_node(nt, "SUBTRACT", zc, 2.6)
     tm = math_node(nt, "MULTIPLY", tm, 0.8, clamp=True)
-    tgs = math_node(nt, "MULTIPLY", math_node(nt, "MULTIPLY", tm, tg), 14.0)
+    tgs = math_node(nt, "MULTIPLY", math_node(nt, "MULTIPLY", tm, tg), 40.0)
     tem = node(nt, "ShaderNodeEmission", Color=(1.0, 0.04, 0.02, 1))
     link(nt, tgs, tem.inputs["Strength"])
     add1 = node(nt, "ShaderNodeAddShader")
@@ -506,18 +507,21 @@ def glass_mat(name, rb_strength, with_front=False):
     d = math_node(nt, "SUBTRACT", zc, F)
     below_snip = math_node(nt, "LESS_THAN", zc, T.Z_SNIP)
     cracked = math_node(nt, "MULTIPLY", math_node(nt, "GREATER_THAN", d, 0.0), below_snip)
-    gone = math_node(nt, "MULTIPLY", math_node(nt, "GREATER_THAN", d, 0.22), below_snip)
+    gone = math_node(nt, "MULTIPLY", math_node(nt, "GREATER_THAN", d, 0.13), below_snip)
     # crack network: a white, glowing web in the band just behind the front
     vo = node(nt, "ShaderNodeTexVoronoi", Scale=9.0)
     vo.feature = "DISTANCE_TO_EDGE"
     link(nt, tc.outputs["Object"], vo.inputs["Vector"])
     web = math_node(nt, "LESS_THAN", vo.outputs["Distance"], 0.06)
     cem = node(nt, "ShaderNodeEmission", Color=(0.85, 0.93, 1.0, 1))
-    link(nt, math_node(nt, "ADD", math_node(nt, "MULTIPLY", web, 9.0), 1.6), cem.inputs["Strength"])
+    link(nt, math_node(nt, "ADD", math_node(nt, "MULTIPLY", web, 14.0), 0.35), cem.inputs["Strength"])
+    cadd = node(nt, "ShaderNodeAddShader")
+    link(nt, add2.outputs[0], cadd.inputs[0])
+    link(nt, cem.outputs[0], cadd.inputs[1])
     mx1 = node(nt, "ShaderNodeMixShader")
     link(nt, cracked, mx1.inputs[0])
     link(nt, add2.outputs[0], mx1.inputs[1])
-    link(nt, cem.outputs[0], mx1.inputs[2])
+    link(nt, cadd.outputs[0], mx1.inputs[2])
     tr = node(nt, "ShaderNodeBsdfTransparent")
     mx2 = node(nt, "ShaderNodeMixShader")
     link(nt, gone, mx2.inputs[0])
@@ -528,7 +532,7 @@ def glass_mat(name, rb_strength, with_front=False):
     return m, res
 
 
-drop_m, DROP_K = glass_mat("DropGlass", 2.2, with_front=True)
+drop_m, DROP_K = glass_mat("DropGlass", 1.5, with_front=True)
 DV, DF = drop_vf()
 DROP = obj_from("Drop", DV, DF, drop_m)
 to_set("drop", DROP)
@@ -537,7 +541,7 @@ metal_m, _ = principled("Steel", (0.42, 0.43, 0.46), rough=0.28)
 _.inputs["Metallic"].default_value = 1.0
 dark_metal_m, _p = principled("DarkSteel", (0.16, 0.17, 0.19), rough=0.32)
 _p.inputs["Metallic"].default_value = 1.0
-grip_m, _ = principled("Grip", (0.55, 0.03, 0.02), rough=0.45, coat=0.4)
+grip_m, _ = principled("Grip", (0.8, 0.05, 0.03), rough=0.4, coat=0.5)
 
 # clamp holding the tail tip
 tx = T.bend(T.Z_TOP)
@@ -569,12 +573,12 @@ bd_m, nt_bd, out_bd = new_mat("Backdrop")
 _tc = node(nt_bd, "ShaderNodeTexCoord")
 _gr = node(nt_bd, "ShaderNodeTexGradient")
 _gr.gradient_type = "SPHERICAL"
-_mp = node(nt_bd, "ShaderNodeMapping", Scale=(0.55, 0.38, 1.0))
+_mp = node(nt_bd, "ShaderNodeMapping", Scale=(0.11, 1.0, 0.075))
 link(nt_bd, _tc.outputs["Object"], _mp.inputs["Vector"])
 link(nt_bd, _mp.outputs[0], _gr.inputs["Vector"])
 _r = ramp(nt_bd, [(0.0, (0.0, 0.0, 0.0)), (0.6, (0.02, 0.05, 0.16)), (1.0, (0.08, 0.18, 0.55))])
 link(nt_bd, _gr.outputs[0], _r.inputs[0])
-_em = node(nt_bd, "ShaderNodeEmission", Strength=1.0)
+_em = node(nt_bd, "ShaderNodeEmission", Strength=0.4)
 link(nt_bd, _r.outputs[0], _em.inputs["Color"])
 link(nt_bd, _em.outputs[0], out_bd.inputs[0])
 BACK = obj_from("Backdrop", [(-14, 14, -12), (14, 14, -12), (14, 14, 22), (-14, 14, 22)], [[0, 1, 2, 3]], bd_m)
@@ -588,6 +592,8 @@ to_set("drop", BACK)
 area("RimL", (-4.5, 5.0, 2.5), (0, 0, 1.5), 700, 2.5, (0.9, 0.95, 1.0), "drop")
 area("RimR", (4.5, 5.0, 4.0), (0, 0, 2.5), 700, 2.5, (1.0, 0.95, 0.9), "drop")
 area("KeyD", (-3.0, -6.0, 5.0), (0, 0, 2.0), 140, 4.0, (1.0, 1.0, 1.0), "drop")
+area("CutKey", (4.0, -4.0, 9.5), (1.5, 0, 6.0), 300, 3.0, (1.0, 0.97, 0.92), "drop")
+area("CutRim", (3.0, 4.0, 3.5), (1.5, 0, 6.0), 250, 2.0, (0.8, 0.9, 1.0), "drop")
 fl = bpy.data.lights.new("FrontLight", "POINT")
 fl.color = (0.75, 0.88, 1.0)
 fl.shadow_soft_size = 0.2
@@ -596,7 +602,7 @@ col.objects.link(FRONT_L)
 to_set("drop", FRONT_L)
 
 # ---------------------------------------------------------------- the powder (glass shards)
-NSH = 5200
+NSH = 6500
 zs_pool = np.linspace(-1.0, T.Z_SNIP - 0.02, 4000)
 wts = np.array([T.radius(z) ** 2 + 0.012 for z in zs_pool])
 wts /= wts.sum()
@@ -609,7 +615,7 @@ SH_TR = np.array([T.front_time(z) for z in SH_Z]) + rng.uniform(0.0, 0.05, NSH)
 _rad = np.stack([np.cos(SH_TH), np.sin(SH_TH), np.zeros(NSH)], 1)
 SH_V = _rad * (rng.uniform(0.7, 2.6, NSH) * (0.35 + 0.9 * SH_R))[:, None] + rng.normal(0, 0.35, (NSH, 3))
 SH_V[:, 1] -= 0.5 * np.abs(rng.normal(0, 0.6, NSH))        # a bit more spray toward the camera
-SH_S = (0.018 + 0.05 * rng.uniform(0, 1, NSH) ** 2) * (0.6 + 0.7 * SH_R)
+SH_S = (0.012 + 0.032 * rng.uniform(0, 1, NSH) ** 2) * (0.6 + 0.7 * SH_R)
 SH_AX = rng.normal(0, 1, (NSH, 3))
 SH_AX /= np.linalg.norm(SH_AX, axis=1, keepdims=True)
 SH_SPIN = rng.uniform(4, 16, NSH)
@@ -625,17 +631,17 @@ _ps.inputs["Base Color"].default_value = (0.9, 0.95, 1.0, 1)
 _ps.inputs["Transmission Weight"].default_value = 0.6
 link(nt_sh, _at.outputs["Color"], _ps.inputs["Emission Color"])
 SH_EM = _ps.inputs["Emission Strength"]
-SH_EM.default_value = 3.0
+SH_EM.default_value = 1.1
 link(nt_sh, _ps.outputs[0], out_sh.inputs[0])
 SHARDS = Dyn("Powder", np.zeros((NSH * 4, 3)), sh_faces, sh_m, sets=("drop",), smooth=False)
 _ca = SHARDS.o.data.color_attributes.new("col", "FLOAT_COLOR", "POINT")
 _hue = rng.uniform(0, 1, NSH)
 _cols = []
 for hh in _hue:
-    if hh < 0.45:
+    if hh < 0.25:
         c = (0.85, 0.92, 1.0)                                   # most of the powder: white glitter
     else:
-        u = (hh - 0.45) / 0.55
+        u = (hh - 0.25) / 0.75 * 0.72
         for (a0, c0), (a1, c1) in zip(RAINBOW, RAINBOW[1:]):
             if a0 <= u <= a1:
                 f = (u - a0) / (a1 - a0)
@@ -651,9 +657,9 @@ def shards_pose(te):
     a = np.clip(age, 0, None)
     tau = 0.65
     disp = SH_V * (tau * (1 - np.exp(-a / tau)))[:, None]
-    disp[:, 2] -= 0.12 * a ** 2
+    disp[:, 2] -= 0.04 * a ** 2
     pos = SH_P0 + disp
-    shrink = np.clip(1 - (a - 1.9) / 1.4, 0, 1)
+    shrink = np.clip(1 - (a - 1.6) / 1.2, 0, 1)
     pop = np.clip(a / 0.05, 0, 1)
     s = SH_S * live * shrink * pop
     ang = SH_SPIN * a
@@ -684,8 +690,13 @@ WATER_O = lathe("WaterBody", [(0.0, 0.18), (2.19, 0.18), (2.19, 4.4), (0.0, 4.4)
 WATER_O.location = (WX, WY, 0)
 to_set("water", BEAKER, WATER_O)
 # backlight softbox behind the beaker (cool blue), floor kick
-wb_m, _wbs = emit_mat("WaterBack", (0.25, 0.5, 1.0), 1.6)
-WBACK = obj_from("WaterBack", [(WX - 9, 9, 0), (WX + 9, 9, 0), (WX + 9, 9, 13), (WX - 9, 9, 13)], [[0, 1, 2, 3]], wb_m)
+wbd_m = bd_m.copy()
+wbd_m.name = "WaterBackdrop"
+wbd_m.node_tree.nodes["Mapping"].inputs["Scale"].default_value = (0.085, 1.0, 0.085)
+wbd_m.node_tree.nodes["Emission"].inputs["Strength"].default_value = 2.2
+WBACK = obj_from("WaterBack", [(-16, 0, -12), (16, 0, -12), (16, 0, 16), (-16, 0, 16)], [[0, 1, 2, 3]], wbd_m)
+WBACK.location = (WX, 10, 4.0)
+WBACK.scale = (0.8, 1, 0.8)
 to_set("water", WBACK)
 area("WKey", (WX - 5, -6, 9), (WX, 0, 3), 260, 4.0, (1.0, 0.98, 0.95), "water")
 area("WRim", (WX + 5, 4, 7), (WX, 0, 4), 500, 2.0, (0.8, 0.9, 1.0), "water")
@@ -694,18 +705,19 @@ hot_m, nt_h, out_h = new_mat("HotGlass")
 _hg = node(nt_h, "ShaderNodeBsdfPrincipled", Roughness=0.05, IOR=1.52)
 _hg.inputs["Transmission Weight"].default_value = 1.0
 HEAT_V = value(nt_h, 1.0)
-_hr = ramp(nt_h, [(0.0, (0.55, 0.03, 0.0)), (0.5, (1.0, 0.22, 0.02)), (1.0, (1.0, 0.55, 0.12))])
+_hr = ramp(nt_h, [(0.0, (0.6, 0.01, 0.0)), (0.5, (1.0, 0.1, 0.0)), (1.0, (1.0, 0.36, 0.02))])
 link(nt_h, HEAT_V, _hr.inputs[0])
 _lw = node(nt_h, "ShaderNodeLayerWeight", Blend=0.35)
 _hem = node(nt_h, "ShaderNodeEmission")
 link(nt_h, _hr.outputs[0], _hem.inputs["Color"])
 _hs = math_node(nt_h, "POWER", HEAT_V, 2.0)
-_hs = math_node(nt_h, "MULTIPLY", _hs, 9.0)
+_hs = math_node(nt_h, "MULTIPLY", _hs, 1.5)
 _hs = math_node(nt_h, "MULTIPLY", _hs, math_node(nt_h, "SUBTRACT", 1.15, _lw.outputs["Facing"]))
 link(nt_h, _hs, _hem.inputs["Strength"])
-_ha = node(nt_h, "ShaderNodeAddShader")
-link(nt_h, _hg.outputs[0], _ha.inputs[0])
-link(nt_h, _hem.outputs[0], _ha.inputs[1])
+_ha = node(nt_h, "ShaderNodeMixShader")
+link(nt_h, math_node(nt_h, "MULTIPLY", HEAT_V, 1.25, clamp=True), _ha.inputs[0])
+link(nt_h, _hg.outputs[0], _ha.inputs[1])
+link(nt_h, _hem.outputs[0], _ha.inputs[2])
 link(nt_h, _ha.outputs[0], out_h.inputs[0])
 GS = 0.55
 gv, gf = drop_vf(seg=48, scale=GS)
@@ -715,6 +727,8 @@ gl_ = bpy.data.lights.new("GobLight", "POINT")
 gl_.color = (1.0, 0.45, 0.12)
 gl_.shadow_soft_size = 0.5
 GOB_L = bpy.data.objects.new("GobLight", gl_)
+GOB_L.visible_glossy = False
+GOB_L.visible_transmission = False
 col.objects.link(GOB_L)
 to_set("water", GOB_L)
 # steam bubbles rising off the hot glass
@@ -743,7 +757,7 @@ def pose_water(t):
     GOB.rotation_euler = (0, 0, 0.6 * math.sin(t * 1.3))
     HEAT_V.default_value = h
     GOB_L.location = (WX, WY - 0.9, z + 0.3)
-    GOB_L.data.energy = 500 * h ** 2
+    GOB_L.data.energy = 120 * h ** 2
     age = t - T.T_WATER
     vv = []
     for k in range(NB):
@@ -806,7 +820,7 @@ _rl.data.foreach_set("value", np.array(rel, np.float32))
 SEC_FACE.location = (SX, SY - 0.003, SZ)
 to_set("section", SEC_SHELL, SEC_FACE)
 # squeeze arrows around the outline, pointing in
-ar_m, AR_S = emit_mat("Arrow", (0.55, 0.85, 1.0), 6.0)
+ar_m, AR_S = emit_mat("Arrow", (0.05, 0.45, 1.0), 3.0)
 ARR_Z = [-0.8, -0.45, 0.0, 0.45, 0.9, 1.5, 2.2, 3.1]
 ARROWS = []
 for z in ARR_Z:
@@ -848,12 +862,14 @@ def pose_section(t):
     s = appear
     v = ARR_TIP + (ARR_V - ARR_TIP) * max(s, 1e-4) + ARR_DIR * off - ARR_DIR * (1 - s) * 0.0
     ARR.set(v + np.array(T.SECTION))
-    AR_S.default_value = 6.0 * appear
+    AR_S.default_value = 3.0 * appear
 
 
 # ================================================================= hammer set
 HX, HY, HZ = T.HAMMER
-anv = box("Anvil", (HX - 9, -3.0, -2.0), (HX + 9, 3.0, 0.0), dark_metal_m)
+anv_m, _ap = principled("Anvil", (0.05, 0.055, 0.06), rough=0.55)
+_ap.inputs["Metallic"].default_value = 1.0
+anv = box("Anvil", (HX - 9, -3.0, -2.0), (HX + 9, 3.0, 0.0), anv_m)
 to_set("hammer", anv)
 ham_glass_m, HAM_K = glass_mat("HammerGlass", 1.6)
 HDROP = obj_from("HammerDrop", DV, DF, ham_glass_m)
@@ -889,6 +905,16 @@ def pose_hammer(t):
     s = 0.3 + 2.4 * T.clamp(u / 0.35) ** 0.5 if u > 0 else 0.01
     IMPACT.scale = (s, s, 1)
     IMP_A.default_value = 0.0 if u < 0 else 0.8 * math.exp(-u / 0.18)
+
+
+# backdrops: re-centre each mesh on its glow centre (the gradient is in object space)
+for _n, _c in (("Backdrop", (0.0, 14.0, 2.0)), ("SecBack", (T.SECTION[0], 14.0, 1.5)), ("HamBack", (T.HAMMER[0], 14.0, 1.5))):
+    _o = bpy.data.objects[_n]
+    _w = _o.matrix_world.copy()
+    _o.data.transform(_w)
+    _o.matrix_world = Matrix.Identity(4)
+    _o.data.transform(Matrix.Translation((-_c[0], -_c[1], -_c[2])))
+    _o.location = _c
 
 
 # ================================================================= camera
