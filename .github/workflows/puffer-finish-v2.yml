@@ -10,9 +10,6 @@ jobs:
   movie:
     runs-on: ubuntu-24.04
     timeout-minutes: 50
-    env:
-      BANDS: ${{ runner.temp }}/clean-bands
-      CAPTION_FONT: ${{ runner.temp }}/Barlow.ttf
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,6 +36,9 @@ jobs:
           merge-multiple: true
           path: ${{ runner.temp }}/clean-bands
       - name: Render, retime and inspect captions
+        env:
+          BANDS: ${{ runner.temp }}/clean-bands
+          CAPTION_FONT: ${{ runner.temp }}/Barlow.ttf
         run: |
           if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
           pip -q install pillow numpy
