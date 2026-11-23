@@ -1060,7 +1060,7 @@ def pose_macro(t):
             s = dd_s[k] * (1 + 1.6 * u)
             pos.append(DROP_V * s + (MX + r * math.cos(dd_ang[k]), MY + r * math.sin(dd_ang[k]), MZ + 0.3 + 0.8 * T.ease_out(u)))
         DUST.set(np.concatenate(pos))
-        DUST_A.default_value = 0.3 * T.clamp(1 - u / 2.0) * T.smoother(u / 0.08)
+        DUST_A.default_value = 0.13 * T.clamp(1 - u / 2.0) * T.smoother(u / 0.08)
         DUST.o.hide_render = False
     else:
         DUST.o.hide_render = True

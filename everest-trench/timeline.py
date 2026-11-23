@@ -161,7 +161,7 @@ def camera(t):
         w = smoother(x / 0.85)
         return lerpv(p0, cp, w), lerpv(a0, ct, w), lerp(l0, cl, w)
     if _set == "macro":                     # close on the square inch, pull back as the weight lands
-        u = 0.08 * x + 0.92 * smoother((t - T_8 + 0.05) / 0.9)
+        u = 0.08 * x + 0.92 * smoother((t - T_8 + 0.55) / 1.1)
         return lerpv(p0, p1, u), lerpv(a0, a1, u), lerp(l0, l1, u)
     u = smoother(x) * 0.85 + 0.15 * x
     return lerpv(p0, p1, u), lerpv(a0, a1, u), lerp(l0, l1, u)

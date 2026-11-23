@@ -229,7 +229,7 @@ def overlays(img, t):
     if i == 1:
         u = T.smoother((t - T.T_TRENCH) / (T.T_7 + 0.45 - T.T_TRENCH))
         a = window(t, S[1][0] + 0.05, S[1][1], 0.15)
-        big(img, f"{int(round(T.DEEP_FT * u / 10) * 10):,} FT", "MARIANA TRENCH" if t < T.T_7 else "ALMOST 7 MILES DOWN", a,
+        big(img, f"{(T.DEEP_FT if u > 0.999 else int(round(T.DEEP_FT * u / 10) * 10)):,} FT", "MARIANA TRENCH" if t < T.T_7 else "ALMOST 7 MILES DOWN", a,
             color=ICE)
     if i == 2:
         big(img, "1.3 MILES", "OF WATER ABOVE THE PEAK", window(t, T.T_MILE - 0.05, S[2][1], 0.15), color=AMBER)
