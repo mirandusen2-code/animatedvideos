@@ -1,0 +1,73 @@
+name: Assemble the lunar ranging documentary
+on:
+  push:
+    branches: [codex/puffer-captions-and-lunar-ranging]
+    paths: ['.github/workflows/lunar-master.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  movie:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: lunar-laser-ranging
+          persist-credentials: false
+      - name: Wait for the recorded voice and native plates
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for id in 45150535962 45151370402; do
+            for attempt in $(seq 1 100); do
+              state=$(gh api repos/$GITHUB_REPOSITORY/actions/runs/$id --jq '.conclusion // "running"')
+              if [ "$state" = success ]; then break; fi
+              if [ "$state" != running ]; then exit 1; fi
+              sleep 10
+            done
+            test "$state" = success
+          done
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45151370402
+          name: lunar-plates
+          path: ${{ runner.temp }}/moon-plates
+      - uses: actions/cache/restore@v4
+        with:
+          path: |
+            lunar-laser-ranging/vo/timing.json
+            lunar-laser-ranging/vo/narration.wav
+          key: lunar-voice-v1-${{ hashFiles('lunar-laser-ranging/script.py','lunar-laser-ranging/realign.py','lunar-laser-ranging/voiceover.py') }}
+          fail-on-cache-miss: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Finish and check the movie
+        env:
+          PLATES: ${{ runner.temp }}/moon-plates
+          CAPTION_FONT: ${{ runner.temp }}/Barlow.ttf
+          HF_HUB_DISABLE_XET: '1'
+        working-directory: lunar-laser-ranging
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          pip install -q numpy scipy soundfile pillow faster-whisper
+          curl -fsSL --retry 3 https://raw.githubusercontent.com/google/fonts/main/ofl/barlowsemicondensed/BarlowSemiCondensed-Bold.ttf -o "$CAPTION_FONT"
+          python make_cues.py
+          python finish.py
+          python realign.py lunar-laser-ranging.mp4
+          python - <<'PY'
+          import base64
+          from pathlib import Path
+          allowed=['lunar-laser-ranging.srt','qa/measurements.json','qa/transcript.json','qa/shot-sheet.jpg','vo/timing.json','cues.json']+['thumbnails/cover-'+k+'.jpg' for k in 'abc']
+          for name in allowed:
+              b=Path(name).read_bytes()
+              print('FILEINFO',name,len(b))
+              for x in range(0,len(b),3072):print('FILEPART',name,x,base64.b64encode(b[x:x+3072]).decode())
+          PY
+      - uses: actions/upload-artifact@v7
+        with:
+          path: lunar-laser-ranging/lunar-laser-ranging.mp4
+          archive: false
+          retention-days: 15
