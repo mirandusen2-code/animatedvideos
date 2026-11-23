@@ -1,0 +1,51 @@
+name: Finish revised pufferfish film
+on:
+  push:
+    branches: [codex/puffer-captions-and-lunar-ranging]
+    paths: ['.github/workflows/puffer-finish-v2.yml']
+permissions:
+  actions: read
+  contents: read
+jobs:
+  movie:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      BANDS: ${{ runner.temp }}/clean-bands
+      CAPTION_FONT: ${{ runner.temp }}/Barlow.ttf
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            pufferfish-sand-circle
+            pufferfish-sand-circle-v2
+          persist-credentials: false
+      - name: Wait for the requested original scene bands
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 120); do
+            state=$(gh api repos/$GITHUB_REPOSITORY/actions/runs/45150084757 --jq '.conclusion // "running"')
+            if [ "$state" = success ]; then exit 0; fi
+            if [ "$state" != running ]; then exit 1; fi
+            sleep 12
+          done
+          exit 1
+      - uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: 45150084757
+          pattern: band-*
+          merge-multiple: true
+          path: ${{ runner.temp }}/clean-bands
+      - name: Render, retime and inspect captions
+        run: |
+          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          pip -q install pillow numpy
+          curl -fsSL --retry 3 https://raw.githubusercontent.com/google/fonts/main/ofl/barlowsemicondensed/BarlowSemiCondensed-Bold.ttf -o "$CAPTION_FONT"
+          python pufferfish-sand-circle-v2/revise.py
+      - uses: actions/upload-artifact@v7
+        with:
+          path: pufferfish-sand-circle-v2/pufferfish-sand-circle-v2.mp4
+          archive: false
+          retention-days: 15
