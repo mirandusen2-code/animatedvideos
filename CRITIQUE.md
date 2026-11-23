@@ -1,3 +1,36 @@
+# Critique of "Mount Everest Would Vanish in the Ocean" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: FAIL.** Frame 0 shows a small grey mountain (about 15 % of the frame height) in a dark
+blue scene; the brightest thing is the "29,032 FT" text, not the hero. Something is happening (the
+splash), but at thumbnail size it reads as "a small rock on a table".
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 5 | See above. The splash is small and white-on-teal, low contrast. |
+| 2 | Retention | 6 | 6.2–10.0 s (frames 186–300): Everest sits still on the floor for almost 4 s; 12.6–14.7 s: the pillar waits 2 s for the weight. |
+| 3 | Clarity | 9 | The comparison is instantly clear: mountain in the trench, mile of water above. |
+| 4 | Visual quality | 6 | Real terrain is great, but 10.0–12.6 s is dark blue on black; the sunbeams barely read. Red cut faces look odd on a phone. |
+| 5 | Motion design | 7 | Smooth, but every shot is a slow creep; the weight impact first filled the whole frame (fixed). |
+| 6 | Typography | 8 | Big numbers read well; the depth counter was 4 ft off (fixed). |
+| 7 | Voice and sound | 8 | Clear and energetic; the falling swoosh into the loop works. |
+| 8 | Story | 8 | Good escalation (depth → darkness → pressure); the loop line is natural. |
+| 9 | Accuracy | 9 | Real DEM data, sourced numbers. |
+| 10 | Packaging | 7 | Thumbnails are dark; "7 MILES DEEP" is the strongest. |
+
+## Top 5 problems → fixes
+1. **Weak frame 0** (hero small, grey, dark). Root cause: the topic's most dramatic moment (the drop) was
+   framed wide to show scale. → Rule: hero ≥ 40 % of frame height, brightest object, already in action.
+2. **Dark-on-dark shot** (frames 300–378). Root cause: "darkness" was shown literally. → Rule: every shot
+   keeps a bright area; show darkness by contrast, never by an all-dark frame.
+3. **Static stretches** (frames 186–300, 378–440). → Rule: a visible change every 2.5 s.
+4. **The impact framing** (frames 442–450). Root cause: the camera was set on the resting pose, not the
+   moving one. → Rule: frame big impacts so the object stays whole; check impact frames at full size.
+5. **Number mismatch** (35,880 vs 35,876). → Rule: on-screen numbers match the voice exactly.
+
+**Keep:** real-world data for the hero, the recurring big-number overlay, the falling-object loop.
+
+---
+
 # Critique of "This Fluffy Cloud Weighs Over a Million Pounds" (run of CRITIQUE_PROMPT.md)
 
 | # | Axis | Score | Evidence |
