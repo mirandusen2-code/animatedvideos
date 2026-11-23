@@ -1,0 +1,33 @@
+name: Register the two verified video blobs
+on:
+  push:
+    branches: [codex/puffer-captions-and-lunar-ranging]
+    paths: ['.github/workflows/register-verified-20261123-films.yml']
+permissions: {}
+jobs:
+  register:
+    if: github.repository == 'mirandusen2-code/animatedvideos' && github.event.before == 'a3bd1d951d320129bd232e9732dae1dd0aae1fe9' && github.run_attempt == 1
+    permissions:
+      actions: read
+      contents: write
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - name: Verify the two finished MP4s and create their content-addressed Git blobs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import base64,hashlib,json,subprocess
+          repo='mirandusen2-code/animatedvideos'
+          films=[{"id":14817337409,"digest":"df5353e36549c84d208e5dd2e98cdc3e8e0412da4e67754174ed62bfe2571d80","size":11600054,"name":"pufferfish-sand-circle-v2.mp4"},{"id":14808295138,"digest":"482dadb0c0334d77a1776bf11ddb67aa91ef978133cf118824e857dda875bfb3","size":5815284,"name":"lunar-laser-ranging.mp4"}]
+          for f in films:
+              raw=subprocess.check_output(['gh','api',f'repos/{repo}/actions/artifacts/{f["id"]}/zip'])
+              assert len(raw)==f['size'] and raw[4:8]==b'ftyp'
+              assert hashlib.sha256(raw).hexdigest()==f['digest']
+              gitid=hashlib.sha1(b'blob '+str(len(raw)).encode()+bytes([0])+raw).hexdigest()
+              body=json.dumps({'encoding':'base64','content':base64.b64encode(raw).decode()}).encode()
+              out=subprocess.run(['gh','api','--method','POST',f'repos/{repo}/git/blobs','--input','-'],input=body,stdout=subprocess.PIPE,check=True)
+              assert json.loads(out.stdout)['sha']==gitid
+              print('VERIFIED_VIDEO',f['name'],gitid,len(raw))
+          PY
