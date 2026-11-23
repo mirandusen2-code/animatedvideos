@@ -11,7 +11,7 @@ assert json.loads((src.parent/'vo/timing.json').read_text())['NFRAMES']==682
 def run(args,**kw):return sp.run(['ffmpeg','-hide_banner','-nostdin','-y',*args],check=True,**kw)
 def loud(path):
     res=run(['-i',str(path),'-vn','-af','loudnorm=print_format=json','-f','null','-'],capture_output=True,text=True)
-    return json.loads(res.stderr[res.stderr.rfind('{'):])
+    return json.JSONDecoder().raw_decode(res.stderr[res.stderr.rfind('{'):])[0]
 def repair_onset():
     # In the historical word alignment “Hundreds” was assigned six milliseconds.
     # Use the recorded consonant attack after “groove”, inside its long sentence break.
