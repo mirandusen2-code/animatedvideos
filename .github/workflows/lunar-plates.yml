@@ -9,9 +9,6 @@ jobs:
   plates:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
-    env:
-      PLATES: ${{ runner.temp }}/moon-plates
-      MOON_MAP: ${{ runner.temp }}/lroc.jpg
     steps:
       - uses: actions/checkout@v4
         with:
@@ -20,7 +17,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - run: |
+      - name: Render plates
+        env:
+          PLATES: ${{ runner.temp }}/moon-plates
+          MOON_MAP: ${{ runner.temp }}/lroc.jpg
+        run: |
           pip -q install 'bpy==5.2.3' pillow
           curl -fsSL --retry 3 https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_2k.jpg -o "$MOON_MAP"
           python lunar-laser-ranging/scene.py > "$RUNNER_TEMP/plates.log" 2>&1 || { tail -20 "$RUNNER_TEMP/plates.log"; exit 1; }
