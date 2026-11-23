@@ -1,0 +1,39 @@
+name: Lunar optical scenes
+on:
+  push:
+    branches: [codex/puffer-captions-and-lunar-ranging]
+    paths: ['.github/workflows/lunar-plates.yml','lunar-laser-ranging/scene.py']
+permissions:
+  contents: read
+jobs:
+  plates:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      PLATES: ${{ runner.temp }}/moon-plates
+      MOON_MAP: ${{ runner.temp }}/lroc.jpg
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: lunar-laser-ranging
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: |
+          pip -q install 'bpy==5.2.3' pillow
+          curl -fsSL --retry 3 https://svs.gsfc.nasa.gov/vis/a000000/a004700/a004720/lroc_color_2k.jpg -o "$MOON_MAP"
+          python lunar-laser-ranging/scene.py > "$RUNNER_TEMP/plates.log" 2>&1 || { tail -20 "$RUNNER_TEMP/plates.log"; exit 1; }
+          python - <<'PY'
+          import io,os,base64
+          from PIL import Image
+          from pathlib import Path
+          p=Path(os.environ['PLATES']);im=Image.new('RGB',(600,357))
+          for i,n in enumerate(('moon','array','station')):im.paste(Image.open(p/(n+'.png')).resize((200,357)),(200*i,0))
+          b=io.BytesIO();im.save(b,'JPEG',quality=88);print('PLATECHECK',base64.b64encode(b.getvalue()).decode(),'ENDIMAGE')
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lunar-plates
+          path: ${{ runner.temp }}/moon-plates
+          retention-days: 3
