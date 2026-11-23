@@ -10,9 +10,9 @@ import timeline as T
 frames, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 for name, f, lines, colors, y in [
-    ("thumb_leaving", 20, [["THE", "MOON", "IS"], ["LEAVING", "US"]], {3: post.AMBER, 4: post.AMBER}, 1000),
-    ("thumb_young", int((T.T_SKY + 0.2) * T.FPS), [["WHEN", "THE", "MOON"], ["FILLED", "THE", "SKY"]], {3: post.AMBER, 5: post.AMBER}, 1400),
-    ("thumb_eclipse", int((T.SHOTS[5][1] - 0.3) * T.FPS), [["NO", "MORE"], ["ECLIPSES"]], {2: post.AMBER}, 1350),
+    ("thumb_vanish", 24, [["EVEREST", "WOULD"], ["VANISH"]], {2: post.AMBER}, 1300),
+    ("thumb_7miles", int((T.T_PEAK + 0.3) * T.FPS), [["7", "MILES"], ["DEEP"]], {0: post.AMBER, 1: post.AMBER}, 560),
+    ("thumb_8tons", int((T.T_8 + 1.0) * T.FPS), [["8", "TONS"], ["PER", "INCH"]], {0: post.AMBER, 1: post.AMBER}, 560),
 ]:
     img = post.finish(Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB"), f / T.FPS)
     post.text_block(img, lines, post.CX, y, 124, colors=colors)
