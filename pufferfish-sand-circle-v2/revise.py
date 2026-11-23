@@ -12,7 +12,21 @@ def run(args,**kw):return sp.run(['ffmpeg','-hide_banner','-nostdin','-y',*args]
 def loud(path):
     res=run(['-i',str(path),'-vn','-af','loudnorm=print_format=json','-f','null','-'],capture_output=True,text=True)
     return json.loads(res.stderr[res.stderr.rfind('{'):])
+def repair_onset():
+    # In the historical word alignment “Hundreds” was assigned six milliseconds.
+    # Use the recorded consonant attack after “groove”, inside its long sentence break.
+    words=CUES[15]['words'];assert words[0][0]=='Hundreds'
+    factor=682/N;lo=CUES[14]['words'][-1][2]+.07;hi=words[1][1]-.075
+    buf=run(['-loglevel','error','-ss',str(lo*factor),'-i',str(src),'-t',str((hi-lo)*factor),'-vn','-af','highpass=f=900,lowpass=f=4500','-ar','16000','-ac','1','-f','f32le','-'],stdout=sp.PIPE).stdout
+    samples=np.frombuffer(buf,'<f4');energy=np.sqrt(np.mean(samples[:len(samples)//160*160].reshape(-1,160)**2,axis=1))
+    energy=np.convolve(energy,[.25,.5,.25],mode='same')
+    quiet=np.percentile(energy,20);threshold=quiet+.22*(np.percentile(energy,93)-quiet)
+    minimum=int(np.argmin(energy[:max(2,len(energy)//2)]))
+    onset=next(i for i in range(minimum,len(energy)-2) if np.all(energy[i:i+3]>threshold))
+    words[0][1]=round(lo+onset*.01/factor,4);FIRST_FRAME[15]=math.ceil(words[0][1]*30-1e-8)
+    print('Hundreds consonant onset',words[0][1],flush=True)
 def main():
+    repair_onset()
     for j in range(len(CUES)):overlay(j,-1)
     subtitles(N,'pufferfish-sand-circle-v2.srt')
     source=sp.Popen(['ffmpeg','-v','error','-i',str(src),'-an','-fps_mode','passthrough','-f','rawvideo','-pix_fmt','rgb24','-'],stdout=sp.PIPE)
@@ -44,5 +58,6 @@ def main():
     assert (int(v['nb_frames']),v['width'],v['height'],v['pix_fmt'])==(N,W,H,'yuv420p')
     mem=io.BytesIO();review.save(mem,'JPEG',quality=88)
     print('PFREVIEW',base64.b64encode(mem.getvalue()).decode(),'ENDIMAGE')
+    print('PFSRT',base64.b64encode((HERE/'pufferfish-sand-circle-v2.srt').read_bytes()).decode());print('PFCUES',base64.b64encode(json.dumps(CUES,indent=2).encode()).decode())
     print('PUBLICQA',json.dumps(dict(frames=N,seconds=N/30,speed=682/N,cues=len(CUES),words=len(seen),font_px=72,baseline=1420,max_center_error=center,LUFS=float(m['input_i']),peak=float(m['input_tp']))))
 if __name__=='__main__':main()
