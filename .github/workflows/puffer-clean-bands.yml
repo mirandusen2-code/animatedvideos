@@ -1,0 +1,51 @@
+name: Recover clean native pufferfish subtitle bands
+on:
+  push:
+    branches: [codex/puffer-captions-and-lunar-ranging]
+    paths: ['.github/workflows/puffer-clean-bands.yml']
+permissions:
+  contents: read
+jobs:
+  band:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      max-parallel: 10
+      fail-fast: false
+      matrix:
+        start: [0,80,160,240,320,400,480,560,640]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: pufferfish-sand-circle
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Render native crop from the original scene
+        working-directory: pufferfish-sand-circle
+        env:
+          START: ${{ matrix.start }}
+        run: |
+          pip install -q 'bpy==5.2.3' pillow
+          python - <<'PY' > "$RUNNER_TEMP/render.log" 2>&1 || { tail -25 "$RUNNER_TEMP/render.log"; exit 1; }
+          import os
+          from pathlib import Path
+          from PIL import Image
+          import scene
+          scene.sc.render.use_border=True
+          scene.sc.render.use_crop_to_border=True
+          scene.sc.render.border_min_y=3/16
+          scene.sc.render.border_max_y=5/16
+          scene.sc.render.threads_mode='FIXED';scene.sc.render.threads=4
+          start=int(os.environ['START']);folder=Path(os.environ['RUNNER_TEMP'])/'band'
+          for i in range(start,min(start+80,scene.NFRAMES)):
+              scene.render(i,folder)
+              with Image.open(folder/f'{i:05}.png') as im:
+                  assert im.size==(1080,240)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: band-${{ matrix.start }}
+          path: ${{ runner.temp }}/band
+          retention-days: 2
