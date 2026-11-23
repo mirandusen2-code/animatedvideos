@@ -47,7 +47,7 @@ def ground(m,terrain,scale):
     for p in o.data.polygons:p.use_smooth=True
 s=start((.002,.003,.006))
 bpy.ops.mesh.primitive_uv_sphere_add(segments=192,ring_count=96,radius=1)
-o=bpy.context.object;o.rotation_euler.z=pi/2
+o=bpy.context.object;o.rotation_euler.z=-pi/2
 for p in o.data.polygons:p.use_smooth=True
 m=mat('LROC global mosaic',(.5,.5,.5),.96)
 nt=m.node_tree;tex=nt.nodes.new('ShaderNodeTexImage');tex.image=bpy.data.images.load(os.environ['MOON_MAP']);nt.links.new(tex.outputs['Color'],nt.nodes['Principled BSDF'].inputs['Base Color']);o.data.materials.append(m)
