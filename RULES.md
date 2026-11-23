@@ -35,3 +35,10 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 ## Added after user feedback (diamond video)
 - [ ] Voice speed like the lightning video (atempo 1.08); never speed up further to fit a length: cut words instead. (user)
 - [ ] Sound follows the picture: every visible event (impact, spark, molecule, pencil stroke, light sweep) gets its own sound at its exact time, driven by the same event list in `timeline.py` as the scene; ambience beds follow the set on screen. (user, lightning video)
+
+## Added after the diamond video
+- [ ] A glowing/burning hero keeps a saturated rim (clearly orange/red) with only the core near-white; check the hue at 180 × 320. (diamond: the hot gem read peach)
+- [ ] In every shot the object the voice names fills ≥ 25 % of the frame height. (diamond: the ring's stone was ~8 %)
+- [ ] A set longer than 3 s gets a clear change of scale or angle halfway. (diamond: the CO2 shot)
+- [ ] Emissive heroes keep surface detail (facet edges, normal-based variation). (diamond)
+- [ ] post.py asserts label ≥ 44 px and number ≥ 96 px font sizes. (diamond)

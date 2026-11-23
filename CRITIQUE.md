@@ -1,3 +1,41 @@
+# Critique of "This Diamond Is Burning Into Thin Air" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: the white-hot diamond fills ~45 % of the frame height, it is the
+brightest object, sparks are flying, "1,500°F" is on screen and a flame burst hits on frame 0. At 180 × 320
+it still reads as "a glowing gem on fire". Weak point: the hot diamond reads peach/beige rather than
+blazing orange, so it looks more "lit" than "burning".
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 8 | Passes the test; colour is a little pastel (frames 0–100). |
+| 2 | Retention | 7 | Cuts every 1–4 s. S4 (frames 336–459, 4.1 s) is one set with slow molecules; S5 ring (459–544) is a slow push-in. |
+| 3 | Clarity | 8 | Burn → atoms → CO2 is clear; "slowly turning into pencil lead" needs the pencil shot to land (it does). |
+| 4 | Visual quality | 7 | Atoms and ring look premium; the hot diamond's faceting is flat (frames 250–330), the dish reads as a white plate. |
+| 5 | Motion design | 7 | Clean easing; the ring shot is centred and static; the time-lapse light sweep is subtle. |
+| 6 | Typography | 8 | Big counters read well; "100% CARBON ATOMS" and the pill labels are on the small side. |
+| 7 | Voice and sound | 9 | Lightning-speed voice and event-synced SFX (torch, sizzle, molecule plops, pencil scratch, day sweeps). |
+| 8 | Story | 9 | Strong twist ("diamonds aren't forever"), natural loop line. |
+| 9 | Accuracy | 8 | Honest, but "1,500 degrees" is near the top of the ignition range; the years counter is illustrative. |
+| 10 | Packaging | 8 | "THIS DIAMOND IS BURNING" thumbnail is bright and clear. |
+
+## Top 5 problems → fixes
+1. **Hot hero reads pastel, not fiery** (frames 0–100, 280–335). Root cause: emission mixed toward white over
+   the whole surface. → Rule: a burning/glowing hero keeps a saturated rim (hue clearly orange/red) and only
+   its core goes white; check the hue in a 180 × 320 downscale.
+2. **Ring shot: hero too small** (frames 459–544: the diamond is ~8 % of the frame). → Rule: in every shot
+   the object the voice names is ≥ 25 % of the frame height.
+3. **One set for 4 s** (S4). → Rule: a set longer than 3 s needs a camera move with a clear change of
+   scale or angle halfway.
+4. **Flat faceting when hot** (frames 250–330). → Rule: emissive heroes keep surface detail (facet edges,
+   normal-based variation); no flat-shaded glow.
+5. **Small pill labels** (S1, S2). → Rule from the cloud video still applies (labels ≥ 44 px) — enforce it
+   in post.py with an assert, not by eye.
+
+**Keep:** event-synced sound design from one shared event list; frame 0 = the climax of the story; a twist
+that reframes something the viewer owns (their ring).
+
+---
+
 # Critique of "Mount Everest Would Vanish in the Ocean" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: FAIL.** Frame 0 shows a small grey mountain (about 15 % of the frame height) in a dark
