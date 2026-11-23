@@ -198,3 +198,42 @@ def diamond_scale(t):
     if shot_index(t) == 0:
         return 1.0 - 0.10 * smoother(t / SHOTS[0][1])
     return 1.0
+
+
+# ---------------------------------------------------------------- shared event lists (picture AND sound use these)
+import random as _random
+
+_r = _random.Random(11)
+N_MOL = 26
+MOL_U = [_r.random() for _ in range(N_MOL)]
+
+
+def mol_depart(j):
+    """Time the j-th CO2 molecule lifts off the hot crystal (S4); its two oxygens arrive in the 0.5 s before."""
+    s0, s1 = SHOTS[4][0], SHOTS[4][1]
+    return s0 + 0.55 + MOL_U[j] * (s1 - s0 - 1.2)
+
+
+DAY = 0.9                                    # one day per 0.9 s in the time-lapse (S7)
+
+
+def day_peaks():
+    s0, s1 = SHOTS[7][0], SHOTS[7][1]
+    out, k = [], 0
+    while True:
+        tp = s0 + DAY * (0.25 + k)           # the sun is highest a quarter period into each day
+        if tp >= s1:
+            return out
+        out.append(tp)
+        k += 1
+
+
+def bursts():
+    """Spark bursts: when the heated diamond bursts into flame, and the flare that wraps into frame 0."""
+    return [T_BURNS - 0.04, DUR - 0.15]
+
+
+def pencil_u(t):
+    """0..1 progress of the pencil stroke in S6."""
+    s0, s1 = SHOTS[6][0], SHOTS[6][1]
+    return clamp((t - s0 + 0.35) / (s1 - s0 + 0.35))

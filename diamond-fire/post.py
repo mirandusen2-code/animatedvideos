@@ -515,28 +515,73 @@ def make_music_and_sfx():
         n_ = min(len(w_), len(th))
         return 0.6 * w_[:n_] + 0.9 * th[:n_]
 
+    # ---- every sound comes from what is on screen at that moment (same event lists as the picture)
     S = T.SHOTS
-    # the loop point: the torch roars up and the diamond flares on frame 0
-    add(sfx, S[-1][0] + 0.2, hiss(T.DUR - S[-1][0] - 0.2 + 3.4, 53), 0.20)    # torch, continues into the hook
-    add(sfx, T.DUR - 0.9, swoosh(0.9, 54, up=True), 0.22)
-    add(sfx, 0.0, whoomp(), 0.6)
-    add(sfx, 0.0, crackle(3.3, 55), 0.35)
-    add(sfx, S[1][0], swoosh(0.7, 56, up=False), 0.16)                      # into the atoms
-    add(sfx, S[1][0] + 0.1, shimmer(1.6), 0.05)
-    add(sfx, S[2][0] + 0.05, clink(1500, 0.6), 0.14)                         # diamond and charcoal
-    add(sfx, S[3][0] + 0.1, hiss(3.9, 57), 0.22)                              # the torch heats it
-    add(sfx, S[3][0] + 0.1, thump(200, 90, 0.3), 0.2)
-    add(sfx, T.T_BURNS, whoomp(), 0.55)                                       # it bursts into flame
-    add(sfx, T.T_BURNS, crackle(0.8, 58, 30), 0.35)
-    add(sfx, S[4][0], swoosh(0.7, 59, up=True), 0.14)
-    for k in range(12):                                                       # molecules popping off
-        add(sfx, S[4][0] + 0.6 + k * 0.28, plop(500 + 40 * (k % 5), 200, 0.12), 0.10)
-    add(sfx, S[5][0], shimmer(2.2), 0.08)                                     # the ring sparkles
-    add(sfx, S[5][0] + 0.25, clink(2300, 0.8), 0.08)
-    add(sfx, S[6][0] + 0.1, hiss(1.5, 60, lp=30), 0.10)                       # pencil scratch
-    add(sfx, S[7][0], swoosh(1.5, 61, up=True), 0.14)                         # time-lapse
-    for k in range(10):
-        add(sfx, S[7][0] + 0.1 + k * 0.15, beep(2400, 0.03), 0.04)
+    last = len(S) - 1
+    tt = np.arange(ext) / SR
+
+    def curve(fn, smooth=0.02):
+        """Sample an envelope function of t on a 10 ms grid, wrapping past the loop point."""
+        g = np.arange(0, ext / SR, 0.01)
+        v = np.array([fn(x % T.DUR) for x in g])
+        k = max(1, int(smooth / 0.01))
+        v = np.convolve(v, np.ones(k) / k, mode="same")
+        return np.interp(tt, g, v)
+
+    fire = curve(lambda x: 1.0 if T.shot_set(x) == "fire" else 0.0, 0.06)
+    atoms = curve(lambda x: 1.0 if T.shot_set(x) == "atoms" else 0.0, 0.06)
+    # the oxygen torch: a roaring hiss exactly while the flame is on screen
+    rng_ = np.random.default_rng(70)
+    noise = rng_.standard_normal(ext)
+    roar = noise - np.convolve(noise, np.ones(5) / 5, mode="same") * 0.7
+    low = np.convolve(noise, np.ones(80) / 80, mode="same") * 6
+    torch_env = curve(T.torch) * fire
+    sfx[:] += (0.10 * roar + 0.12 * low) * torch_env
+    # the burning diamond: crackles whose density follows the heat (none when it is cold)
+    heat_env = curve(lambda x: T.heat(x) ** 2) * fire
+    clicks = (rng_.random(ext) < 45 / SR).astype(float) * rng_.uniform(0.3, 1.0, ext)
+    ck = np.exp(-np.arange(int(0.006 * SR)) / SR * 900)
+    crack_bed = np.convolve(clicks, ck, mode="same") * rng_.choice([-1, 1], ext)
+    sfx[:] += 0.5 * crack_bed * heat_env
+    # heating up: a sizzle that rises in pitch with the temperature counter (S3)
+    a3, b3 = T.T_1500 - 0.3, T.bursts()[0]
+    st = np.arange(int((b3 - a3) * SR)) / SR
+    f_ = 180 + 900 * (st / st[-1]) ** 2
+    sizzle = np.sin(2 * np.pi * np.cumsum(f_) / SR) * (st / st[-1]) ** 1.5 * 0.5 + hiss(len(st) / SR, 71) * (st / st[-1])
+    add(sfx, a3, sizzle, 0.12)
+    # every spark burst: a whoomp of flame + a shower of sparks
+    for b in T.bursts():
+        add(sfx, b, whoomp(), 0.55)
+        add(sfx, b, crackle(0.9, 72, 40), 0.35)
+    add(sfx, 0.0, thump(140, 45, 0.8), 0.45)                                  # the hit on frame 0
+    # atom scale: a soft airy bed
+    air = np.convolve(noise, np.ones(30) / 30, mode="same") * 4
+    sfx[:] += 0.05 * air * atoms
+    for k in range(1, len(S)):                                                # every cut: a short air swish
+        add(sfx, S[k][0] - 0.12, pulse_swish(0.35, 80 + k), 0.07)
+    add(sfx, T.T_PURE, shimmer(1.2), 0.04)                                    # "pure carbon"
+    add(sfx, S[2][0] + 0.05, clink(1760, 0.5), 0.10)                          # the two labels pop on
+    add(sfx, S[2][0] + 0.12, plop(300, 140, 0.15), 0.12)
+    add(sfx, S[3][0] + 0.15, swoosh(0.35, 73, up=True), 0.10)                 # the torch lights
+    add(sfx, S[last][0] + 0.3, swoosh(0.35, 74, up=True), 0.10)
+    for j in range(T.N_MOL):                                                  # each CO2 molecule
+        td = T.mol_depart(j)
+        add(sfx, td - 0.45, beep(1300 + 37 * (j % 7), 0.08), 0.018)           # oxygens swoop in
+        add(sfx, td, plop(620 + 23 * (j % 9), 260, 0.14), 0.09)               # ... and it pops off
+    add(sfx, S[5][0] + 0.1, shimmer(2.4), 0.07)                               # the ring sparkles
+    for k, dt in enumerate((0.35, 1.25, 2.1)):
+        add(sfx, S[5][0] + dt, clink(2637 + 300 * k, 0.9), 0.05)
+    # the pencil: scratching while it moves
+    pen = curve(lambda x: 1.0 if T.shot_index(x) == 6 and 0 < T.pencil_u(x) < 1 else 0.0, 0.03)
+    scratch = noise - np.convolve(noise, np.ones(3) / 3, mode="same")
+    grain = 0.6 + 0.4 * np.sin(2 * np.pi * 13 * tt) ** 2
+    sfx[:] += 0.10 * scratch * pen * grain
+    # the time-lapse: each day the sun sweeps over with a whoosh, the counter ticks
+    for tp in T.day_peaks():
+        add(sfx, tp - 0.3, swoosh(0.6, 75, up=True), 0.12)
+    for k in range(12):
+        add(sfx, S[7][0] + 0.06 + k * 0.12, beep(2600, 0.06), 0.03)
+    add(sfx, T.DUR - 0.8, swoosh(0.8, 76, up=True), 0.12)                    # rising into the loop
     sfx = fold(reverb(sfx, 2.2, 0.35, seed=2), n)
     return music, sfx
 

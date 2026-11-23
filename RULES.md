@@ -31,3 +31,7 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 ## Habits (passed five videos in a row)
 - Facts from two sources in `RESEARCH.md`; US units.
 - Deliver mp4 + srt + 3 thumbnails + UPLOAD.md.
+
+## Added after user feedback (diamond video)
+- [ ] Voice speed like the lightning video (atempo 1.08); never speed up further to fit a length: cut words instead. (user)
+- [ ] Sound follows the picture: every visible event (impact, spark, molecule, pencil stroke, light sweep) gets its own sound at its exact time, driven by the same event list in `timeline.py` as the scene; ambience beds follow the set on screen. (user, lightning video)

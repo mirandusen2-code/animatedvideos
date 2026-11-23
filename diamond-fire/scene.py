@@ -710,7 +710,7 @@ pts = np.unique(np.round(np.array(pts), 4), axis=0)
 pts = pts - np.array((NX / 2, NY / 2, 0.0))
 # atoms that leave as CO2: top-layer atoms near the middle
 top = np.where((pts[:, 2] >= NZ - 0.01) & (np.abs(pts[:, 0]) < 2.6) & (np.abs(pts[:, 1]) < 2.2))[0]
-leave = rng.permutation(top)[:min(26, len(top))]
+leave = rng.permutation(top)[:T.N_MOL]
 leave_set = set(leave.tolist())
 stay = [i for i in range(len(pts)) if i not in leave_set]
 A_R, B_R = 0.115, 0.03
@@ -778,7 +778,7 @@ def molecule_pose(t):
     cs, os_ = [], []
     for j, idx in enumerate(leave):
         home = pts[idx] + (AX, AY, AZ)
-        td = s0 + 0.55 + lv_t[j] * (s1 - s0 - 1.2) if i4 else 1e9
+        td = T.mol_depart(j) if i4 else 1e9
         u = t - td
         ang = lv_ang[j] + lv_spin[j] * max(0.0, u)
         axis = np.array([math.cos(ang), math.sin(ang), 0.35 * math.sin(2 * ang)])
@@ -943,8 +943,7 @@ area("PenFill", (PX + 5.0, PY - 6.0, PZ + 3.0), (PX, PY, PZ), 160, 4.0, (0.8, 0.
 
 
 def pencil_tip(t):
-    s0, s1 = T.SHOTS[6][0], T.SHOTS[6][1]
-    u = T.clamp((t - s0 + 0.35) / (s1 - s0 + 0.35))
+    u = T.pencil_u(t)
     k = 0.15 + 0.75 * u
     n = k * (NLINE - 1)
     i = int(n)
@@ -1015,8 +1014,8 @@ def pose_fire(t, te, i):
     for w in FLAME_W:
         w.default_value = 2.2 * te
     burst = None
-    if i == 3 and t >= T.T_BURNS - 0.04:
-        burst = t - T.T_BURNS + 0.04
+    if i == 3 and t >= T.bursts()[0]:
+        burst = t - T.bursts()[0]
     elif i in (0, len(T.SHOTS) - 1) and te >= -0.15:
         burst = te + 0.15
     SPARKS.set(spark_verts(te, h, burst))
@@ -1038,7 +1037,7 @@ def pose_ring(t, i):
     RDIA.rotation_euler = (0, 0, 0.2 + 0.25 * t)
     if i == 7:
         u = t - T.SHOTS[7][0]
-        a = 2 * math.pi * u / 0.9                                # a day every 0.9 s
+        a = 2 * math.pi * u / T.DAY
         p = V((RX + 6.0 * math.cos(a), RY - 3.0 + 6.0 * math.sin(a) * 0.4, RZ + 3.5 + 2.5 * math.sin(a)))
         aim(TIME_SUN, p, (RX, RY, RZ + 1.4))
         TIME_SUN.rotation_euler = (V((RX, RY, RZ + 1.4)) - p).to_track_quat("-Z", "Y").to_euler()
