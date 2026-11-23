@@ -1,0 +1,17 @@
+name: Test the two direct MP4 links without login
+on:
+  push:
+    branches: [codex/puffer-captions-and-lunar-ranging]
+    paths: ['.github/workflows/check-20261123-film-links.yml']
+permissions: {}
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 4
+    steps:
+      - run: |
+          curl -fsSL --retry 4 --retry-all-errors 'https://raw.githubusercontent.com/mirandusen2-code/animatedvideos/71b06de6ccedc211301a8a3f93480c1823430cdc/pufferfish-sand-circle-v2/pufferfish-sand-circle-v2.mp4' -o fish.mp4
+          curl -fsSL --retry 4 --retry-all-errors 'https://raw.githubusercontent.com/mirandusen2-code/animatedvideos/71b06de6ccedc211301a8a3f93480c1823430cdc/lunar-laser-ranging/lunar-laser-ranging.mp4' -o moon.mp4
+          echo 'df5353e36549c84d208e5dd2e98cdc3e8e0412da4e67754174ed62bfe2571d80  fish.mp4' | sha256sum -c -
+          echo '482dadb0c0334d77a1776bf11ddb67aa91ef978133cf118824e857dda875bfb3  moon.mp4' | sha256sum -c -
+          file fish.mp4 moon.mp4
