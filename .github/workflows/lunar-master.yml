@@ -51,7 +51,12 @@ jobs:
           HF_HUB_DISABLE_XET: '1'
         working-directory: lunar-laser-ranging
         run: |
-          if ! command -v ffmpeg >/dev/null; then sudo apt-get update -qq && sudo apt-get install -y ffmpeg; fi
+          pip -q install imageio-ffmpeg
+          mkdir -p "$RUNNER_TEMP/media-bin"
+          ln -s "$(python -c 'import imageio_ffmpeg as f; print(f.get_ffmpeg_exe())')" "$RUNNER_TEMP/media-bin/ffmpeg"
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/media-bin" @ffprobe-installer/linux-x64
+          ln -s "$RUNNER_TEMP/media-bin/node_modules/@ffprobe-installer/linux-x64/ffprobe" "$RUNNER_TEMP/media-bin/ffprobe"
+          export PATH="$RUNNER_TEMP/media-bin:$PATH"
           pip install -q numpy scipy soundfile pillow faster-whisper
           curl -fsSL --retry 3 https://raw.githubusercontent.com/google/fonts/main/ofl/barlowsemicondensed/BarlowSemiCondensed-Bold.ttf -o "$CAPTION_FONT"
           python make_cues.py

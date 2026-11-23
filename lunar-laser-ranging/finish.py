@@ -45,7 +45,7 @@ def encode():
     p=subprocess.Popen(['ffmpeg','-v','error','-y','-f','rawvideo','-pix_fmt','rgb24','-s','1080x1920','-r','30','-i','-','-c:v','libx264','-threads','3','-preset','fast','-crf','18','-maxrate','4600k','-bufsize','6000k','-pix_fmt','yuv420p','silent.mp4'],stdin=subprocess.PIPE)
     sheet=Image.new('RGB',(600,534));seen=set();qa=Path('qa');qa.mkdir(exist_ok=True);covers=Path('thumbnails');covers.mkdir(exist_ok=True)
     samples={round((a+.49*((SHOTS[j+1][1] if j+1<len(SHOTS) else DUR)-a))*30):j for j,(_,a) in enumerate(SHOTS)}
-    picks={round((W('apollo')+1)*30):('a',['A MIRROR','ON THE MOON']),round((W('echo')+2.5)*30):('b',['LIGHT COMES','BACK']),round((W('drift','away')+.77)*30):('c',['THE MOON','IS LEAVING'])}
+    picks={round((W('apollo')+1)*30):('a',['MIRROR ON','THE MOON']),round((W('echo')+2.5)*30):('b',['LIGHT COMES','BACK']),round((W('drift','away')+.77)*30):('c',['FARTHER','EACH YEAR'])}
     shape=None
     for i in range(N):
         im=frame(i);assert im.size==(1080,1920)

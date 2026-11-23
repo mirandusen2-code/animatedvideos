@@ -22,6 +22,6 @@ Original animated reconstruction with English synthetic narration. Lunar map cou
 
 | Cover | Wording | Image |
 |---|---|---|
-| A · recommended | A MIRROR ON THE MOON | The actual object to look for |
+| A · recommended | MIRROR ON THE MOON | The actual object to look for |
 | B | LIGHT COMES BACK | The clock and the two endpoints |
-| C | THE MOON IS LEAVING | The slow annual shift on the ruler |
+| C | FARTHER EACH YEAR | The slow annual shift on the ruler |
