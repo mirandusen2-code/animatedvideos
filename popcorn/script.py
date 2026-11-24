@@ -7,7 +7,7 @@ LINES = [
  ("steam", "The heat turns it to steam at nine times normal air pressure.",
   "The HEAT | turns it to STEAM | at 9× | NORMAL AIR PRESSURE.", 0.3),
  ("burst", "The shell cracks, and the starch puffs into foam forty times bigger.",
-  "The SHELL CRACKS, | and the starch puffs into FOAM | 40× BIGGER.", 0.3),
+  "The SHELL CRACKS, | and the STARCH | puffs into FOAM | 40× BIGGER.", 0.3),
  ("leg", "It even kicks out a leg and flips like a gymnast.",
   "It even KICKS OUT A LEG | and FLIPS | like a GYMNAST.", 0.3),
  ("pop", "And the pop? That's the steam escaping, not the shell.",

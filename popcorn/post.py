@@ -255,7 +255,7 @@ def overlays(img, t):
         label_at(img, "CRACK!", CROWN, t, window(t, T.T_CRACK - 0.05, T.T_FOAM - 0.4, 0.1), accent=HOT, dy=-110)
         big(img, "40×", "BIGGER", window(t, T.T_40 - 0.1, S[4][1] + 0.3, 0.15), color=AMBER,
             pop=1 + 0.25 * math.exp(-max(0, t - T.T_40 + 0.1) / 0.12))
-        label_at(img, "1 KERNEL", COMP, t, window(t, T.T_40 + 0.2, S[4][1] + 0.3, 0.12), accent=ICE, dy=110)
+        label_at(img, "1 KERNEL", COMP, t, window(t, T.T_40 + 0.2, S[4][1] + 0.3, 0.12), accent=ICE, dy=-110)
     if i == 5:
         label_at(img, "THE LEG", (0.3, -0.4, 0.2), t, window(t, T.T_LEG - 0.1, T.FLIP_T0 + 0.5, 0.1), accent=AMBER, dy=60)
         pill(img, "BACKFLIP!", CX, 420, 56, alpha=window(t, T.T_FLIPS - 0.05, S[5][1] + 0.3, 0.12), accent=AMBER)

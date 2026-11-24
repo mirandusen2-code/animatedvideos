@@ -134,7 +134,11 @@ CAM0_K = 2.0
 
 def cam0(te):
     s0 = SHOTS[0]
-    f = (1 - math.exp(-CAM0_K * te)) / (1 - math.exp(-CAM0_K * s0[1]))
+    n = 1 - math.exp(-CAM0_K * s0[1])
+    if te >= 0:
+        f = (1 - math.exp(-CAM0_K * te)) / n
+    else:                        # before the seam: C1-smooth, saturating (the exponential would fly off)
+        f = (CAM0_K / n) * -0.25 * (1 - math.exp(te / 0.25))
     return lerpv(s0[2], s0[3], f), lerpv(s0[4], s0[5], f), s0[6]
 
 
