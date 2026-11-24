@@ -42,3 +42,11 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - [ ] A set longer than 3 s gets a clear change of scale or angle halfway. (diamond: the CO2 shot)
 - [ ] Emissive heroes keep surface detail (facet edges, normal-based variation). (diamond)
 - [ ] post.py asserts label ≥ 44 px and number ≥ 96 px font sizes. (diamond)
+
+## Added after the glass-drop video
+- Swinging or moving props stay fully inside the camera frustum while the voice talks about them; check the
+  arc in a low-res preview of the key frames before the full render.
+- An impact shows contact for ≥ 2 frames; the rebound is smaller than the prop.
+- Before a fast camera move, props that are done move out of the way, so nothing crosses the lens.
+- The hook shot ends ≤ 0.5 s after its action ends (or re-frames on what is left).
+- Check the loop line with Whisper on its own and across the seam; rephrase words that merge ("snip it" → "snippet").

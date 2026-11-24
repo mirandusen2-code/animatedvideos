@@ -1,3 +1,39 @@
+# Critique of "This Glass Drop Just Exploded" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: the photoelastic rainbow head is mid-burst, glitter flying up, "3,000+ MPH"
+on screen and a whoomp + crackle on frame 0. At 180 × 320 it reads as "a glass bubble exploding".
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Climax on frame 0, saturated rainbow on navy. |
+| 2 | Retention | 7 | Cuts every 1.7–5 s; S2 (section, 5.1 s) is long but keeps changing (swing, arrows pulsing, 50 TONS). S0 ends on 1.5 s of settling powder with an empty top half (frames 70–122). |
+| 3 | Clarity | 9 | Drip → skin vs core → hammer → snip tells the mechanism in order. |
+| 4 | Visual quality | 8 | Glass and powder look premium; the section is clean but flat (peach core, no depth). |
+| 5 | Motion design | 7 | First render: the hammer left the frame and never touched; the cutters crossed the camera as a grey slab. Both fixed by re-rendering 122 frames. |
+| 6 | Typography | 8 | Big counters read well; the head label sits close to the caption in S3. |
+| 7 | Voice and sound | 8 | Event-synced (splash, sizzle, squeeze thumps, clang, warning beeps); "Snip it" sounds close to "snippet". |
+| 8 | Story | 9 | Strong paradox (hammer-proof vs. one snip) and a natural loop line. |
+| 9 | Accuracy | 9 | Crack speed and stress from peer-reviewed sources, US units. |
+| 10 | Packaging | 8 | "IT JUST EXPLODED" thumbnail is bright and clear. |
+
+## Top 5 problems → fixes
+1. **A prop that swings leaves the frame** (hammer, frames 394–428 in render 1). → Rule: compute the arc of every
+   swinging/moving prop against the camera frustum before rendering; the prop stays fully in frame while the
+   voice talks about it.
+2. **An impact that never visibly makes contact** (hammer stopped above the head). → Rule: an impact holds
+   visible contact for ≥ 2 frames and rebounds less than its own size.
+3. **Props crossing the lens during a fast camera move** (cutter slab, frames 542–546). → Rule: when the
+   camera dives or whips, props that are done get moved out of the way first.
+4. **Dead time after the hook** (frames 70–122: powder settling, top half empty). → Rule: the hook shot ends
+   within 0.5 s after its action is over, or the camera re-frames on what is left.
+5. **Homophone at the loop line** ("Snip it" ≈ "snippet"). → Rule: check the loop line with Whisper alone and
+   in the seam; rephrase words that ASR merges.
+
+**Keep:** low-res preview renders of the risky frames before a full re-render (cheap, caught both fixes);
+event-synced sound; frame 0 = the climax.
+
+---
+
 # Critique of "This Diamond Is Burning Into Thin Air" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: the white-hot diamond fills ~45 % of the frame height, it is the

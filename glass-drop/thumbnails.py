@@ -11,7 +11,7 @@ frames, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 for name, f, lines, colors, y in [
     ("thumb_exploded", 25, [["IT", "JUST"], ["EXPLODED"]], {2: post.AMBER}, 1180),
-    ("thumb_hammer", int((T.T_HIT + 0.15) * T.FPS), [["HAMMER"], ["PROOF?"]], {1: post.AMBER}, 640),
+    ("thumb_hammer", int((T.T_HIT + 0.15) * T.FPS), [["HAMMER"], ["PROOF?"]], {1: post.AMBER}, 1420),
     ("thumb_snip", 556, [["DON'T", "SNIP"], ["THE", "TAIL"]], {3: post.AMBER}, 1300),
 ]:
     img = post.finish(Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB"), f / T.FPS)
