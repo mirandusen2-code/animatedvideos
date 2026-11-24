@@ -692,6 +692,7 @@ print("flake / kernel volume:", round(HERO.vol_ratio, 1), flush=True)
 HERO_M = frame_from((0.5, -0.35, 0.8), up=(0.0, -1.0, 0.2))
 REST_LIFT = -((HERO.K @ HERO_M.T)[:, 2].min())
 FULL_LIFT = -((HERO.P @ HERO_M.T)[:, 2].min())
+CROWN0 = np.array([0.4, -0.3, 1.5])                    # debris origin: the middle of the bursting kernel
 
 OTHER_K = []
 for k, (x, y, yaw, tp) in enumerate(T.OTHERS):
@@ -736,6 +737,51 @@ J_DIR = rng.normal(0, 1, (NJ, 3)) * 0.28 + np.array([0.0, 0.0, 1.0])
 J_DIR /= np.linalg.norm(J_DIR, axis=1, keepdims=True)
 J_PH = rng.uniform(0, 1, NJ)
 J_SP = rng.uniform(4.0, 7.0, NJ)
+
+# flying debris on every burst: glossy hull chips and white starch crumbs, thrown toward the camera
+chip_m, _cp = principled("Chip", (1.0, 0.5, 0.04), rough=0.25, coat=1.0, emit=(1.0, 0.55, 0.1), emit_s=0.6)
+crumb_m, _cr = principled("Crumb", (1.0, 0.95, 0.85), rough=0.6, emit=(1.0, 0.92, 0.8), emit_s=0.5)
+TET = np.array([(1, 1, 1), (1, -1, -1), (-1, 1, -1), (-1, -1, 1)], float) / math.sqrt(3)
+TETF = [[0, 1, 2], [0, 3, 1], [0, 2, 3], [1, 3, 2]]
+NCH, NCR = 320, 340
+
+
+def debris(n, name, mat, flat):
+    base = TET[None, :, :] * rng.uniform(0.5, 1.5, (n, 4, 1))
+    if flat:
+        base[:, :, 2] *= 0.25                                   # thin curved hull flakes
+    dyn = Dyn(name, np.zeros((n * 4, 3)), [[i + 4 * k for i in f] for k in range(n) for f in TETF], mat,
+              sets=("pan",), smooth=False)
+    d = rng.normal(0, 1, (n, 3))
+    d[:, 1] = -np.abs(d[:, 1]) * 1.1 - 0.2                     # toward the camera
+    d[:, 2] = np.abs(d[:, 2]) + 0.2
+    d /= np.linalg.norm(d, axis=1, keepdims=True)
+    return dict(dyn=dyn, base=base, dir=d, sp=rng.uniform(6.0, 15.0, n), size=rng.uniform(0.04, 0.12, n) * (1.6 if flat else 1.0),
+                ax=rng.normal(0, 1, (n, 3)), spin=rng.uniform(6, 20, n), t0=rng.uniform(0.0, 0.12, n))
+
+
+CHIPS = debris(NCH, "HullChips", chip_m, True)
+CRUMBS = debris(NCR, "Crumbs", crumb_m, False)
+
+
+def pose_debris(D, age, origin):
+    n = len(D["sp"])
+    a = age - D["t0"]
+    live = (a > 0) & (a < 2.5)
+    a = np.clip(a, 0, None)
+    pos = origin[None] + D["dir"] * (1.3 + D["sp"][:, None] * (1 - np.exp(-a / 0.55))[:, None] * 0.55) \
+        + np.array([0, 0, -1.0])[None] * (a ** 2)[:, None] * 0.6
+    ang = D["spin"] * a
+    ax = D["ax"] / np.linalg.norm(D["ax"], axis=1, keepdims=True)
+    c, s_ = np.cos(ang)[:, None, None], np.sin(ang)[:, None, None]
+    b = D["base"]
+    k = ax[:, None, :]
+    rotd = b * c + np.cross(k, b) * s_ + k * np.sum(k * b, 2, keepdims=True) * (1 - c)
+    shrink = np.clip(1 - (a - 1.6) / 0.9, 0, 1)
+    v = rotd * (D["size"] * shrink * live * np.clip(a / 0.04, 0, 1))[:, None, None] + pos[:, None, :]
+    v[~live] = np.array([0, 0, -50.0])
+    D["dyn"].set(v.reshape(-1, 3))
+
 
 RINGS = []
 for k in range(4):
@@ -922,6 +968,13 @@ def pose_pan(t):
     STEAM.set(np.concatenate(w))
     ST_A.default_value = 0.0
     STEAM.o.hide_render = True
+    # debris from the crown on every burst
+    if 0 <= age < 2.6:
+        pose_debris(CHIPS, age, CROWN0)
+        pose_debris(CRUMBS, age, CROWN0)
+    else:
+        pose_debris(CHIPS, -9.0, cp)
+        pose_debris(CRUMBS, -9.0, cp)
     # jets (S6)
     j = T.jets(t)
     w = []
