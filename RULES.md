@@ -50,3 +50,8 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - Before a fast camera move, props that are done move out of the way, so nothing crosses the lens.
 - The hook shot ends ≤ 0.5 s after its action ends (or re-frames on what is left).
 - Check the loop line with Whisper on its own and across the seam; rephrase words that merge ("snip it" → "snippet").
+
+## Added after user feedback (glass-drop video)
+- [ ] Frame 0 shows the hero *breaking apart* mid-action: shattering, bursting, exploding into pieces/particles
+  that fly toward the camera (the glass drop's head bursting into glitter is the reference). Pick topics and
+  story orders where this destruction moment exists, and loop the video so the ending leads back into it. (user)
