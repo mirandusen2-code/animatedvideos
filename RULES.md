@@ -55,3 +55,11 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - [ ] Frame 0 shows the hero *breaking apart* mid-action: shattering, bursting, exploding into pieces/particles
   that fly toward the camera (the glass drop's head bursting into glitter is the reference). Pick topics and
   story orders where this destruction moment exists, and loop the video so the ending leads back into it. (user)
+
+## Added after the popcorn video
+- Print the camera path for every frame of the loop shot before rendering; any time curve evaluated at negative
+  time needs a bounded, C1-smooth extension (no exponentials flying off).
+- Caption chunks ≤ 3 words or ≤ 18 characters, so they never shrink.
+- Labels stay ≥ 120 px above the caption block.
+- A key motion (flip, jump, swing) fills ≥ 35 % of the frame height while it happens.
+- Every shot shows a new on-screen event at least every 1 s.

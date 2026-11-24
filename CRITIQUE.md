@@ -1,3 +1,31 @@
+# Critique of "This Corn Kernel Explodes Inside Out" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: a big foam flake bursting out of the kernel, hull chips and crumbs flying at
+the lens, "356°F" on screen, burst sound on frame 0. At 180 × 320 it reads as "popcorn exploding".
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Destruction on frame 0, as the user asked after the glass drop. |
+| 2 | Retention | 7 | S1 (frames 69–141) shows a finished flake with no new action for 1.3 s; S3's steam dots carry the section. |
+| 3 | Clarity | 9 | Water → steam → 9× → crack → 40× → flip → pop explains the whole mechanism. |
+| 4 | Visual quality | 8 | Foam reads as popcorn; the section is clean; the S5 side view is dark at the bottom. |
+| 5 | Motion design | 6 | First render: the loop shot's camera flew away (44 empty frames). The flip is hard to read at speed. |
+| 6 | Typography | 8 | Pressure counter reads well; one caption chunk was too long and shrank (split). |
+| 7 | Voice and sound | 8 | Event-synced throughout; tempo matches the lightning video. |
+| 8 | Story | 9 | Two surprises (backflip, the pop isn't the shell) and a natural loop line. |
+| 9 | Accuracy | 9 | Numbers from peer-reviewed papers, °F. |
+| 10 | Packaging | 8 | Bright flake + debris thumbnail. |
+
+## Top 5 problems → fixes
+1. **Camera functions evaluated outside their designed range** (cam0 at negative time in the loop shot). →
+   Rule: print the camera position for every frame of the loop shot (and any shot that reuses another shot's
+   camera) before rendering; any curve used at negative time needs a bounded, C1-smooth extension.
+2. **Long caption chunks shrink below readable size.** → Rule: ≤ 3 words or ≤ 18 characters per chunk.
+3. **Labels on the caption line** ("1 KERNEL"). → Rule: labels stay ≥ 120 px above the caption block.
+4. **Fast acrobatics in a wide shot read weakly** (the flip). → Rule: a key motion gets a camera that is close
+   enough that the hero is ≥ 35 % of the frame height during the motion.
+5. **Idle stretch after the hook** (S1 settling). → Rule: every shot has a new on-screen event at least every 1 s.
+
 # Critique of "This Glass Drop Just Exploded" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: the photoelastic rainbow head is mid-burst, glitter flying up, "3,000+ MPH"
