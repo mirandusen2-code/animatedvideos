@@ -1,0 +1,23 @@
+1
+00:00:00,100 --> 00:00:03,819
+This glass drop just exploded at over 3,000 miles per hour.
+
+2
+00:00:04,200 --> 00:00:07,620
+It's a Prince Rupert's drop: hot glass dripped into cold water.
+
+3
+00:00:08,140 --> 00:00:12,619
+The outside cools first and squeezes the inside with 50 tons per square inch.
+
+4
+00:00:13,079 --> 00:00:15,679
+That's why you can hit the head with a hammer, and nothing happens.
+
+5
+00:00:16,239 --> 00:00:17,679
+But the tail is its weak spot.
+
+6
+00:00:18,064 --> 00:00:18,919
+Snip it, and

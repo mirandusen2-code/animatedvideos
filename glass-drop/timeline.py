@@ -118,7 +118,7 @@ def _shots():
         # S2 the cut drop: the skin cools first and squeezes (3/4 view swinging to face-on, pushing in)
         (s2, s3, s(5.2, -8.6, 3.4), s(0.35, -5.6, 0.5), s(0.0, 0.0, 2.2), s(0.0, 0.0, 0.25), 50, 50, "section"),
         # S3 the hammer hits the head, nothing happens
-        (s3, s4, h(0.4, -11.0, 3.6), h(-0.2, -9.6, 3.0), h(0.6, 0.0, 2.6), h(0.3, 0.0, 2.0), 50, 50, "hammer"),
+        (s3, s4, h(0.5, -11.0, 3.0), h(-0.1, -9.8, 2.6), h(0.45, 0.0, 1.95), h(0.25, 0.0, 1.65), 50, 50, "hammer"),
         # S4 the tail is its weak spot: the whole drop, tilting up to the tail
         (s4, s5, (0.2, -15.5, 3.8), (0.9, -8.6, 5.6), (0.0, 0.0, 3.6), (0.1, 0.0, 5.7), 50, 50, "drop"),
         # S5 snip: the cutters close, the crack races down, the camera follows it into the opening shot
@@ -216,7 +216,9 @@ def cutter_in(t):
     i = shot_index(t)
     if i == 4:
         return smoother((t - T_TAIL) / 0.9)
-    if i == len(SHOTS) - 1 or i == 0:
+    if i == len(SHOTS) - 1:
+        return 1.0 - smoother((t - T_SNIP - 0.06) / 0.22)   # snip, then pull away before the camera dives
+    if i == 0:
         return 1.0
     return 0.0
 
@@ -265,13 +267,13 @@ def squeeze_pulses():
 
 
 def hammer_angle(t):
-    """Hammer angle in degrees (0 = hitting the head)."""
+    """Hammer angle in degrees (0 = hitting the head). Kept low enough that the head never leaves the frame."""
     if t < T_HIT:
-        x = clamp((t - (T_HIT - 0.38)) / 0.38)
-        lift = 62 * smoother(clamp((t - SHOTS[3][0]) / 0.5))
-        return lerp(min(62, 30 + lift), 0.0, x ** 2.2)
+        hold = 20 + 5 * smoother(clamp((t - SHOTS[3][0]) / 0.9)) + 0.8 * math.sin(4.0 * (t - SHOTS[3][0]))
+        x = clamp((t - (T_HIT - 0.3)) / 0.3)
+        return lerp(hold, 0.0, x ** 2.2)
     u = t - T_HIT
-    return 8 * smoother(u / 0.9) + 14 * math.sin(math.pi * clamp(u / 0.6))
+    return 2 * smoother(u / 0.9) + 6 * math.sin(math.pi * clamp(u / 0.45))
 
 
 def flash(t):
