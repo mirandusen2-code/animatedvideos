@@ -142,7 +142,7 @@ def _shots():
         # S1 wide: the ejecta cone blooming out of Dimorphos, Didymos behind (14,000 MPH)
         (s1, s2, w0, w1, add(M0, mul(N_IMP, 12.0)), add(M0, mul(N_IMP, 16.0)), 45, 45),
         # S2 before the hit: the tiny moon circling the big asteroid (orbiting camera)
-        (s2, s3, (150.0, -250.0, 135.0), (85.0, -285.0, 115.0), (0.0, 35.0, 0.0), (0.0, 35.0, 0.0), 32, 32),
+        (s2, s3, (150.0, -250.0, 135.0), (85.0, -285.0, 115.0), (40.0, 30.0, 0.0), (25.0, 30.0, 0.0), 32, 32),
         # S3 top-down: the hit, the orbit shrinks, -33 minutes
         (s3, s4, (0.0, -25.0, 540.0), (0.0, -12.0, 500.0), (0.0, 0.0, 0.0), (0.0, 0.0, 0.0), 35, 35),
         # S4 the tail of rock streaming away from the sun
@@ -194,8 +194,8 @@ def dimo_pos(t):
     i = shot_index(t)
     if i in (2, 3):
         th0 = math.pi / 2
-        if i == 2:
-            th = th0 - 2 * math.pi * (SHOTS[3][0] - t) / PERIOD_VIS
+        if i == 2:                                   # slow, phased so the moon stays in the safe column
+            th = 0.70 + 2 * math.pi * (t - SHOTS[2][0]) / 16.0
             return (ORBIT_R * math.cos(th), ORBIT_R * math.sin(th), 0.0)
         # S3: hit at T_HIT, then the orbit tightens (exaggerated 12 %) and speeds up
         u = t - T_HIT
@@ -234,24 +234,21 @@ def dart_pos(t):
     if i == len(SHOTS) - 1:
         rem = DUR - t + 0.04
         return add(P_IMP, mul(V_DART, -(18.0 * rem + 12.0 * rem * rem)))
-    if i == 2:
-        t0 = SHOTS[2][0]
-        loc, tgt, _ = camera(t0)
+    if i == 2:                                       # rides away from the (moving) camera toward the moon
+        loc, tgt, _ = camera(t)
         fwd = norm(add(tgt, mul(loc, -1.0)))
         right = norm(cross(fwd, (0.0, 0.0, 1.0)))
         up = cross(right, fwd)
         start = add(loc, mul(fwd, 3.2), mul(right, 0.4), mul(up, -0.45))
-        goal = M0
-        u = t - t0
-        dirv = norm(add(goal, mul(start, -1.0)))
+        u = t - SHOTS[2][0]
+        dirv = norm(add(dimo_pos(t), mul(start, -1.0)))
         return add(start, mul(dirv, 2.0 * u + 6.0 * u * u))
     return None
 
 
 def dart_dir(t):
     if shot_index(t) == 2:
-        t0 = SHOTS[2][0]
-        return norm(add(M0, mul(dart_pos(t0), -1.0)))
+        return norm(add(dimo_pos(t), mul(dart_pos(t), -1.0)))
     return V_DART
 
 
