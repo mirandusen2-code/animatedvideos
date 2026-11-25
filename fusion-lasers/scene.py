@@ -1133,7 +1133,7 @@ try:
 except Exception:
     pass
 
-SPP = 24
+SPP = 12   # 12 is visually identical to 24 after OIDN here (checked frames 30, 75)
 if os.environ.get("PC_EXP"):
     exec(os.environ["PC_EXP"])
 

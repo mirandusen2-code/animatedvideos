@@ -70,3 +70,9 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - Project the hero's bounding box per frame and keep it out of the caption band (y ≈ 1300–1540).
 - The hero's mean luminance after grading is ≥ 0.25; add a rim light on dark-sky shots.
 - A hard cut at the loop seam is allowed only if the same title spans the seam and the motion direction continues.
+
+## Added after user feedback (DART video)
+- [ ] Every video explains **WHY** they do it: who does this, and what they want to get out of it (DART: test
+  whether we can push a killer asteroid off course; NIF: build a clean power source like the Sun). Give the
+  WHY its own spoken line within the first 25 % of the video, with its own picture, and repeat it in the
+  description. (user)
