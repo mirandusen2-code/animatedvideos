@@ -63,3 +63,10 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - Labels stay ≥ 120 px above the caption block.
 - A key motion (flip, jump, swing) fills ≥ 35 % of the frame height while it happens.
 - Every shot shows a new on-screen event at least every 1 s.
+
+## Added after the DART video
+- The subject the voice names fills ≥ 10 % of the frame height, or the shot pushes in to that size within 1 s.
+- The second shot (right after the hook) keeps moving: real camera travel or a new event at least every 1 s.
+- Project the hero's bounding box per frame and keep it out of the caption band (y ≈ 1300–1540).
+- The hero's mean luminance after grading is ≥ 0.25; add a rim light on dark-sky shots.
+- A hard cut at the loop seam is allowed only if the same title spans the seam and the motion direction continues.

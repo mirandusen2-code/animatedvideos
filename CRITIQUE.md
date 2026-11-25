@@ -1,3 +1,32 @@
+# Critique of "NASA Slammed a Spacecraft Into an Asteroid" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: Dimorphos bursting with boulders and a bright dust cone flying at the lens,
+"14,000 MILES PER HOUR" on screen, impact boom on frame 0. At 180 × 320 it reads as "something exploded in space".
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Destruction on frame 0 plus a big number; a current topic (Hera arrived this month). |
+| 2 | Retention | 7 | S1 (frames 73–154) is a slow wide of the settling plume for 2.7 s with only the caption changing. |
+| 3 | Clarity | 8 | Orbit clock 11 H 55 → 11 H 22 makes "33 minutes" concrete; in S2 Dimorphos is tiny (≈ 3 % of the height), so the reticle has to carry it. |
+| 4 | Visual quality | 8 | Rubble piles read well up close (S6/S7); S5 is very dark and the Hera bus sits right behind the caption. |
+| 5 | Motion design | 7 | S7's accelerating POV into the boulders is strong; S1 and S2 are almost static. |
+| 6 | Typography | 9 | Counters (clock, 0 → 6,000 miles) and pills read cleanly; no chunk shrank. |
+| 7 | Voice and sound | 8 | Event-synced; proximity beeps accelerate into the cut. |
+| 8 | Story | 9 | News peg + twist ("no crater") + loop line "All because → NASA slammed…". |
+| 9 | Accuracy | 9 | Peer-reviewed numbers; "may be" hedges the reshape claim until Hera's images. |
+| 10 | Packaging | 8 | Impact thumbnail is bright; the no-crater grid thumbnail is a strong curiosity alternative. |
+
+## Top 5 problems → fixes
+1. **Hero too small in establishing shots** (Dimorphos in S2). → Rule: the subject the voice names is ≥ 10 % of the
+   frame height, or the shot pushes in to that size within 1 s.
+2. **Slow wide after the hook** (S1). → Rule: the second shot keeps moving: camera travel ≥ 15 % of the subject
+   distance, or a new event, at least every 1 s (the existing rule, now also checked on the second shot).
+3. **Hero hidden behind the caption** (Hera in S5). → Rule: project the hero's bounding box per frame and keep it
+   out of the caption band (y ≈ 1300–1540).
+4. **Dark shots on a dark sky** (S5). → Rule: the hero's mean luminance ≥ 0.25 after grading; add a rim light if not.
+5. **Seam needs a cut instead of continuous motion** when the story ends on the cause. → Accept a hard cut only if
+   the same on-screen title spans the seam and the motion direction continues (here: rushing in → burst outward).
+
 # Critique of "This Corn Kernel Explodes Inside Out" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: a big foam flake bursting out of the kernel, hull chips and crumbs flying at
