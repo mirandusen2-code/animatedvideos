@@ -1,0 +1,9 @@
+# Design brief: the chicken gun
+
+- **Hook (frame 0):** a chicken hits an airliner cockpit window: body squashing, hundreds of white feathers and fluff exploding toward the lens, cracks spreading, "350 MILES PER HOUR" on screen, impact sound on frame 0.
+- **WHY beat (4.3 s):** "Why do they do it? Birds hit planes about sixty times a day, in the U.S. alone." An airliner flies through a flock of gulls, three thunks on the nose, a counter ticks to 60. Then the Hudson story: geese into both engines over New York (flames, smoke, "ALL 155 ON BOARD LIVED").
+- **Story:** impact → the rig (air cannon aimed at a cockpit nose) → WHY: 60 strikes a day → 2009 both engines out → old windshield shatters at 75 mph → rule: every cockpit window must stop a 4-lb bird (the chicken on a scale) → the test: chicken loaded into the breech, 35 psi, fired at 350 mph → twist: never frozen (ice block, red X, it thaws) → "That's why, before you fly," → the chicken leaves the muzzle and hits on the seam.
+- **Look:** Blender Cycles; dark test hangar with a concrete floor and yellow firing-line paint, primer-green cockpit nose, gunmetal cannon on yellow stands; blue sky and cloud deck; New York grid with the Hudson; white hen with red comb.
+- **Scale:** 1 unit = 1 ft; nose radius 6.5 ft, barrel 60 ft, muzzle 45 ft from the window, chicken 1.25 ft.
+- **Sound:** bright pluck score (C Am F G); every effect tied to an event: cannon boom + air hiss, impact thump + crack + feather poof, glass tinkles, gull chirps, goose honks, engine bangs + stall crackle, scale beeps, ice clunk, drips.
+- **Loop:** continuous slow-motion impact clock across the seam; the camera flies from the cannon side view into the hook camera (linear, C1 at the seam); voice "…That's why, before you fly, / engineers fire chickens at airplanes…".
