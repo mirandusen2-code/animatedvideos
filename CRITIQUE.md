@@ -1,3 +1,36 @@
+# Critique of "Scientists Blast a Fuel Pellet With 192 Lasers" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: the fuel capsule bursting inside the gold can, shards and sparks flying at the
+lens, "192 LASER BEAMS" on screen, blast on frame 0. At 180 × 320 it reads as "something just exploded".
+
+**WHY test (new user rule): PASS.** Spoken at 4.1 s ("Why do it? They want to build a star on Earth"), with a big
+"WHY?" title, a star flaring in the chamber, then 5 s of why: Sun fusion, zero CO2, fuel from seawater.
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Destruction on frame 0 plus a big number; 192 beams converge 2 s later. |
+| 2 | Retention | 7 | S9 (24.7–26.4 s) holds on the intact capsule for 1.7 s; S6 holds a white ball for ~1 s after the bars fill. |
+| 3 | Clarity | 9 | Pellet next to a peppercorn; temperature bars (100 vs 27 million °F); energy bars 2.1 → 8.6 MJ. |
+| 4 | Visual quality | 7 | Chamber, sun and drop read well; the fusion flash and the deuterium glow white-out their nuclei for ~0.5 s; S7 hohlraum is a near-static frame until the burn. |
+| 5 | Motion design | 7 | Implosion, star birth and the burn are strong; S6/S9 rely on slow camera drift. |
+| 6 | Typography | 9 | Counters and pills clean; no chunk shrank; labels clear of captions. |
+| 7 | Voice and sound | 8 | Tempo as the lightning video; zaps, booms, ticks and falling beeps match events. |
+| 8 | Story | 9 | What → WHY → how → record → twist ("years away") → loop line "That's why, over and over, → Scientists blast…". |
+| 9 | Accuracy | 9 | NIF/LLNL numbers; "fuel from seawater" simplified (tritium from lithium, noted in the description). |
+| 10 | Packaging | 8 | "192 LASERS VS 1 PELLET" is a clear curiosity frame. |
+
+## Top 5 problems → fixes
+1. **Close-up shots with nothing new for > 1 s** (S6 end, S9). → Rule: in a close shot, plan a visible event (beam
+   flash, spark, label pop) at least every 1 s; check the event list per shot before rendering.
+2. **Emissive flashes white out the hero** (fusion flash, deuterium glow). → Rule: a flash may cover the hero for
+   ≤ 0.3 s; keep glow alpha ≤ 0.5 over the subject the label names.
+3. **Render cost not measured before the full run** (chamber 160 s/frame at SPP 24). → Rule: time one frame per
+   set before the full render; when > 60 s, test SPP 12 against 24 (OIDN) and the costliest objects.
+4. **Static establishing frame before the burn** (S7). → Rule: the camera travels ≥ 15 % of the subject distance or
+   the subject animates in every shot longer than 1.5 s.
+5. **Simplified science claim** ("fuel from seawater"). → Keep the short claim only if the description gives the
+   full fact in one sentence.
+
 # Critique of "NASA Slammed a Spacecraft Into an Asteroid" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: Dimorphos bursting with boulders and a bright dust cone flying at the lens,

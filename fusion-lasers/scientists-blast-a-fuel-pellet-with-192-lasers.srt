@@ -1,0 +1,31 @@
+1
+00:00:00,100 --> 00:00:03,600
+Scientists blast a fuel pellet with 192 lasers.
+
+2
+00:00:04,084 --> 00:00:06,480
+Why do it? They want to build a star on earth.
+
+3
+00:00:07,259 --> 00:00:11,419
+Fusion powers the Sun. no carbon, and the fuel comes from seawater.
+
+4
+00:00:12,060 --> 00:00:14,980
+The lasers crush a pellet smaller than a peppercorn,
+
+5
+00:00:15,214 --> 00:00:17,859
+Until its core is hotter than the center of the Sun.
+
+6
+00:00:18,440 --> 00:00:21,920
+Last year, one shot gave back 4× the laser energy.
+
+7
+00:00:22,314 --> 00:00:24,579
+But a real power plant is still years away.
+
+8
+00:00:24,963 --> 00:00:26,620
+That's why, over and over,

@@ -76,3 +76,9 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
   whether we can push a killer asteroid off course; NIF: build a clean power source like the Sun). Give the
   WHY its own spoken line within the first 25 % of the video, with its own picture, and repeat it in the
   description. (user)
+
+## Added after the laser-fusion video
+- In a close shot, plan a visible event (flash, spark, label pop) at least every 1 s; list the events per shot before rendering.
+- A flash or glow may cover the hero for ≤ 0.3 s; glow alpha ≤ 0.5 over the subject a label names.
+- Time one frame per set before the full render; if > 60 s, compare SPP 12 vs 24 (after OIDN) and profile the costliest objects.
+- A simplified science claim in the voice gets its full version in one sentence of the description.
