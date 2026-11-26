@@ -82,3 +82,8 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - A flash or glow may cover the hero for ≤ 0.3 s; glow alpha ≤ 0.5 over the subject a label names.
 - Time one frame per set before the full render; if > 60 s, compare SPP 12 vs 24 (after OIDN) and profile the costliest objects.
 - A simplified science claim in the voice gets its full version in one sentence of the description.
+
+## Added after the chicken-gun video
+- A label must point at the thing it names in every frame it is shown: check its projected anchor on the rendered frame, not only the world point (points behind other objects still project onto them).
+- The hero object must be visible when the voice or a label names it; never let a prop (sabot, case, cover) hide it at that moment.
+- After a re-render that moves a shot boundary or a camera, recompute which frames belong to the shot (`shot_index`) and delete all of them, including the boundary frame, before rendering.

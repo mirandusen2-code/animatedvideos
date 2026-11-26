@@ -1,3 +1,29 @@
+# Critique of "Engineers Fire Chickens at Airplanes" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: the chicken bursting on the cockpit pane, feathers flying at the lens, cracks
+spreading, "350 MILES PER HOUR" on screen, impact on frame 0. At 180 × 320 it reads as "a chicken just hit a plane".
+
+**WHY test: PASS.** Spoken at 4.3 s ("Why do they do it? Birds hit planes about sixty times a day"), with a big "WHY?"
+title over an airliner flying through gulls, a 0 → 60 counter, then Flight 1549 and the 75 mph windshield.
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Absurd premise + destruction on frame 0 + big number. |
+| 2 | Retention | 8 | Something happens every second; S5 (cockpit window, 2 s) is a slow push-in on a static nose. |
+| 3 | Clarity | 9 | Scale reads 4.0 LB, 35 PSI pill, red X on the ice block, "ALL 155 ON BOARD LIVED". |
+| 4 | Visual quality | 7 | Lab, impact and glass shards are crisp; the gulls close to the lens in S2 read as pale blobs; the old pane is invisible before it breaks. |
+| 5 | Motion design | 8 | Chicken flight, shards at the camera, melt; S5 is camera-drift only. |
+| 6 | Typography | 9 | Pills and counters clean, no chunk shrank, labels clear of captions. |
+| 7 | Voice and sound | 8 | Tempo as the lightning video; cannon, impact, gulls, honks, engine bangs, beeps, clunks, drips all on events. |
+| 8 | Story | 9 | What → WHY (60/day, 1549) → old windshields → the rule → the test → twist (not frozen) → loop "That's why, before you fly, → engineers fire chickens…". |
+| 9 | Accuracy | 9 | FAA 2024 (61/day), NTSB AAR-10/03, 14 CFR 25.775, chicken-gun history; "at 350 mph" is a typical test speed (stated in the description). |
+| 10 | Packaging | 9 | "CHICKEN VS PLANE" on the impact frame. |
+
+**Fixed during QA:** the "AIR CANNON" label in S1 sat on the nose (the barrel axis projects behind it) → removed; the
+breech shot hid the chicken behind a full-length foam sabot while the label said "REAL CHICKEN" → sabot made a thin
+pusher plate, camera moved to the side, loading slowed so the bird is visible under the label; one stale frame (673)
+at the shot boundary re-rendered.
+
 # Critique of "Scientists Blast a Fuel Pellet With 192 Lasers" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: the fuel capsule bursting inside the gold can, shards and sparks flying at the
