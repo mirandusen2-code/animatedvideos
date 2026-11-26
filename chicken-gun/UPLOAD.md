@@ -29,7 +29,11 @@ The test birds are bought from the grocery store, and yes, they have to be thawe
 | `thumb_frozen.png` | WHY NOT FROZEN? | The twist |
 
 ## QA passed
-QA_PLACEHOLDER
+- 1080x1920, 30 fps, 915 frames, 30.5 s; H.264 + AAC; loudness −14.2 LUFS integrated; no black frames.
+- Every frame checked on contact sheets (cuts at 45, 123, 272, 396, 501, 560, 614, 673, 724, 848); captions inside the safe zone, synced word by word; labels clear of the caption.
+- Fixed in QA: misplaced "AIR CANNON" label removed; breech shot re-rendered so the chicken is visible under "REAL CHICKEN"; stale boundary frame 673 re-rendered.
+- Loop seam is continuous: picture diff 914→0 is 12.0 (neighbours 7.9 and 15.6, the burst growing); the impact clock and camera run across the seam.
+- Whisper across the seam hears one sentence: "That's why, before you fly, engineers fire chickens at airplanes at 300…".
 
 ### Rules checklist (`RULES.md`)
 - [x] Frame 0: the chicken bursting on the cockpit pane, feathers flying at the camera, "350 MILES PER HOUR" on screen, impact sound on frame 0.
