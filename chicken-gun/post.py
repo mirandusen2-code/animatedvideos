@@ -284,9 +284,6 @@ def overlays(img, t):
             pop=pop(t, T.T_350[0]))
     if i == last:
         big(img, "350", "MILES PER HOUR", T.smoother((t - (T.DUR - 0.45)) / 0.3), color=AMBER)
-    if i == 1:
-        label_at(img, "AIR CANNON", np.array(G.P_I) + np.array([0.0, -40.0, 1.5]), t,
-                 window(t, S[1][0] + 0.15, S[1][1] + 0.3, 0.1), ICE, -130)
     if i == 2:
         text_block(img, [["WHY?"]], CX, 430, 150, colors={0: AMBER},
                    alpha=window(t, T.T_WHY[0] - 0.05, T.T_60[0] - 0.35, 0.1), scale=pop(t, T.T_WHY[0] - 0.05, 0.25))

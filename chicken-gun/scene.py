@@ -1175,7 +1175,7 @@ def pose_scale(te):
 
 # ================================================================= set "gun": loading at the breech, then the muzzle
 foam_m, _ = principled("Sabot", (0.9, 0.35, 0.08), rough=0.8)
-SABOT = puts(ylathe("Sabot", [(0.0, -0.9), (0.58, -0.9), (0.58, 0.2), (0.0, 0.2)], foam_m, (0, 0, 0)), "gun")
+SABOT = puts(ylathe("Sabot", [(0.0, -0.9), (0.58, -0.9), (0.58, -0.62), (0.0, -0.62)], foam_m, (0, 0, 0)), "gun")  # foam pusher plate behind the bird
 PUFF = Burst("MuzzlePuff", 500, ("gun", "lab"), 41, fluff_m, kind="tet", size=(0.03, 0.08))
 _gp = np.random.default_rng(42)
 _n = PUFF.n
@@ -1193,7 +1193,7 @@ def pose_gun(tl, tf):
     if tf is None:
         tf = -9.0
     if tf < 0:
-        x = smooth01(tl / 0.7)
+        x = smooth01((tl - 0.1) / 1.7)
         y = G.BREECH[1] - 2.4 + 3.2 * x
         CHD.location = tuple(np.array([G.BREECH[0], y, G.BREECH[2] - 0.05]))
         SABOT.location = tuple(np.array([G.BREECH[0], y - 0.55, G.BREECH[2]]))
