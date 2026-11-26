@@ -1,0 +1,20 @@
+# key, spoken text, caption text (| = chunk break by meaning, CAPS = highlight), pause after (s)
+LINES = [
+ ("hook", "Airplane windows used to be square, and the planes ripped apart in the sky.",
+  "AIRPLANE | WINDOWS | used to be | SQUARE, | and the PLANES | RIPPED APART | in the SKY.", 0.3),
+ ("why", "Why? Every flight, the cabin is pumped up like a balloon.",
+  "WHY? | EVERY FLIGHT, | the CABIN | is PUMPED UP | like a BALLOON.", 0.3),
+ ("corner", "At a sharp corner, all that push piles up in one tiny spot.",
+  "At a SHARP | CORNER, | all that PUSH | PILES UP | in ONE | TINY SPOT.", 0.3),
+ ("crack", "Flight after flight, a crack grows right there.",
+  "FLIGHT | after FLIGHT, | a CRACK | GROWS | RIGHT THERE.", 0.3),
+ ("comet", "In nineteen fifty-four, two of the first jetliners broke apart in mid-air.",
+  "In 1954, | TWO of the | FIRST JETLINERS | BROKE APART | in MID-AIR.", 0.3),
+ ("tank", "Engineers sank one in a water tank and pumped it up, again and again.",
+  "ENGINEERS | SANK ONE | in a WATER TANK | and PUMPED IT UP, | AGAIN | and AGAIN.", 0.3),
+ ("burst", "After about three thousand flights, it split open at a window corner.",
+  "After about | 3,000 FLIGHTS, | it SPLIT OPEN | at a WINDOW | CORNER.", 0.3),
+ ("round", "A round corner spreads the push all the way around. No weak spot.",
+  "A ROUND | CORNER | SPREADS | the PUSH | all the WAY | AROUND. | NO WEAK SPOT.", 0.3),
+ ("loop", "So next time you fly, remember:", "So next time | YOU FLY, | REMEMBER:", 0.0),
+]
