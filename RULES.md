@@ -94,3 +94,9 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - Debris that flies at the camera must miss the lens by more than its own size: print the closest approach of every hero piece before rendering.
 - After changing a hero motion that also plays at the loop end, re-render the loop-end frames too, then check the seam pixel diff.
 - Keep scratch disk free: delete old frame folders before a new render; a full disk corrupts frames silently.
+
+## Added after the grape-plasma video
+- When a size is shown next to a ruler ("½ INCH = GRAPE SIZE"), the object next to the ruler must match it on screen; if the real object is bigger, say "about" in the script and scale the prop, not the claim.
+- Emissive "energy" shots (hotspots, glowing rays) can bloom to white as the intensity ramps; check the last frames of the ramp at full size, not only the contact sheet.
+- Dark translucent props (water beads) on a dark turntable need a saturated colour and a rim light to read at phone size.
+- Full renders run in 2-hour chunks and can survive a container restart: keep frames in the scratchpad, verify every PNG with PIL before resuming.

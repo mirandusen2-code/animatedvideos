@@ -1,3 +1,31 @@
+# Critique of "Two Grapes in a Microwave Make Plasma" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: two grapes on a microwave turntable bursting open, an orange plasma ball rising,
+skin, juice and sparks flying at the lens, "2 GRAPES / IN A MICROWAVE" on screen, burst sound on frame 0. At 180 × 320
+it reads as "grapes exploding into fire".
+
+**WHY test: PASS.** Spoken at 4.2 s ("Why? Physicists want to squeeze light into tiny spots, and grapes do it"), with a
+big "WHY?" over waves converging on the grapes, "SQUEEZE LIGHT", then a close-up of the glowing contact, "TINY SPOT".
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Everyday object + fireball on frame 0 + a claim people have seen on video but never understood. |
+| 2 | Retention | 8 | A cut or new event every 2–3 s; the oven wide shot (S1) is a slow push on a small fireball. |
+| 3 | Clarity | 9 | 5-INCH ruler → wave shrinks in water → ½ INCH next to a grape → bouncing star → hotspot with a pin for scale → ions losing electrons. |
+| 4 | Visual quality | 8 | Turbulent orange plasma, glowing waves and water block are crisp; the hotspot close-up blooms close to white and the water beads read dark. |
+| 5 | Motion design | 8 | Burst, converging waves, wave entering water, ray star, hotspot swell, electrons flying off, bead burst. |
+| 6 | Typography | 9 | Short pills on the objects, big numbers ("5 INCHES", "½ INCH"), captions in the safe zone. |
+| 7 | Voice and sound | 8 | Lightning-video tempo; hum, arcing, burst, bloop, bounce pings, sizzle, zaps, boom all on events. |
+| 8 | Story | 9 | Claim → WHY → size of the wave → shrinks to grape size → trapped → hotspot → plasma → bead proof → loop "So never do this at home: → put two grapes in a microwave". |
+| 9 | Accuracy | 9 | PNAS 2019, Physics World, Physics Today, PBS NOVA; "about half an inch" (0.48–0.53 in); pinhead ~1 mm; safety warning spoken and written. |
+| 10 | Packaging | 9 | "2 GRAPES = PLASMA" on the burst frame; WHY and zoom alternatives. |
+
+**Fixed during QA:** the first plasma was a large pastel-pink blob → smaller, deep orange, turbulent, thin purple
+fringe; the oven was too dark and the turntable a mirror → brighter lamp, rough glass; cut grapes looked like flat
+discs → green flesh with a skin ring; the zoom had a white ball covering the ions → hidden; the water beads were
+invisible → cyan; the wave ruler jumped → follows one crest; "exactly grape size" did not match the ½-inch ruler →
+script changed to "about half an inch: grape size", re-voiced, a smaller grape next to the ruler.
+
 # Critique of "Why Airplane Windows Are Round" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: a square window tearing out of a white fuselage, skin shards and glass flying at
