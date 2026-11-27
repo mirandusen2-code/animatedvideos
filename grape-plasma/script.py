@@ -1,0 +1,20 @@
+# key, spoken text, caption text (| = chunk break by meaning, CAPS = highlight), pause after (s)
+LINES = [
+ ("hook", "Put two grapes in a microwave, and they spit out a ball of plasma.",
+  "PUT | TWO GRAPES | in a MICROWAVE, | and they | SPIT OUT | a BALL | of PLASMA.", 0.3),
+ ("why", "Why? Physicists want to squeeze light into tiny spots, and grapes do it.",
+  "WHY? | PHYSICISTS | WANT TO SQUEEZE | LIGHT | into TINY SPOTS, | and GRAPES | DO IT.", 0.3),
+ ("wave", "A microwave is about five inches long.",
+  "A MICROWAVE | is about | 5 INCHES | LONG.", 0.25),
+ ("water", "But inside water, it shrinks to about half an inch: grape size.",
+  "But inside | WATER, | it SHRINKS | to about | HALF an INCH: | GRAPE SIZE.", 0.3),
+ ("trap", "So each grape traps the waves, and they bounce around inside.",
+  "So EACH GRAPE | TRAPS | the WAVES, | and they | BOUNCE | AROUND INSIDE.", 0.3),
+ ("touch", "Where two grapes touch, it all piles into one spot the size of a pinhead.",
+  "Where TWO GRAPES | TOUCH, | it ALL | PILES | into ONE SPOT | the SIZE | of a PINHEAD.", 0.3),
+ ("plasma", "That rips electrons off the salt in the juice. Boom, plasma.",
+  "That RIPS | ELECTRONS | off the SALT | in the JUICE. | BOOM, | PLASMA.", 0.3),
+ ("proof", "They proved it with water beads: no skin, same fireball.",
+  "They PROVED IT | with | WATER BEADS: | NO SKIN, | SAME | FIREBALL.", 0.3),
+ ("loop", "So never do this at home:", "So NEVER | DO THIS | at HOME:", 0.0),
+]
