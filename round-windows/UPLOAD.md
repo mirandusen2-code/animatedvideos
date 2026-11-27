@@ -29,4 +29,12 @@ That's also why the little hole at the bottom of your window exists: it lets the
 | `thumb_1954.png` | 1954: JETS RIPPED APART | The history angle (the Comet breaking up) |
 
 ## QA passed
-(filled in after the final build)
+- [x] 1080×1920, 30 fps, 992 frames (33.1 s), h264 + aac; every frame checked on contact sheets.
+- [x] Frame 0: the square window tearing out of the skin, shards flying toward the camera, "SQUARE WINDOWS" on screen, rip sound on frame 0.
+- [x] WHY line at 3 s with its own picture (the cabin pumped up like a balloon, "8 LB ON EVERY SQUARE INCH").
+- [x] Sharp: no motion blur, grain or upscaling (Cycles + OIDN). No black frames (blackdetect).
+- [x] Captions ≤ 3 words per chunk, synced to the measured word times, inside the safe zone; labels clear of the captions.
+- [x] Loudness −14.1 LUFS integrated.
+- [x] Voice at atempo 1.08 (as the lightning video); every sound effect tied to an event on screen.
+- [x] Seamless loop: seam pixel diff 11.4 (neighbouring frames 12.7–14.9); Whisper across the seam: "…no weak spot. So next time you fly, remember, airplane windows used to be square, and the planes ripped apart in the sky."
+- [x] Facts from two+ sources in `RESEARCH.md`; US units; the simplification (squarish, not square) stated in the description.

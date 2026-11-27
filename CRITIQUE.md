@@ -1,3 +1,30 @@
+# Critique of "Why Airplane Windows Are Round" (run of CRITIQUE_PROMPT.md)
+
+**First-second test: PASS.** Frame 0: a square window tearing out of a white fuselage, skin shards and glass flying at
+the lens, "SQUARE WINDOWS" on screen, rip sound on frame 0. At 180 × 320 it reads as "a plane window ripping out".
+
+**WHY test: PASS.** Spoken at 3 s ("Why? Every flight, the cabin is pumped up like a balloon") over a swelling cabin
+cross-section with "8 LB ON EVERY SQUARE INCH", then the stress map shows where that push goes.
+
+| # | Axis | Score | Evidence |
+|---|---|---|---|
+| 1 | Hook | 9 | Everyday object + destruction on frame 0 + a claim nobody knows. |
+| 2 | Retention | 8 | A cut or new event every second; the tank shot is mostly a counter before the split. |
+| 3 | Clarity | 9 | Stress colour legend, "SHARP CORNER → STRESS PILES UP", the crack growing at exactly that corner, then the same corner splitting in the tank. |
+| 4 | Visual quality | 8 | Crisp skin, shards and stress map; the tank set is plain. |
+| 5 | Motion design | 8 | Tear, swell, flowing push lines, break-up, split with bubbles, square-to-round morph. |
+| 6 | Typography | 9 | Pills and counters clean; "THE FIRST JETLINER" moved clear of the title. |
+| 7 | Voice and sound | 8 | Lightning-video tempo; rip, creaks, crack ticks, turbojet, pump thumps, split + bubbles, ping all on events. |
+| 8 | Story | 9 | Claim → WHY → mechanism → crack → 1954 crashes → tank proof → round fix → loop "So next time you fly, remember: → airplane windows used to be square". |
+| 9 | Accuracy | 9 | FAA Lessons Learned, RAE/Cranfield report, Smithsonian; "about 3,000 flights" = 3,060 cycles; squarish vs square stated in the description. |
+| 10 | Packaging | 9 | "SQUARE WINDOWS" on the tearing frame; WHY and 1954 alternatives. |
+
+**Fixed during QA:** frames 13–16 went dark because the hero window flew through the lens → new trajectory (closest
+approach 1.58 ft); the loop-end frames still had the old trajectory (seam diff 21.7) → re-rendered; in the tank split
+the bubbles buried the crack and the crack flickered under the swelling skin → fewer bubbles moved off the crack, a
+widening crack ribbon with a larger offset; "THE FIRST JETLINER" overlapped the title → moved down; "ROUND CORNERS"
+showed before the morph finished → retimed.
+
 # Critique of "Engineers Fire Chickens at Airplanes" (run of CRITIQUE_PROMPT.md)
 
 **First-second test: PASS.** Frame 0: the chicken bursting on the cockpit pane, feathers flying at the lens, cracks
