@@ -87,3 +87,10 @@ video is in brackets. Check them off in the video's `UPLOAD.md` QA section.
 - A label must point at the thing it names in every frame it is shown: check its projected anchor on the rendered frame, not only the world point (points behind other objects still project onto them).
 - The hero object must be visible when the voice or a label names it; never let a prop (sabot, case, cover) hide it at that moment.
 - After a re-render that moves a shot boundary or a camera, recompute which frames belong to the shot (`shot_index`) and delete all of them, including the boundary frame, before rendering.
+
+## Added after the round-windows video
+- A flat decal or glass disk on a curved hull sits further out than the chord sagitta, and a decal or crack on a hull that swells is offset more than the swell; otherwise it sinks under the skin and flickers.
+- Avoid large transparent sheets parallel to the view direction; time any volume (water, fog) render on one frame before the full run.
+- Debris that flies at the camera must miss the lens by more than its own size: print the closest approach of every hero piece before rendering.
+- After changing a hero motion that also plays at the loop end, re-render the loop-end frames too, then check the seam pixel diff.
+- Keep scratch disk free: delete old frame folders before a new render; a full disk corrupts frames silently.
