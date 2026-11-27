@@ -867,7 +867,7 @@ _gf0, _ff0 = window_faces(1)
 W0 = Dyn("RipW0", np.zeros((1 + 3 * WM, 3)), _gf0 + _ff0, glass_dark_m, sets=("rip",), smooth=False)
 multi_mat(W0.o, [glass_dark_m, frame_m], [0] * len(_gf0) + [1] * len(_ff0))
 _g0 = np.random.default_rng(17)
-W0_V = G.rip_normal(0.0) * 9.0 + np.array([0, -7.0, 1.0])
+W0_V = G.rip_normal(0.0) * 9.0 + np.array([0, -7.0, 5.5])   # flies at the camera and skims just over the lens
 W0_AX = rand_dirs(1, _g0)[0]
 W0_T = 0.06                 # the window frame pops out this long after the tear starts
 
@@ -1230,7 +1230,7 @@ tip_m, _ = emit_mat("CrackTip", (1.0, 0.9, 0.7), 12.0)
 MTIP = puts(sph("CrackTip", (0, 0, 0), 0.07, tip_m, 16, 10), "map")
 
 
-def map_crack(L):
+def map_crack(L, widen=1.0):
     j = np.searchsorted(CCUM, L)
     j = min(max(j, 1), len(CP) - 1)
     f = (L - CCUM[j - 1]) / max(CCUM[j] - CCUM[j - 1], 1e-6)
@@ -1240,7 +1240,7 @@ def map_crack(L):
     d = np.gradient(pts, axis=0)
     nrm = np.stack([-d[:, 1], d[:, 0]], -1)
     nrm /= np.maximum(np.linalg.norm(nrm, axis=1, keepdims=True), 1e-9)
-    w = (0.035 * np.clip(1 - np.minimum(CCUM, L) / max(L, 1e-3), 0.12, 1.0) + 0.01)[:, None]
+    w = (0.035 * np.clip(1 - np.minimum(CCUM, L) / max(L, 1e-3), 0.12, 1.0) + 0.01)[:, None] * widen
     a = pts + nrm * w
     b = pts - nrm * w
     v = np.stack([np.stack([a[:, 0], np.full(len(a), -0.06), a[:, 1]], -1),
@@ -1520,10 +1520,12 @@ BUB.dyn.o.data.from_pydata(np.zeros((BUB.n * len(_sv), 3)).tolist(), [],
                            [[k * len(_sv) + i for i in fc] for k in range(BUB.n) for fc in _sf])
 BUB.dyn.o.data.shade_smooth()
 _gb = np.random.default_rng(93)
-_bd = SPLIT_N[None] * _gb.uniform(3, 14, BUB.n)[:, None] + _gb.normal(0, 2.0, (BUB.n, 3)) + np.array([0, 2.0, 0])
-BUB.emit(SPLIT_P + _gb.normal(0, 0.08, (BUB.n, 3)), _bd, _gb.uniform(0, 1.8, BUB.n), _gb.uniform(0.8, 2.0, BUB.n),
-         -2.5)
-FLAP_L, FLAP_F = slab(1, 0.35, 0.28, 0.04)
+# a steady stream out of the tear that rises away (it must not bury the tear or fill the lens)
+BUB.L *= 0.6
+_bd = SPLIT_N[None] * _gb.uniform(0.8, 3.0, BUB.n)[:, None] + _gb.normal(0, 0.5, (BUB.n, 3)) + np.array([0, 0.4, 1.6])
+_bp = SPLIT_P + np.outer(_gb.uniform(0, 1, BUB.n), np.array([0, -0.9, 0.35])) + _gb.normal(0, 0.05, (BUB.n, 3))
+BUB.emit(_bp + SPLIT_N * 0.05, _bd, _gb.uniform(0.05, 4.0, BUB.n) ** 1.3, _gb.uniform(1.2, 2.5, BUB.n), -6.0)
+FLAP_L, FLAP_F = slab(1, 0.6, 0.42, 0.04)
 FLAP = Dyn("Flap", np.zeros((8, 3)), FLAP_F, white_m, sets=("tank",), smooth=False)
 _tcr = Dyn("TankCrack", np.zeros((len(CP) * 2, 3)),
            [[2 * i, 2 * i + 1, 2 * i + 3, 2 * i + 2] for i in range(len(CP) - 1)], crack_m, sets=("tank",),
@@ -1540,20 +1542,20 @@ def pose_tank(press, ts):
     if b_on:
         BUB.pose(a)
     # flap: hinged at the corner, peels outward
-    ang = min(1.0, a / 0.35) * math.radians(75) if b_on else 0.0
+    ang = (1 - math.exp(-a / 0.12)) * math.radians(105) if b_on else 0.0
     t_ = np.array([0, 1.0, 0])
     nb = np.cross(SPLIT_N, t_)
     B = np.array([t_, nb, SPLIT_N])
     loc = FLAP_L @ B + np.array([0, 0, 0])
     hinge = SPLIT_P - t_ * 0.0
     Rm = rodrigues(nb[None], np.array([ang]))[0]
-    FLAP.set(((loc + t_ * 0.35 + SPLIT_N * 0.03) @ Rm.T) + hinge)
+    FLAP.set(((loc + t_ * 0.6 + SPLIT_N * 0.03) @ Rm.T) + hinge)
     FLAP.o.hide_render = bool(not b_on)
     # crack on the skin growing just before the split
     L = 0.0 if ts < -0.6 else min(2.4, (ts + 0.6) * 2.5)
     _tcr.o.hide_render = bool(L <= 0.02)
     if L > 0.02:
-        v, _tip = map_crack(L)
+        v, _tip = map_crack(L, 1.0 + 5.0 * min(1.0, a / 0.3) if b_on else 1.0)   # the crack gapes open
         # map (x, z) crack coords onto the fuselage near the split point: x -> along -Y (aft), z -> around
         mx_ = v[:, 0] - G.MAP_CORNER[0]
         mz_ = v[:, 2] - G.MAP_CORNER[1]

@@ -353,7 +353,7 @@ def overlays(img, t):
     if i == 5:
         big(img, "1954", "DE HAVILLAND COMET", window(t, S[5][0] + 0.05, T.T_BROKE[0] - 0.1, 0.1), color=AMBER,
             pop=pop(t, T.T_1954[0]))
-        pill(img, "THE FIRST JETLINER", CX, 560, 46, alpha=window(t, T.T_FIRST[0], T.T_BROKE[0] - 0.1, 0.1),
+        pill(img, "THE FIRST JETLINER", CX, 618, 46, alpha=window(t, T.T_FIRST[0], T.T_BROKE[0] - 0.1, 0.1),
              accent=ICE)
         pill(img, "2 CRASHES IN 3 MONTHS", CX, 430, 52, alpha=window(t, T.T_BROKE[0] - 0.05, S[5][1] + 0.3, 0.1),
              accent=HOT)
@@ -370,7 +370,7 @@ def overlays(img, t):
         reticle(img, SPLIT_W, t, 0.6, window(t, T.T_SPLIT - 0.05, S[7][1] + 0.3, 0.1), HOT)
     if i == 8:
         label_at(img, "ROUND CORNERS", np.array(G.MAP_O) + np.array([0, -0.05, G.MAP_B + 0.2]), t,
-                 window(t, T.T_ROUND[0] - 0.05, T.T_NO[0] - 0.1, 0.1), ICE, -110)
+                 window(t, T.T_MORPH + 0.45, T.T_NO[0] - 0.1, 0.1), ICE, -110)
         pill(img, "NO WEAK SPOT", CX, 545, 58, alpha=window(t, T.T_NO[0] - 0.05, S[8][1] + 0.3, 0.1), accent=GREEN)
 
 
