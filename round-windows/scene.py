@@ -1524,9 +1524,10 @@ _gb = np.random.default_rng(93)
 BUB.L *= 0.6
 _bd = SPLIT_N[None] * _gb.uniform(0.8, 3.0, BUB.n)[:, None] + _gb.normal(0, 0.5, (BUB.n, 3)) + np.array([0, 0.4, 1.6])
 _bp = SPLIT_P + np.outer(_gb.uniform(0, 1, BUB.n), np.array([0, -0.9, 0.35])) + _gb.normal(0, 0.05, (BUB.n, 3))
-BUB.emit(_bp + SPLIT_N * 0.05, _bd, _gb.uniform(0.05, 4.0, BUB.n) ** 1.3, _gb.uniform(1.2, 2.5, BUB.n), -6.0)
+BUB.emit(_bp + SPLIT_N * 0.05, _bd, 0.2 + _gb.uniform(0.0, 3.8, BUB.n) ** 1.3, _gb.uniform(1.2, 2.5, BUB.n), -6.0)
 FLAP_L, FLAP_F = slab(1, 0.6, 0.42, 0.04)
-FLAP = Dyn("Flap", np.zeros((8, 3)), FLAP_F, white_m, sets=("tank",), smooth=False)
+FLAP = Dyn("Flap", np.zeros((8, 3)), FLAP_F, alu_m, sets=("tank",), smooth=False)
+HOLE = Dyn("TearHole", np.zeros((8, 3)), FLAP_F, crack_m, sets=("tank",), smooth=False)   # the dark gap the flap leaves
 _tcr = Dyn("TankCrack", np.zeros((len(CP) * 2, 3)),
            [[2 * i, 2 * i + 1, 2 * i + 3, 2 * i + 2] for i in range(len(CP) - 1)], crack_m, sets=("tank",),
            smooth=False)
@@ -1550,17 +1551,20 @@ def pose_tank(press, ts):
     hinge = SPLIT_P - t_ * 0.0
     Rm = rodrigues(nb[None], np.array([ang]))[0]
     FLAP.set(((loc + t_ * 0.6 + SPLIT_N * 0.03) @ Rm.T) + hinge)
-    FLAP.o.hide_render = bool(not b_on)
+    FLAP.o.hide_render = True                 # the gaping crack reads better than a flap at this distance
+    hs = min(1.0, a / 0.15)
+    HOLE.set((FLAP_L * np.array([hs, hs, 0.2])) @ B + t_ * 0.6 * hs + SPLIT_N * 0.012 + hinge)
+    HOLE.o.hide_render = True
     # crack on the skin growing just before the split
     L = 0.0 if ts < -0.6 else min(2.4, (ts + 0.6) * 2.5)
     _tcr.o.hide_render = bool(L <= 0.02)
     if L > 0.02:
-        v, _tip = map_crack(L, 1.0 + 5.0 * min(1.0, a / 0.3) if b_on else 1.0)   # the crack gapes open
+        v, _tip = map_crack(L, 1.0 + 7.0 * (1 - math.exp(-a / 0.12)) if b_on else 1.0)   # the crack gapes open
         # map (x, z) crack coords onto the fuselage near the split point: x -> along -Y (aft), z -> around
         mx_ = v[:, 0] - G.MAP_CORNER[0]
         mz_ = v[:, 2] - G.MAP_CORNER[1]
-        w = G.jet_surf(SPLIT_S - 0.62 + mx_ * 0.6, _ang + (0.62 + mz_ * 0.6) / G.JET_R, TO)
-        w = w + (w - (TO + np.array([0, w[0, 1] - TO[1], G.jet_zc(SPLIT_S)]))) * 0.004
+        w = G.jet_surf(SPLIT_S - 0.62 + mx_ * 0.9, _ang + (0.62 + mz_ * 0.9) / G.JET_R, TO)
+        w = w + (w - (TO + np.array([0, w[0, 1] - TO[1], G.jet_zc(SPLIT_S)]))) * 0.022   # stays above the skin when the hull swells
         _tcr.set(w)
 
 
