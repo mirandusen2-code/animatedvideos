@@ -1,0 +1,22 @@
+# key, spoken text, caption text (| = chunk break by meaning, CAPS = highlight), pause after (s)
+LINES = [
+ ("hook", "Drop Mentos into Diet Coke, and it blasts higher than a basketball hoop.",
+  "DROP MENTOS | into DIET COKE, | and it BLASTS | HIGHER | than a | BASKETBALL HOOP.", 0.3),
+ ("why", "Why? This bottle is secretly holding three bottles of gas.",
+  "WHY? | This BOTTLE | is SECRETLY | HOLDING | 3 BOTTLES | of GAS.", 0.3),
+ ("squeeze", "The factory squeezed it in, and it's dying to get out.",
+  "The FACTORY | SQUEEZED IT IN, | and it's | DYING | to GET OUT.", 0.3),
+ ("seed", "But a bubble can't start from nothing. It needs a rough spot.",
+  "But a BUBBLE | CAN'T START | from NOTHING. | It NEEDS | a ROUGH SPOT.", 0.3),
+ ("pits", "And up close, a Mentos is covered in tiny craters.",
+  "And UP CLOSE, | a MENTOS | is COVERED | in TINY | CRATERS.", 0.25),
+ ("bubbles", "Every crater spits out bubbles, all at once.",
+  "EVERY CRATER | SPITS OUT | BUBBLES, | ALL | at ONCE.", 0.3),
+ ("sink", "And Mentos are heavy, so they sink, making bubbles all the way down.",
+  "And MENTOS | are HEAVY, | so they SINK, | making BUBBLES | ALL THE WAY | DOWN.", 0.3),
+ ("push", "All that foam has only one way out: up!",
+  "All that FOAM | has only | ONE WAY OUT: | UP!", 0.3),
+ ("diet", "And Diet works best: the sweetener makes bubbling even easier.",
+  "And DIET | works BEST: | the SWEETENER | makes BUBBLING | EVEN EASIER.", 0.3),
+ ("loop", "So stand back, and", "So STAND BACK, | and", 0.0),
+]
