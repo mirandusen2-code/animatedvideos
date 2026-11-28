@@ -11,7 +11,7 @@ frames, out = sys.argv[1], sys.argv[2]
 os.makedirs(out, exist_ok=True)
 for name, f, lines, colors, y in [
     ("thumb_mentos_geyser", 0, [["MENTOS"], ["+ DIET COKE"]], {1: post.AMBER}, 1340),
-    ("thumb_why_craters", 520, [["WHY DOES"], ["IT EXPLODE?"]], {1: post.HOT}, 560),
+    ("thumb_why_craters", 620, [["WHY DOES"], ["IT EXPLODE?"]], {1: post.HOT}, 1180),
     ("thumb_3_bottles", 215, [["3 BOTTLES"], ["OF HIDDEN GAS"]], {0: post.ICE}, 1360),
 ]:
     img = post.finish(Image.open(os.path.join(frames, f"f_{f:04d}.png")).convert("RGB"), f / T.FPS)
